@@ -259,6 +259,39 @@ for (const [sid, at, p] of [['kif', 9.75, { optH: 180 }], ['kif', 10, { optH: 18
     for (const m of [...ch.matchAll(/<script>([\s\S]*?)<\/script>/g)]) { let okJs = true, err = ''; try { new vm.Script(m[1]); } catch (e) { okJs = false; err = e.message; } check('control.html: το σενάριο της σελίδας είναι έγκυρη JavaScript', okJs, err); }
     check('control.html: γράφει ότι η αναμονή είναι προσομοίωση και οι μετρήσεις αναπαραγωγή', /προσομοίωση/.test(ch) && /αναπαραγωγή/.test(ch));
     check('control.html: δεν ονομάζει το σταθερό πρόγραμμα «ισχύον»', /όχι το ισχύον/.test(ch));
+    check('control.html: γράφει ότι οι κάθετες της Βασ. Σοφίας χωρίς ανιχνευτή είναι παραδοχή', /Βασ\. Σοφίας: η κίνηση στις κάθετες χωρίς ανιχνευτή είναι παραδοχή/.test(ch));
+  }
+}
+{
+  const dp = path.join(dir, 'demo.html');
+  check('demo.html υπάρχει', fs.existsSync(dp));
+  if (fs.existsSync(dp)) {
+    const dh = fs.readFileSync(dp, 'utf8');
+    for (const m of [...dh.matchAll(/<script>([\s\S]*?)<\/script>/g)]) { let okJs = true, err = ''; try { new vm.Script(m[1]); } catch (e) { okJs = false; err = e.message; } check('demo.html: το σενάριο της σελίδας είναι έγκυρη JavaScript', okJs, err); }
+    check('demo.html: γράφει ότι οι ουρές είναι προσομοίωση, το ρολόι δικός μας σχεδιασμός, και το σενάριο ανιχνευτών', /προσομοίωση/.test(dh) && /όχι το ισχύον/.test(dh) && /ανιχνευτής σε κάθε κάθετη οδό/.test(dh));
+  }
+}
+// Λ. Βασ. Σοφίας στο κέντρο ελέγχου: 14 φανάρια, απλοί κανόνες, με τους σημερινούς ανιχνευτές (blind 1) ή με ανιχνευτή σε κάθε κάθετη (blind 0)
+{
+  const sp = path.join(dir, 'sofias-data.js');
+  check('sofias-data.js υπάρχει', fs.existsSync(sp));
+  if (fs.existsSync(sp)) {
+    vm.runInContext(fs.readFileSync(sp, 'utf8'), ctx);
+    const SO = ctx.window.SOFIAS; DATA.sites.push(SO.site); for (const d in SO.detectors) DATA.detectors[d] = SO.detectors[d];
+    const tot = sim => sim.st.qInt.reduce((a, b) => a + b, 0);
+    const fx = runWith('sofias', '2026-11-03', 6, 9.5, {}, 'fixed'), fxEnd = runWith('sofias', '2026-11-03', 6, 12, {}, 'fixed');
+    for (const blind of [1, 0]) {
+      let before = null, ctl = 0;
+      const r = runWith('sofias', '2026-11-03', 6, 12, { blind }, 'adaptive', sim => {
+        if (sim.t === 6 * 3600) sim.net.juncs.forEach((J, j) => sim.hold(j, true));
+        if (sim.t === 9.5 * 3600) { before = tot(sim); sim.net.juncs.forEach((J, j) => sim.hold(j, false)); ctl = sim.net.juncs.filter((J, j) => sim.mode(j) === 'adaptive').length; }
+      });
+      check('sofias blind=' + blind + ': πριν από την ανάθεση ίδιος με το σταθερό πρόγραμμα', before === tot(fx.sim), before + ' / ' + tot(fx.sim));
+      check('sofias blind=' + blind + ': ελέγχονται ' + (blind ? 3 : 14) + ' από 14 φανάρια', ctl === (blind ? 3 : 14), ctl);
+      check('sofias blind=' + blind + ': όρια ασφαλείας και διατήρηση μετά την ανάθεση', !r.safe.bad.length && r.s.conserved, 'παραβάσεις ' + r.safe.bad.length);
+      check('sofias blind=' + blind + ': λιγότερη αναμονή από το ρολόι ως τις 12:00', tot(r.sim) < tot(fxEnd.sim), ((tot(fxEnd.sim) - tot(r.sim)) / 3600).toFixed(1) + ' ώρες');
+    }
+    DATA.sites.pop();
   }
 }
 

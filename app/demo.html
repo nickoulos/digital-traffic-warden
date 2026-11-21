@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="el">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ψηφιακός Τροχονόμος</title>
+<style>
+:root{--sign:#0b3f91;--deep:#082f70;--night:#06245a;--white:#fbfcfd;--yellow:#ffd42a;--soft:#c5d5f1;--red:#ff5a4c;--blue:#2f8bff;--ink:#17202b;--mute:#5a6675}
+*{box-sizing:border-box;margin:0;padding:0}
+[hidden]{display:none!important}
+html{font-size:10px;height:100%}
+body{height:100%;background:var(--night);color:var(--white);overflow:hidden;display:flex;align-items:center;justify-content:center;
+  font-family:Bahnschrift,"DIN Alternate","Segoe UI",system-ui,sans-serif;font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+.rec *{transition:none!important}
+button:focus-visible{outline:.3rem solid var(--yellow);outline-offset:.3rem}
+.stage{position:relative;width:160rem;height:90rem;overflow:hidden;background:var(--deep)}
+#map{position:absolute;left:0;top:0;width:100%;height:100%}
+
+/* τίτλος και ώρα */
+.head{position:absolute;left:3.2rem;top:3rem}
+.head h1{font-size:2.6rem;font-weight:600;color:var(--yellow);line-height:1}
+.head b{display:block;font-size:8.4rem;font-weight:600;line-height:.95;margin-top:.6rem}
+.head span{display:block;font-size:1.8rem;color:var(--soft);margin-top:.4rem}
+
+/* ο ένας διακόπτης */
+.switch{position:absolute;left:50%;top:3rem;transform:translateX(-50%);display:flex;background:rgba(6,36,90,.9);border:.3rem solid var(--white);border-radius:3.4rem;padding:.5rem;box-shadow:0 .6rem 2.4rem rgba(3,18,48,.5)}
+.switch button{font-size:2.4rem;font-weight:600;padding:1.1rem 3rem;border-radius:2.8rem;color:var(--soft);transition:background-color .3s,color .3s}
+.switch button[aria-pressed=true]{background:var(--white);color:var(--sign)}
+.switch button.ours[aria-pressed=true]{background:var(--yellow);color:var(--ink)}
+
+/* μήνυμα κάτω από τον διακόπτη */
+.banner{position:absolute;left:50%;top:12.4rem;transform:translateX(-50%);max-width:92rem;background:var(--white);color:var(--ink);border-radius:1.4rem;padding:1.2rem 2.2rem;font-size:2rem;line-height:1.3;text-align:center;box-shadow:0 .6rem 2.4rem rgba(3,18,48,.5);border-left:1rem solid var(--blue)}
+.banner b{color:var(--sign)}
+
+/* μετρητές */
+.card{position:absolute;left:3.2rem;bottom:6.2rem;width:44rem;background:rgba(6,36,90,.9);border-radius:1.8rem;padding:2rem 2.4rem 1.8rem;box-shadow:0 .6rem 2.4rem rgba(3,18,48,.5)}
+.card .row{display:flex;align-items:baseline;gap:1.2rem}
+.card .n{font-size:7.2rem;font-weight:600;line-height:1}
+.card .l{font-size:1.9rem;color:var(--soft);line-height:1.25;margin-top:.4rem}
+.card .cmp{font-size:2rem;color:var(--yellow);margin-top:.4rem;min-height:2.5rem}
+.card hr{border:0;border-top:.2rem solid rgba(197,213,241,.25);margin:1.5rem 0 1.3rem}
+.card .n2{font-size:4.4rem;font-weight:600;line-height:1}
+.card .n2 small{font-size:2rem;font-weight:400;color:var(--soft);margin-left:.6rem}
+.legend{display:flex;flex-direction:column;gap:.6rem;font-size:1.6rem;color:var(--soft);margin-top:1.6rem}
+.legend i{display:inline-block;vertical-align:.2rem;margin-right:.7rem}
+.legend .q{width:3rem;height:.7rem;border-radius:.35rem;background:var(--red)}
+.legend .c{width:1rem;height:1rem;border-radius:50%;background:#e9f0ff}
+
+/* όχημα έκτακτης ανάγκης */
+.evbtn{position:absolute;right:3.2rem;bottom:6.2rem;background:var(--white);color:#b3261e;border-radius:1.8rem;padding:1.8rem 2.6rem 1.8rem 8rem;font-size:2.6rem;font-weight:600;line-height:1.15;text-align:left;box-shadow:0 .6rem 2.4rem rgba(3,18,48,.5)}
+.evbtn span{display:block;font-size:1.7rem;font-weight:400;color:var(--mute);margin-top:.3rem}
+.evbtn::before,.evbtn::after{content:"";position:absolute;background:#e0261b;border-radius:.25rem}
+.evbtn::before{left:3.3rem;top:50%;width:1.2rem;height:4rem;margin-top:-2rem}
+.evbtn::after{left:1.9rem;top:50%;width:4rem;height:1.2rem;margin-top:-.6rem}
+.evbtn:disabled{opacity:.55;cursor:default}
+
+.fine{position:absolute;left:3.2rem;right:3.2rem;bottom:1.8rem;font-size:1.45rem;line-height:1.35;color:rgba(197,213,241,.8);text-align:center}
+</style>
+</head>
+<body>
+<div class="stage" id="stage">
+  <canvas id="map"></canvas>
+  <div class="head"><h1>Ψηφιακός Τροχονόμος</h1><b id="clock">--:--</b><span id="sub">Τρίτη 3 Νοεμβρίου 2026</span></div>
+  <div class="switch" role="group" aria-label="Πώς δουλεύουν τα φανάρια">
+    <button id="mClock" aria-pressed="true">Σήμερα: με το ρολόι</button>
+    <button id="mOurs" class="ours" aria-pressed="false">Με τον Ψηφιακό Τροχονόμο</button>
+  </div>
+  <div class="banner" id="banner" hidden></div>
+  <div class="card">
+    <div class="n" id="stopped">0</div>
+    <div class="l">αυτοκίνητα σταματημένα αυτή τη στιγμή στα 20 φανάρια</div>
+    <div class="cmp" id="cmp"></div>
+    <hr>
+    <div class="n2" id="hours">0<small>ώρες</small></div>
+    <div class="l" id="hoursCap">αναμονής στα φανάρια</div>
+    <div class="cmp" id="cmp2"></div>
+    <div class="legend"><span><i class="q"></i>ουρά: όσο μακρύτερη, τόσα περισσότερα αυτοκίνητα</span><span><i class="c"></i>αυτοκίνητο σε κίνηση</span></div>
+  </div>
+  <button class="evbtn" id="evb">Όχημα έκτακτης ανάγκης<span>Λ. Βασ. Σοφίας, προς το Ιπποκράτειο</span></button>
+  <p class="fine" id="fine">Ροές: πραγματικές μετρήσεις ανιχνευτών της Περιφέρειας Αττικής, Τρίτη 3/11/2026. Ουρές και αναμονή: προσομοίωση. «Ρολόι»: σταθερό πρόγραμμα δικού μας σχεδιασμού, όχι το ισχύον. Δρόμοι © OpenStreetMap.</p>
+</div>
+<script src="data.js"></script>
+<script src="sim-core.js"></script>
+<script src="map-data.js"></script>
+<script src="corridor-data.js"></script>
+<script src="sofias-data.js"></script>
+<script>
+(function () {
+  'use strict';
+  var $ = function (id) { return document.getElementById(id); };
+  var H = {}; location.hash.slice(1).split('&').forEach(function (kv) { var p = kv.split('='); if (p[0]) H[p[0]] = p[1] == null ? '1' : decodeURIComponent(p[1]); });
+  function hms(s) { var p = String(s).split(':'); return (+p[0]) * 3600 + (+(p[1] || 0)) * 60 + (+(p[2] || 0)); }
+  function hm(t) { var h = Math.floor(t / 3600) % 24, m = Math.floor(t % 3600 / 60); return (h < 10 ? '0' : '') + h + ':' + (m < 10 ? '0' : '') + m; }
+  function num(x, d) { return x.toFixed(d).replace('.', ',').replace('-', '−'); }
+
+  /* ---------- δίκτυο: τρεις άξονες, 20 φανάρια ---------- */
+  // Ελεγκτής ανά άξονα όπως στο experiment-impact.js: Κηφισίας βελτιστοποίηση ανά κόμβο, Αλεξάνδρας και Βασ. Σοφίας απλοί κανόνες.
+  // Σενάριο ανιχνευτών: #det=all (προεπιλογή) ανιχνευτής σε κάθε κάθετη οδό· #det=now οι σημερινοί (η Αλεξάνδρας μένει τότε στο ρολόι).
+  var DAY = '2026-11-03', DET = H.det === 'now' ? 'now' : 'all', SEED = +H.seed || 7;
+  var START = hms(H.t || '10:00'), T0 = START - 1800, T1 = 22 * 3600;
+  DATA.sites = DATA.sites.filter(function (s) { return s.id === 'alex'; });
+  [CORRIDOR, SOFIAS].forEach(function (X) { DATA.sites.push(X.site); for (var d in X.detectors) DATA.detectors[d] = X.detectors[d]; });
+  var AX = [{ id: 'kifx', ctrl: 'optimal', now: true }, { id: 'alex', ctrl: 'adaptive', now: false }, { id: 'sofias', ctrl: 'adaptive', now: true }];
+  if (DET === 'now') $('fine').textContent += ' Σημερινοί ανιχνευτές.'; else $('fine').textContent += ' Σενάριο: ανιχνευτής σε κάθε κάθετη οδό (15 νέοι).';
+
+  var sites = [], mode = H.mode === 'ours' ? 'ours' : 'clock', base = { clock: 0, ours: 0 }, ema = { clock: 0, ours: 0 };
+  function build() {
+    sites = AX.map(function (X) {
+      var def = DATA.sites.filter(function (s) { return s.id === X.id; })[0], p = { seed: SEED, blind: DET === 'all' ? 0 : 1 };
+      var ctrl = DET === 'now' && !X.now ? 'fixed' : X.ctrl;
+      return { id: X.id, def: def, clock: SimCore.createSim(DATA, X.id, DAY, T0, T1, p, 'fixed', null), ours: SimCore.createSim(DATA, X.id, DAY, T0, T1, p, ctrl, null) };
+    });
+    sites.forEach(geom);
+  }
+  function stopped(m) { var n = 0; sites.forEach(function (s) { var sim = s[m]; for (var a = 0; a < sim.net.apps.length; a++) n += sim.qlen(a); }); return n; }
+  function qint(m) { var n = 0; sites.forEach(function (s) { s[m].st.qInt.forEach(function (v) { n += v; }); }); return n; }
+  function stepAll() {
+    sites.forEach(function (s) { if (!s.clock.done) { s.clock.step(); s.ours.step(); } });
+    ['clock', 'ours'].forEach(function (m) { ema[m] += (stopped(m) - ema[m]) / 90; });
+  }
+  function now() { return sites[0].clock.t; }
+
+  /* ---------- γεωμετρία: πού ζωγραφίζεται η ουρά κάθε πρόσβασης ---------- */
+  // Τοπικές συντεταγμένες σε μέτρα (ανατολικά, βόρεια). Η ουρά απλώνεται πίσω από τη γραμμή στάσης, 7 m ανά όχημα ανά λωρίδα.
+  var LAT0 = 37.9842, LON0 = 23.7522, COS = Math.cos(LAT0 * Math.PI / 180), MPD = 110540;
+  function m(lat, lon) { return [(lon - LON0) * COS * MPD, (lat - LAT0) * MPD]; }
+  function unit(v) { var l = Math.hypot(v[0], v[1]) || 1; return [v[0] / l, v[1] / l]; }
+  function sideDir(P, axisU, detId) {
+    if (detId) { var d = MAP.dets.filter(function (x) { return x.id === detId; })[0]; if (d) { var q = m(d.lat, d.lon), v = [q[0] - P[0], q[1] - P[1]]; if (Math.hypot(v[0], v[1]) > 15) return unit(v); } }
+    var nrm = [-axisU[1], axisU[0]], score = [0, 0];
+    MAP.roads.forEach(function (r) { r.p.forEach(function (pt) { var q = m(pt[1], pt[0]), v = [q[0] - P[0], q[1] - P[1]], l = Math.hypot(v[0], v[1]); if (l < 40 || l > 180) return; var c = (v[0] * nrm[0] + v[1] * nrm[1]) / l; if (c > 0.85) score[0]++; else if (c < -0.85) score[1]++; }); });
+    return score[0] >= score[1] ? nrm : [-nrm[0], -nrm[1]];
+  }
+  function geom(s) {
+    var sim = s.ours, J = s.def.junctions.map(function (j) { return m(j.lat, j.lon); });
+    s.P = J;
+    s.g = sim.net.apps.map(function (A) {
+      var j = A.j, P = J[j], u, L, def = s.def.junctions[j].approaches.filter(function (x) { return x.id === A.id; })[0] || {};
+      var ax = J.length > 1 ? unit(j + 1 < J.length ? [J[j + 1][0] - P[0], J[j + 1][1] - P[1]] : [P[0] - J[j - 1][0], P[1] - J[j - 1][1]]) : [1, 0];
+      if (A.phase === 0) {
+        if (A.up >= 0) { var Q = J[sim.net.apps[A.up].j]; u = unit([P[0] - Q[0], P[1] - Q[1]]); L = Math.hypot(P[0] - Q[0], P[1] - Q[1]); }
+        else { u = A.dir === 'E' ? ax : [-ax[0], -ax[1]]; L = 260; }
+      } else { var n = sideDir(P, ax, def.det); u = [-n[0], -n[1]]; L = 220; }
+      return { P: P, u: u, L: L, lanes: A.lanes || 1 };
+    });
+  }
+
+  /* ---------- όχημα έκτακτης ανάγκης ---------- */
+  var EV = { route: ['ak_E', 'ko_E', 'rg_E', 'rz_E', 'ma_E', 'vk_E', 'pp_E', 'db_E'], notice: 60, run: null };
+  function dispatch() {
+    if (EV.run) return;
+    var s = sites[2], t = now(), T = t + EV.notice;
+    EV.run = { ours: s.ours.addEV(EV.route, T, { preempt: true, notice: EV.notice }), clock: s.clock.addEV(EV.route, T), t0: t, told: false };
+    setMode('ours');
+    banner('<b>Όχημα έκτακτης ανάγκης</b> στη Λ. Βασ. Σοφίας, προς το Ιπποκράτειο. Τα φανάρια μπροστά του αδειάζουν τις ουρές πριν φτάσει.');
+    $('evb').disabled = true;
+  }
+  function freeTime(sim) { return sim.P.lookahead + EV.route.slice(1).reduce(function (x, a) { return x + sim.net.apps[idx(sim, a)].travel; }, 0); }
+  function idx(sim, id) { for (var a = 0; a < sim.net.apps.length; a++) if (sim.net.apps[a].id === id) return a; return -1; }
+  function evCheck() {
+    var r = EV.run; if (!r || r.told || !r.ours.done) return;
+    var sim = sites[2].ours, mine = Math.max(0, r.ours.tEnd - r.ours.t0 - freeTime(sim));
+    if (!r.clock.done && now() - r.ours.tEnd < 200) return;
+    r.told = true;
+    var other = r.clock.done ? Math.max(0, r.clock.tEnd - r.clock.t0 - freeTime(sites[2].clock)) : null;
+    banner('<b>Έφτασε στο Ιπποκράτειο.</b> Κολλημένο πίσω από ουρές: ' + mine + ' s. Με το ρολόι, χωρίς προτεραιότητα: ' + (other == null ? 'ακόμη στον δρόμο' : other + ' s') + '.');
+  }
+  function banner(html) { var b = $('banner'); b.innerHTML = html; b.hidden = false; }
+
+  /* ---------- χάρτης ---------- */
+  var cv = $('map'), cx = cv.getContext('2d'), remPx = 10, PW = 0, PH = 0, PPM = 1, roadCv = document.createElement('canvas'), roadKey = '';
+  function fit() {
+    remPx = Math.min(innerWidth / 160, innerHeight / 90); document.documentElement.style.fontSize = remPx + 'px';
+    var dpr = window.devicePixelRatio || 1; PW = 160 * remPx; PH = 90 * remPx; cv.width = Math.round(PW * dpr); cv.height = Math.round(PH * dpr); cx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    PPM = (PH * 0.8) / 2300; roadKey = '';
+  }
+  function X(p) { return PW * 0.585 + p[0] * PPM; }
+  function Y(p) { return PH * 0.5 - p[1] * PPM; }
+  var LABELS = [['Λ. Βασ. Σοφίας', 37.9772, 23.7432, -0.05], ['Λ. Αλεξάνδρας', 37.9898, 23.7525, 0.245], ['Λ. Κηφισίας', 37.9905, 23.7682, -1.0],
+    ['Σύνταγμα', 37.9752, 23.7352, 0], ['Λυκαβηττός', 37.9818, 23.7432, 0], ['Πεδίον Άρεως', 37.9937, 23.7362, 0], ['Αμπελόκηποι', 37.9872, 23.7640, 0], ['Ερυθρός Σταυρός', 37.9945, 23.7722, 0], ['Ιπποκράτειο', 37.9808, 23.7520, 0]];
+  function drawRoads() {
+    var dpr = window.devicePixelRatio || 1, c = roadCv.getContext('2d');
+    roadCv.width = cv.width; roadCv.height = cv.height; c.setTransform(dpr, 0, 0, dpr, 0, 0);
+    c.fillStyle = '#082f70'; c.fillRect(0, 0, PW, PH); c.lineCap = 'round'; c.lineJoin = 'round';
+    var W = [0, 0.14, 0.22, 0.42, 0.6], A = [0, 0.16, 0.24, 0.42, 0.55];
+    for (var k = 1; k <= 4; k++) {
+      c.beginPath();
+      MAP.roads.forEach(function (r) { if (r.c !== k) return; r.p.forEach(function (pt, i) { var p = m(pt[1], pt[0]); if (i) c.lineTo(X(p), Y(p)); else c.moveTo(X(p), Y(p)); }); });
+      c.strokeStyle = 'rgba(255,255,255,' + A[k] + ')'; c.lineWidth = W[k] * remPx; c.stroke();
+    }
+    c.textAlign = 'center'; c.textBaseline = 'middle';
+    LABELS.forEach(function (l) {
+      var p = m(l[1], l[2]); c.save(); c.translate(X(p), Y(p)); c.rotate(l[3]);
+      c.font = (l[3] ? '600 ' : '500 ') + (l[3] || l[0] === 'Λ. Βασ. Σοφίας' ? 2.1 : 1.6) * remPx + 'px Bahnschrift, "Segoe UI", sans-serif';
+      c.fillStyle = /^Λ./.test(l[0]) ? 'rgba(255,255,255,.95)' : 'rgba(197,213,241,.75)'; if (/^Λ./.test(l[0])) c.font = '600 ' + 2.1 * remPx + 'px Bahnschrift, "Segoe UI", sans-serif'; c.fillText(l[0], 0, 0); c.restore();
+    });
+  }
+  function drawSite(s, sim, tf) {
+    var V = sim.P.cruise / 3.6, half = 14, QM = 6;
+    // κουκκίδες: αυτοκίνητα σε κίνηση. Φτάνουν στο τέλος της ουράς τη στιγμή που ο προσομοιωτής τα βάζει στην ουρά.
+    cx.fillStyle = 'rgba(233,240,255,.92)';
+    s.g.forEach(function (G, a) {
+      var su = [G.u[0], -G.u[1]], sr = [-su[1], su[0]], off = 0.55 * remPx, Sx = X(G.P) - su[0] * half * PPM + sr[0] * off, Sy = Y(G.P) - su[1] * half * PPM + sr[1] * off;
+      var qm = sim.qlen(a) * QM, tr = sim.transit[a], r = 0.24 * remPx;
+      for (var k = 0; k < tr.length; k++) {
+        var d = Math.min(G.L, qm + Math.max(0, tr[k] - tf) * V); if (d >= G.L) continue;
+        cx.beginPath(); cx.arc(Sx - su[0] * d * PPM, Sy - su[1] * d * PPM, r, 0, 6.2832); cx.fill();
+      }
+      G.sx = Sx; G.sy = Sy; G.su = su; G.qm = Math.min(G.L, qm);
+    });
+    // ουρές
+    cx.lineCap = 'round'; cx.strokeStyle = '#ff5a4c'; cx.lineWidth = 0.85 * remPx;
+    s.g.forEach(function (G) { if (G.qm < 1) return; cx.beginPath(); cx.moveTo(G.sx, G.sy); cx.lineTo(G.sx - G.su[0] * G.qm * PPM, G.sy - G.su[1] * G.qm * PPM); cx.stroke(); });
+    // φανάρια
+    s.P.forEach(function (P, j) {
+      var x = X(P), y = Y(P), pre = sim.preempted && sim.preempted(j);
+      if (pre) { cx.beginPath(); cx.arc(x, y, 1.6 * remPx, 0, 6.2832); cx.fillStyle = 'rgba(47,139,255,.45)'; cx.fill(); }
+      cx.beginPath(); cx.arc(x, y, 0.62 * remPx, 0, 6.2832); cx.fillStyle = '#fbfcfd'; cx.fill(); cx.lineWidth = 0.22 * remPx; cx.strokeStyle = pre ? '#2f8bff' : '#06245a'; cx.stroke();
+    });
+  }
+  function drawEV(tf) {
+    var r = EV.run; if (!r) return;
+    var s = sites[2], sim = s.ours, ev = r.ours, p = null, V = sim.P.cruise / 3.6;
+    if (ev.done) { var G = s.g[idx(sim, EV.route[EV.route.length - 1])], d = (tf - ev.tEnd) * V; if (d > 260) return; p = [X(G.P) + G.u[0] * d * PPM, Y(G.P) - G.u[1] * d * PPM]; }
+    else {
+      var a = idx(sim, EV.route[ev.k || 0]), G2 = s.g[a];
+      if (!G2.su) return;
+      var back = ev.state === 'wait' ? G2.L * 0.95 : ev.state === 'queue' ? Math.max(0, ev.target - sim.st.served[a]) * 6 : Math.min(G2.L * 0.95, Math.max(0, ev.arr - tf) * V);
+      p = [G2.sx - G2.su[0] * back * PPM, G2.sy - G2.su[1] * back * PPM];
+    }
+    var on = Math.floor(tf * 2) % 2 === 0, R = 1.5 * remPx;
+    cx.beginPath(); cx.arc(p[0], p[1], R * 1.9, 0, 6.2832); cx.fillStyle = on ? 'rgba(47,139,255,.5)' : 'rgba(255,90,76,.5)'; cx.fill();
+    cx.fillStyle = '#fbfcfd'; cx.beginPath(); cx.roundRect ? cx.roundRect(p[0] - R, p[1] - R, 2 * R, 2 * R, 0.4 * remPx) : cx.rect(p[0] - R, p[1] - R, 2 * R, 2 * R); cx.fill();
+    cx.fillStyle = '#e0261b'; cx.fillRect(p[0] - R * 0.22, p[1] - R * 0.68, R * 0.44, R * 1.36); cx.fillRect(p[0] - R * 0.68, p[1] - R * 0.22, R * 1.36, R * 0.44);
+  }
+  function render(frac) {
+    var key = PW + '|' + remPx; if (key !== roadKey) { roadKey = key; drawRoads(); }
+    cx.save(); cx.setTransform(1, 0, 0, 1, 0, 0); cx.drawImage(roadCv, 0, 0); cx.restore();
+    var tf = now() + (frac || 0);
+    sites.forEach(function (s) { drawSite(s, s[mode], tf); });
+    if (mode === 'ours') drawEV(tf);
+    var t = now(); $('clock').textContent = hm(t);
+    $('stopped').textContent = Math.round(ema[mode]);
+    var h = (qint(mode) - base[mode]) / 3600, hc = (qint('clock') - base.clock) / 3600;
+    $('hours').firstChild.nodeValue = num(h, h >= 100 ? 0 : 1);
+    $('hoursCap').textContent = 'αναμονής στα φανάρια από τις ' + hm(START);
+    $('cmp').textContent = mode === 'ours' ? 'με το ρολόι: ' + Math.round(ema.clock) : '';
+    $('cmp2').textContent = mode === 'ours' ? 'με το ρολόι: ' + num(hc, hc >= 100 ? 0 : 1) + ' ώρες' : '';
+  }
+  function setMode(v) { mode = v; $('mClock').setAttribute('aria-pressed', v === 'clock'); $('mOurs').setAttribute('aria-pressed', v === 'ours'); render(0); }
+
+  /* ---------- χειρισμός ---------- */
+  var playing = H.play !== '0', speed = +H.speed || 30;
+  $('mClock').addEventListener('click', function () { setMode('clock'); });
+  $('mOurs').addEventListener('click', function () { setMode('ours'); });
+  $('evb').addEventListener('click', dispatch);
+  function restart() { EV.run = null; $('banner').hidden = true; $('evb').disabled = false; start(); }
+  addEventListener('keydown', function (e) {
+    var k = e.key.toLowerCase();
+    if (k === ' ') { playing = !playing; e.preventDefault(); }
+    else if (k === 't' || k === 'τ') setMode(mode === 'ours' ? 'clock' : 'ours');
+    else if (k === '1') setMode('clock');
+    else if (k === '2') setMode('ours');
+    else if (k === 'e' || k === 'ε') dispatch();
+    else if (k === 'r' || k === 'ρ') restart();
+    else if (k === 'arrowright') speed = Math.min(240, speed * 2);
+    else if (k === 'arrowleft') speed = Math.max(5, speed / 2);
+  });
+  function start() {
+    build(); while (now() < START) stepAll();
+    ['clock', 'ours'].forEach(function (k) { base[k] = qint(k); ema[k] = stopped(k); });
+  }
+  var carry = 0, last = 0;
+  function frame(ts) {
+    var dt = last ? Math.min(0.1, (ts - last) / 1000) : 0; last = ts;
+    if (playing && !sites[0].clock.done) { carry += dt * speed; var n = Math.floor(carry); carry -= n; for (var i = 0; i < n; i++) { stepAll(); evCheck(); } }
+    render(playing ? carry : 0); requestAnimationFrame(frame);
+  }
+  addEventListener('resize', function () { fit(); render(0); });
+  fit(); start(); setMode(mode);
+  if (H.until) { var u = hms(H.until); while (now() < u) { stepAll(); evCheck(); } }
+  if (H.ev) { dispatch(); for (var w = 0; w < (+H.evrun || 0); w++) { stepAll(); evCheck(); } }
+  if (H.rec) document.body.classList.add('rec');
+  if (H.rec) window.REC = { advance: function (n) { for (var i = 0; i < n; i++) { stepAll(); evCheck(); } render(0); return now(); }, now: now, setMode: setMode, dispatch: dispatch };
+  else requestAnimationFrame(frame);
+  render(0);
+})();
+</script>
+</body>
+</html>

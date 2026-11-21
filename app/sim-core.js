@@ -589,6 +589,110 @@ var SimCore = (function () {
       }
       S.g = A.phase; S.el = A.el; A.el++;
     }
+    // ΣΥΝΤΟΝΙΣΜΕΝΟΣ ΕΛΕΓΚΤΗΣ (ctrl 'coord', ΠΕΙΡΑΜΑ). Κρατά τον κύκλο και τη μετατόπιση του σταθερού προγράμματος, άρα και το πράσινο κύμα
+    // του άξονα: το πράσινο του κύριου άξονα είναι πάντα αναμμένο στην αρχή του κύκλου. Σε κάθε κύκλο διαλέγει μόνο ΠΟΣΟ θα κρατήσει
+    // (το μοίρασμα κύριας/κάθετης) ώστε να είναι ελάχιστη η προβλεπόμενη αναμονή του κόμβου στους δύο επόμενους κύκλους, και γυρίζει
+    // νωρίτερα στον κύριο άξονα όταν η κάθετη αδειάσει. Ίδια όρια ασφαλείας.
+    var cs = [], cq = [], CW = (params && params.coordW != null) ? +params.coordW : 2;
+    function coordSplit(j, t, C, ext) {
+      var st = optState(j, t), L = P.lost, lo = minG[0], hi = Math.min(C - 2 * L - minG[1], P.maxRed - 2 * L), best = Infinity, bg = fx[j].pl.g0, g, s, i;
+      if (C - 2 * L - lo + 2 * L > P.maxRed) lo = C - P.maxRed;          // το κόκκινο του κύριου άξονα δεν ξεπερνά την ανώτατη αναμονή
+      // κάθε φάση παίρνει τουλάχιστον όσο πράσινο χρειάζεται για τις αφίξεις ενός κύκλου (+10%) και για να αδειάσει την ουρά της σε 3 κύκλους
+      var need = [0, 0];
+      for (i = 0; i < st.n; i++) if (st.sat[i] > 0) need[st.ph[i]] = Math.max(need[st.ph[i]], (st.rate[i] * C * 1.1 + st.q0[i] / 3) / st.sat[i]);
+      var lo2 = Math.max(lo, Math.ceil(need[0])), hi2 = Math.min(hi, Math.floor(C - 2 * L - need[1]));
+      if (lo2 > hi2) return Math.max(lo, Math.min(hi, Math.round((C - 2 * L) * need[0] / (need[0] + need[1])))) + ext;   // δεν χωράνε και τα δύο: αναλογικό μοίρασμα
+      lo = lo2; hi = hi2;
+      for (g = lo; g <= hi; g += 2) {
+        var cost = 0; for (i = 0; i < st.n; i++) cq[i] = st.q0[i];
+        for (s = 1; s <= 2 * C; s++) {
+          var u = (s - 1) % C, ph = u < g ? 0 : (u < g + L ? -1 : (u < C - L ? 1 : -1));
+          for (i = 0; i < st.n; i++) {
+            var v = cq[i] + (s <= st.look[i] ? st.known[i][s] : st.rate[i]);
+            if (st.ph[i] === ph) { v -= st.sat[i]; if (v < 0) v = 0; }
+            cq[i] = v; cost += v;
+          }
+          if (cost >= best) break;
+        }
+        if (cost < best) for (i = 0; i < st.n; i++) cost += CW * C * cq[i];      // όσα μένουν στην ουρά στο τέλος θα περιμένουν κι άλλους κύκλους
+        if (cost < best) { best = cost; bg = g; }
+      }
+      return bg + ext;
+    }
+    function coordSignal(j, t, S) {
+      var A = ad[j], F = fx[j], tau = t - F.start, c = cs[j] || (cs[j] = { start: -1, g0: F.pl.g0 + F.ext, sideDone: false });
+      if (c.start !== F.start) { c.start = F.start; c.g0 = coordSplit(j, t, F.pl.C, F.ext); c.sideDone = false; }
+      if (t === t0) { A.phase = 0; A.el = 0; A.inter = -1; }
+      if (A.inter >= 0) {
+        if (A.inter >= P.lost) { A.inter = -1; A.phase = A.next; A.el = 0; }
+        else { S.g = -1; S.amber = 1 - A.next; S.el = A.inter; A.inter++; return; }
+      }
+      var o = 1 - A.phase, want = (tau < c.g0 || c.sideDone) ? 0 : 1, endSide = F.pl.C + F.ext - P.lost;
+      if (A.el >= minG[A.phase]) {
+        var sw = false;
+        if (t - lastEnd[j][o] + P.lost >= P.maxRed) sw = true;
+        else if (A.phase === 0) sw = want === 1 && tau + P.lost + minG[1] <= endSide;       // δίνει κάθετη μόνο αν χωρά ολόκληρο το ελάχιστο πράσινό της
+        else sw = want === 0 || tau >= endSide || pressure(j, 1, t) === 0;                    // τέλος παραθύρου ή άδεια κάθετη
+        if (sw) { if (A.phase === 1) c.sideDone = true; A.next = o; A.inter = 1; S.g = -1; S.amber = A.phase; S.el = 0; return; }
+      }
+      S.g = A.phase; S.el = A.el; A.el++;
+    }
+    // ΟΧΗΜΑ ΕΚΤΑΚΤΗΣ ΑΝΑΓΚΗΣ (ΠΕΙΡΑΜΑ). sim.addEV(['ar_E', 'kp_E'], t, { preempt: true }) βάζει ένα όχημα που διασχίζει τις προσβάσεις με τη σειρά.
+    // Δεν προσπερνά τα οχήματα που στέκονται μπροστά του, αλλά όταν φτάσει πρώτο στη γραμμή περνά και με κόκκινο (ΚΟΚ).
+    // Άρα ο μόνος τρόπος να περάσει γρήγορα είναι να έχει αδειάσει η ουρά μπροστά του.
+    // Με preempt, κάθε φανάρι της διαδρομής γυρίζει στο πράσινο της κατεύθυνσής του λίγο πριν φτάσει (όσο χρειάζεται για να αδειάσει η ουρά)
+    // και το κρατά ώσπου να περάσει. ΤΑ ΟΡΙΑ ΑΣΦΑΛΕΙΑΣ ΔΕΝ ΧΑΛΑΡΩΝΟΥΝ: ελάχιστο πράσινο, ενδιάμεσος χρόνος και ανώτατη αναμονή ισχύουν κανονικά.
+    var evs = [], pre = {}, EVC = (params && params.evCaution != null) ? +params.evCaution : 3;
+    sim.evs = evs;
+    sim.addEV = function (route, t, opt) {
+      var ev = { route: route.map(function (id) { return net.apps.filter(function (x) { return x.id === id; })[0].idx; }), k: 0, state: 'wait', tStart: t, pre: !!(opt && opt.preempt), notice: (opt && +opt.notice) || 0, log: [], done: false, arr: 0, target: 0, t0: 0, tEnd: 0, head: -1 };
+      evs.push(ev); return ev;
+    };
+    sim.preempted = function (j) { return pre[j] != null; };
+    function evEnter(t) {
+      for (var e = 0; e < evs.length; e++) { var ev = evs[e]; if (ev.state === 'wait' && t >= ev.tStart) { var a = ev.route[0]; transit[a].push(t + P.lookahead); st.gen[a]++; ev.arr = t + P.lookahead; ev.t0 = t; ev.state = 'transit'; } }
+    }
+    function evArrive(t) {
+      pre = {};
+      for (var e = 0; e < evs.length; e++) {
+        var ev = evs[e]; if (ev.done || (ev.state === 'wait' && !(ev.pre && t >= ev.tStart - ev.notice))) continue;   // notice: ο χειριστής δίνει την εντολή τόσα s πριν μπει το όχημα
+        var a = ev.route[ev.k];
+        if (ev.state === 'transit' && ev.arr <= t) { ev.state = 'queue'; ev.target = st.served[a] + qlen(a); ev.log.push({ j: net.apps[a].j, a: a, arrive: t, depart: -1, ahead: qlen(a) - 1 }); }
+        if (!ev.pre) continue;
+        var eta = ev.state === 'queue' ? t : ev.state === 'wait' ? ev.tStart + P.lookahead : ev.arr;
+        for (var m = ev.k; m < ev.route.length; m++) {
+          var b = ev.route[m], B = net.apps[b]; if (m > ev.k) eta += B.travel;
+          if (eta - t <= P.lost + minG[1 - B.phase] + qlen(b) / B.sat + 12) pre[B.j] = B.phase;
+        }
+      }
+    }
+    function evDepart(t) {
+      for (var e = 0; e < evs.length; e++) {
+        var ev = evs[e]; if (ev.done || ev.state !== 'queue') continue;
+        var a = ev.route[ev.k], L = ev.log[ev.log.length - 1];
+        if (st.served[a] < ev.target) {
+          // ΚΟΚ: με φάρους και σειρήνα το όχημα περνά και με κόκκινο. Το σταματούν μόνο τα οχήματα που στέκονται μπροστά του.
+          // Όταν φτάσει πρώτο στη γραμμή και το φανάρι δεν είναι πράσινο, διασχίζει μετά από EVC s προσοχής (αν δεν είναι γεμάτος ο επόμενος σύνδεσμος).
+          if (st.served[a] !== ev.target - 1 || sig[net.apps[a].j].g === net.apps[a].phase || blocked(a)) { ev.head = -1; continue; }
+          if (ev.head < 0) ev.head = t;
+          if (t - ev.head < EVC) continue;
+          var arr0 = q[a][qh[a]++]; st.served[a]++; st.delay[a] += t - arr0; if (t > arr0) st.stops[a]++; L.red = true;
+        }
+        ev.head = -1; L.depart = t; if (L.red == null) L.red = false;
+        if (ev.k + 1 < ev.route.length) { var d = ev.route[++ev.k], D = net.apps[d]; transit[d].push(t + D.travel); st.recv[d]++; ev.arr = t + D.travel; ev.state = 'transit'; }
+        else { ev.done = true; ev.tEnd = t; }
+      }
+    }
+    function preemptSignal(j, t, S) {
+      var A = ad[j];
+      if (A.inter >= 0) {
+        if (A.inter >= P.lost) { A.inter = -1; A.phase = A.next; A.el = 0; }
+        else { S.g = -1; S.amber = 1 - A.next; S.el = A.inter; A.inter++; return; }
+      }
+      var o = 1 - A.phase;
+      if (A.el >= minG[A.phase] && (A.phase !== pre[j] || t - lastEnd[j][o] + P.lost >= P.maxRed)) { A.next = o; A.inter = 1; S.g = -1; S.amber = A.phase; S.el = 0; return; }
+      S.g = A.phase; S.el = A.el; A.el++;
+    }
     function trackSignal(j, t, S) {
       var A = ad[j], F = fsig[j], target = F.g >= 0 ? F.g : 1 - F.amber;
       if (t === t0) {                                     // εκκίνηση: ξεκινά ήδη συγχρονισμένος με το πρόγραμμα
@@ -619,6 +723,7 @@ var SimCore = (function () {
         for (i = 0; i < n; i++) transit[a].push(t + P.lookahead);
         st.gen[a] += n;
       }
+      if (evs.length) evEnter(t);
       // 2. όσα έφτασαν στη γραμμή στάσης μπαίνουν στην ουρά
       for (a = 0; a < nA; a++) {
         var tr = transit[a];
@@ -627,13 +732,14 @@ var SimCore = (function () {
         for (i = 0; i < tr.length; i++) { if (tr[i] <= t) { q[a].push(tr[i]); series.arr[bi]++; } else keep.push(tr[i]); }
         transit[a] = keep;
       }
+      if (evs.length) evArrive(t);
       // 3. σηματοδότες (στην κοινή βελτιστοποίηση η απόφαση για όλους τους κόμβους παίρνεται μαζί, πριν από τον βρόχο)
       if (ctrl === 'network') netPlan(t);
       if (ctrl === 'netplan' && t >= npNext) { npOptimise(t); npNext = t + NPER; }
       for (var j = 0; j < nJ; j++) {
         var S = sig[j];
         if (ctrl === 'fixed') fixedSignal(j, t, S);
-        else { fixedSignal(j, t, fsig[j]); if (mode(j) !== 'adaptive') trackSignal(j, t, S); else if (ctrl === 'optimal') optSignal(j, t, S); else if (ctrl === 'network') netSignal(j, t, S); else if (ctrl === 'netplan') npSignal(j, t, S); else if (ctrl === 'replay') replaySignal(j, t, S); else adaptiveSignal(j, t, S); }
+        else { fixedSignal(j, t, fsig[j]); if (pre[j] != null) preemptSignal(j, t, S); else if (mode(j) !== 'adaptive') trackSignal(j, t, S); else if (ctrl === 'optimal') optSignal(j, t, S); else if (ctrl === 'network') netSignal(j, t, S); else if (ctrl === 'netplan') npSignal(j, t, S); else if (ctrl === 'replay') replaySignal(j, t, S); else if (ctrl === 'coord') coordSignal(j, t, S); else adaptiveSignal(j, t, S); }
         if (S.g !== S.prev) {
           if (S.prev >= 0) { lastEnd[j][S.prev] = t; sim.swLog[j].push(t); }
           if (S.g >= 0) { maxRedSeen[j][S.g] = Math.max(maxRedSeen[j][S.g], t - lastEnd[j][S.g]); if (S.g === 0) starts[j]++; }
@@ -662,6 +768,7 @@ var SimCore = (function () {
         if (qlen(a) === 0 && credit[a] > 1) credit[a] = 1;
         if (qh[a] > 512) { q[a] = q[a].slice(qh[a]); qh[a] = 0; }
       }
+      if (evs.length) evDepart(t);
       // 5. στατιστικά
       for (a = 0; a < nA; a++) {
         A = net.apps[a]; n = qlen(a);
