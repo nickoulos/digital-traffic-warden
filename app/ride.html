@@ -38,15 +38,17 @@ button:focus-visible{outline:.2rem solid var(--accent);outline-offset:.3rem}
 .cap small{display:block;font-size:1.8rem;font-weight:400;color:var(--label);margin-top:.5rem}
 
 /* οι αριθμοί της ώρας 08:00–09:00 στο φανάρι του αυτοκινήτου: πρώτα όπως μετρήθηκαν, μετά τι αλλάζει */
-.facts{position:absolute;right:3.2rem;top:2.8rem;width:46rem;padding:2rem 2.4rem 2.2rem}
+.facts{position:absolute;right:3.2rem;top:2.8rem;width:48rem;padding:2rem 2.4rem 2.2rem}
 .facts .when{font-size:1.8rem;font-weight:600;color:var(--label)}
-.facts .row{margin-top:1.6rem}
-.facts .row b{display:block;font-size:5.2rem;font-weight:300;line-height:1;color:#fff;white-space:nowrap}
-.facts .row b s{font-size:3rem;color:var(--muted);text-decoration-thickness:.25rem;margin-right:1.2rem}
-.facts .row b small{font-size:2.4rem;font-weight:400;margin-left:.6rem}
-.facts .row span{display:block;font-size:1.8rem;color:var(--label);line-height:1.3;margin-top:.4rem}
+.facts .row{margin-top:1.5rem}
+.facts .row b{display:block;font-size:4.8rem;font-weight:300;line-height:1;color:#fff;white-space:nowrap}
+.facts .row b small{font-size:2.2rem;font-weight:400;margin-left:.6rem}
+.facts .row b i{font-style:normal}
+.facts .row b .was{font-size:3.4rem;color:var(--muted)}
+.facts .row b .to{font-size:3rem;color:var(--muted);margin:0 .9rem}
+.facts .row span{display:block;font-size:1.7rem;color:var(--label);line-height:1.3;margin-top:.4rem}
+.facts .row.year{padding-top:1.5rem;border-top:1px solid var(--line)}
 .facts.ours .row b{color:var(--accent)}
-.facts.ours .row b s{color:var(--muted)}
 .load{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;font-size:2rem;color:var(--muted);background:#0f1318}
 </style>
 </head>
@@ -65,6 +67,7 @@ button:focus-visible{outline:.2rem solid var(--accent);outline-offset:.3rem}
     <div class="row"><b id="f1"></b><span id="f1l"></span></div>
     <div class="row"><b id="f2"></b><span id="f2l"></span></div>
     <div class="row"><b id="f3"></b><span id="f3l"></span></div>
+    <div class="row"><b id="f4"></b><span id="f4l"></span></div>
   </div>
 </div>
 <!-- Αριθμοί: knowledge-base/results/experiment-ride-numbers.md. Ρολόι: σταθερό πρόγραμμα δικού μας σχεδιασμού. Κτίρια και δρόμοι © OpenStreetMap. -->
@@ -741,19 +744,25 @@ button:focus-visible{outline:.2rem solid var(--accent);outline-offset:.3rem}
   const int = x => String(Math.round(x)).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
   const half = x => { const r = Math.round(x * 2) / 2; return r % 1 ? String(r).replace('.', ',') : String(r); };
   const dec = x => (Math.round(x * 10) / 10).toFixed(1).replace('.', ',').replace(/,0$/, '');
+  // Πρώτα όπως μετρήθηκαν (3/11), μετά «πριν → με τον Τροχονόμο». Οι δύο τελευταίες γραμμές είναι αναγωγή σε 250 εργάσιμες
+  // με τον μέσο όρο των εργάσιμων που καταγράψαμε (knowledge-base/results/experiment-ride-numbers.md).
   function facts(after) {
     if (!RN) return null;
-    const M = RN.meas, O = RN.ours;
+    const M = RN.meas, O = RN.ours, Y = RN.year, km = dec(RN.km) + ' km ως τους Αμπελόκηπους';
+    const h100 = x => int(Math.round(x / 100) * 100);
+    const arrow = (a, b, unit) => '<i class="was">' + a + '</i><i class="to" aria-label="από σε">→</i>' + b + '<small>' + unit + '</small>';
     return {
       when: 'Μεταξύ ' + RN.from + ' και ' + RN.to,
       rows: after ? [
         [int(RN.cars), 'τα ίδια αυτοκίνητα, στο ίδιο φανάρι'],
-        ['<s>' + half(M.lostMin) + '</s>' + half(O.lostMin) + '<small>λεπτά</small>', 'χάνει το καθένα στα ' + dec(RN.km) + ' km ως τους Αμπελόκηπους'],
-        ['<s>' + int(M.hours) + '</s>' + int(O.hours) + '<small>ώρες</small>', int(M.hours - O.hours) + ' ώρες λιγότερες χαμένες, όλα μαζί']
+        [arrow(half(M.lostMin), half(O.lostMin), 'λεπτά'), 'χάνει το καθένα στα ' + km],
+        [arrow(int(Y.personH), int(Y.personHOurs), 'ώρες τον χρόνο'), 'για όποιον κάνει αυτή τη διαδρομή κάθε πρωί', 'year'],
+        [arrow(h100(Y.allH), h100(Y.allHOurs), 'ώρες'), 'τον χρόνο, όλοι μαζί: ' + h100(Y.allH - Y.allHOurs) + ' ώρες λιγότερες']
       ] : [
         [int(RN.cars), 'αυτοκίνητα πέρασαν από το φανάρι που περιμένουμε'],
-        [half(M.lostMin) + '<small>λεπτά</small>', 'έχασε το καθένα στα ' + dec(RN.km) + ' km ως τους Αμπελόκηπους'],
-        [int(M.hours) + '<small>ώρες</small>', 'χαμένες, όλα μαζί, μέσα σε μία ώρα']
+        [half(M.lostMin) + '<small>λεπτά</small>', 'έχασε το καθένα στα ' + km],
+        [int(Y.personH) + '<small>ώρες τον χρόνο</small>', 'χάνει όποιος κάνει αυτή τη διαδρομή κάθε πρωί', 'year'],
+        [h100(Y.allH) + '<small>ώρες τον χρόνο</small>', 'όλοι μαζί, μόνο αυτή την ώρα, μόνο σε αυτά τα ' + dec(RN.km) + ' km']
       ]
     };
   }
@@ -766,7 +775,7 @@ button:focus-visible{outline:.2rem solid var(--accent);outline-offset:.3rem}
     if (k === factsKey) return; factsKey = k;
     $('facts').classList.toggle('ours', mode === 'ours');
     $('fWhen').textContent = F.when;
-    F.rows.forEach((r, i) => { $('f' + (i + 1)).innerHTML = r[0]; $('f' + (i + 1) + 'l').textContent = r[1]; });
+    F.rows.forEach((r, i) => { $('f' + (i + 1)).innerHTML = r[0]; $('f' + (i + 1) + 'l').textContent = r[1]; $('f' + (i + 1)).parentNode.classList.toggle('year', r[2] === 'year'); });
   }
   const CAPS = {
     intro: () => '',
