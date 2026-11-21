@@ -21,6 +21,8 @@
 | [results/experiment-impact.md](results/experiment-impact.md) | Οι τρεις άξονες της απλής οθόνης μαζί: πόσες ώρες, πόσο CO₂, πόσο καθυστερεί ένα ασθενοφόρο; Οι αριθμοί της απλής παρουσίασης. | `experiment-impact.js` |
 | [results/experiment-neighbours.md](results/experiment-neighbours.md) | Τι παθαίνουν τα γειτονικά φανάρια όταν αλλάζουμε την Κηφισίας × Πανόρμου; | `experiment-neighbours.js` |
 | [results/experiment-sofias.md](results/experiment-sofias.md) | Ολόκληρη η Λ. Βασ. Σοφίας, 14 φανάρια: τι δίνουν οι σημερινοί ανιχνευτές και τι ένας ανιχνευτής σε κάθε κάθετη; | `experiment-sofias.js` |
+| [results/experiment-ride-numbers.md](results/experiment-ride-numbers.md) | Οι αριθμοί του `ride.html`: πόσα αυτοκίνητα μέτρησαν οι ανιχνευτές στη Βασ. Σοφίας 08:00–09:00, πόσο χρόνο έχασαν και τι αλλάζει με τον Τροχονόμο. | `experiment-ride-numbers.js` |
+| [results/experiment-ride-time.md](results/experiment-ride-time.md) | Ποια ώρα της 3/11 δείχνει το `ride.html`: η ώρα με το μεγαλύτερο μετρημένο πρόβλημα. | `experiment-ride-time.js` |
 | [results/experiment-emergency.md](results/experiment-emergency.md) | Πόσο μένει ένα όχημα έκτακτης ανάγκης πίσω από ουρές, με και χωρίς προτεραιότητα; | `experiment-emergency.js` |
 
 Τα ακατέργαστα αποτελέσματα ανά εκτέλεση (JSON) είναι στο `results/raw/`.

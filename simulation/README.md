@@ -31,6 +31,9 @@
 | `node experiment-sofias.js run <σπόρος>`, `report`, `export` | λεπτά/σπόρο | η Λ. Βασ. Σοφίας με 14 φανάρια· το `export` γράφει το `../app/sofias-data.js` |
 | `node experiment-emergency.js run <σπόρος>`, `report` | ~1 λεπτό/σπόρο | προτεραιότητα σε όχημα έκτακτης ανάγκης (θέλει το `corridor-data.js`) |
 | `node experiment-impact.js run <σπόρος>`, `report` | ~2 λεπτά/σπόρο | οι τρεις άξονες του `../app/demo.html` μαζί, με ρολόι, σημερινούς ανιχνευτές και ανιχνευτή σε κάθε κάθετη· και ασθενοφόρο στη Βασ. Σοφίας |
+| `node experiment-ride-numbers.js` | ~10 s | οι αριθμοί του `../app/ride.html` από τα ακατέργαστα δεδομένα της 3/11 και από 10 σπόρους· γράφει το `../app/ride-numbers.js` |
+| `node experiment-ride-time.js` | ~1 λεπτό | ποια ώρα δείχνει το `../app/ride.html` |
+| `node build_buildings.js [overpass.json]` | ~1 λεπτό | κτίρια από το OpenStreetMap (Overpass) → `../app/buildings-data.js` |
 | `node build_signals.js` | δευτερόλεπτα | `../app/osm-signals.json` → `../app/signals-data.js`: οι θέσεις των φαναριών για τον χάρτη |
 
 `site`: `alex` (Λ. Αλεξάνδρας), `kif` (Κηφισίας × Πανόρμου), `iera` (Ιερά Οδός). `blind`: 1 = ο ελεγκτής βλέπει μόνο προσβάσεις με ανιχνευτή (σημερινή κατάσταση), 0 = ανιχνευτής σε κάθε πρόσβαση.

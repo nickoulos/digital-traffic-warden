@@ -1,0 +1,861 @@
+<!doctype html>
+<html lang="el">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ψηφιακός Τροχονόμος · Από το αυτοκίνητο στην πόλη</title>
+<style>
+/* Ύφος: σκούρο, ουδέτερο, λίγο χρώμα μόνο εκεί που σημαίνει κάτι. */
+:root{--ink:#e8eaed;--muted:#8d99a8;--label:#9fabb9;--panel:rgba(14,17,22,.72);--line:#232a33;--accent:#3da5ff;
+  --m-red:#e5413b;--m-amb:#ffb020;--m-grn:#46d06a}
+*{box-sizing:border-box;margin:0;padding:0}
+[hidden]{display:none!important}
+html{font-size:10px;height:100%}
+body{height:100%;background:#0f1318;color:var(--ink);overflow:hidden;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+button:focus-visible{outline:.2rem solid var(--accent);outline-offset:.3rem}
+#view{position:fixed;inset:0}
+#view canvas{display:block}
+.hud{position:fixed;inset:0;pointer-events:none}
+.hud button{pointer-events:auto}
+.glass{background:var(--panel);border:1px solid var(--line);border-radius:1.4rem;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);box-shadow:0 1rem 3rem rgba(0,0,0,.45)}
+.fade{transition:opacity .8s}
+.rec .fade{transition:none}
+.off{opacity:0!important}
+
+.head{position:absolute;left:3.2rem;top:2.8rem;text-shadow:0 .2rem 1.2rem rgba(0,0,0,.6)}
+.head h1{font-size:2rem;font-weight:600;color:var(--label);letter-spacing:.02em}
+.head b{display:block;font-size:7.2rem;font-weight:300;line-height:1;margin-top:.4rem;color:#fff}
+.head span{display:block;font-size:1.7rem;color:var(--muted);margin-top:.3rem}
+
+.switch{position:absolute;left:50%;top:2.8rem;transform:translateX(-50%);display:flex;padding:.5rem;border-radius:999px}
+.switch button{font-size:2rem;font-weight:600;padding:1rem 2.6rem;border-radius:999px;color:var(--muted);transition:background-color .3s,color .3s}
+.switch button[aria-pressed=true]{background:#e8eaed;color:#0f1318}
+.switch button.ours[aria-pressed=true]{background:var(--accent);color:#fff}
+
+.cap{position:absolute;left:50%;bottom:5rem;transform:translateX(-50%);max-width:84rem;text-align:center;font-size:2.8rem;font-weight:600;line-height:1.25;padding:1.3rem 2.8rem;color:#fff}
+.cap small{display:block;font-size:1.8rem;font-weight:400;color:var(--label);margin-top:.5rem}
+
+/* οι αριθμοί της ώρας 08:00–09:00 στο φανάρι του αυτοκινήτου: πρώτα όπως μετρήθηκαν, μετά τι αλλάζει */
+.facts{position:absolute;right:3.2rem;top:2.8rem;width:46rem;padding:2rem 2.4rem 2.2rem}
+.facts .when{font-size:1.8rem;font-weight:600;color:var(--label)}
+.facts .row{margin-top:1.6rem}
+.facts .row b{display:block;font-size:5.2rem;font-weight:300;line-height:1;color:#fff;white-space:nowrap}
+.facts .row b s{font-size:3rem;color:var(--muted);text-decoration-thickness:.25rem;margin-right:1.2rem}
+.facts .row b small{font-size:2.4rem;font-weight:400;margin-left:.6rem}
+.facts .row span{display:block;font-size:1.8rem;color:var(--label);line-height:1.3;margin-top:.4rem}
+.facts.ours .row b{color:var(--accent)}
+.facts.ours .row b s{color:var(--muted)}
+.load{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;font-size:2rem;color:var(--muted);background:#0f1318}
+</style>
+</head>
+<body>
+<div id="view"></div>
+<div class="load" id="load">Χτίζεται η πόλη…</div>
+<div class="hud">
+  <div class="head"><h1>Ψηφιακός Τροχονόμος</h1><b id="clock">--:--</b><span>Τρίτη 3 Νοεμβρίου 2026</span></div>
+  <div class="switch glass fade off" id="switch" role="group" aria-label="Πώς δουλεύουν τα φανάρια">
+    <button id="mClock" aria-pressed="true">Σήμερα: με το ρολόι</button>
+    <button id="mOurs" class="ours" aria-pressed="false">Με τον Ψηφιακό Τροχονόμο</button>
+  </div>
+  <div class="cap glass fade off" id="cap"></div>
+  <div class="facts glass fade off" id="facts" aria-live="polite">
+    <p class="when" id="fWhen"></p>
+    <div class="row"><b id="f1"></b><span id="f1l"></span></div>
+    <div class="row"><b id="f2"></b><span id="f2l"></span></div>
+    <div class="row"><b id="f3"></b><span id="f3l"></span></div>
+  </div>
+</div>
+<!-- Αριθμοί: knowledge-base/results/experiment-ride-numbers.md. Ρολόι: σταθερό πρόγραμμα δικού μας σχεδιασμού. Κτίρια και δρόμοι © OpenStreetMap. -->
+<script src="vendor/three.min.js"></script>
+<script src="data.js"></script>
+<script src="sim-core.js"></script>
+<script src="map-data.js"></script>
+<script src="corridor-data.js"></script>
+<script src="sofias-data.js"></script>
+<script src="ride-numbers.js"></script>
+<script src="buildings-data.js"></script>
+<script>
+(function () {
+  'use strict';
+  const $ = id => document.getElementById(id);
+  const H = {}; location.hash.slice(1).split('&').forEach(kv => { const p = kv.split('='); if (p[0]) H[p[0]] = p[1] == null ? '1' : decodeURIComponent(p[1]); });
+  const hms = s => { const p = String(s).split(':'); return (+p[0]) * 3600 + (+(p[1] || 0)) * 60 + (+(p[2] || 0)); };
+  const hm = t => { const h = Math.floor(t / 3600) % 24, m = Math.floor(t % 3600 / 60); return (h < 10 ? '0' : '') + h + ':' + (m < 10 ? '0' : '') + m; };
+  const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
+  const lerp = (a, b, t) => a + (b - a) * t;
+  const smooth = (a, b, x) => { const t = clamp((x - a) / (b - a), 0, 1); return t * t * (3 - 2 * t); };
+  const ease = t => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+
+  /* ================= προσομοίωση: ίδια με το demo.html ================= */
+  // Τρεις άξονες, 20 φανάρια. Ρολόι και Ψηφιακός Τροχονόμος τρέχουν παράλληλα με τα ίδια αυτοκίνητα· η εικόνα δείχνει τον έναν.
+  // Αρχή 08:00: η ώρα της 3/11 με το μεγαλύτερο μετρημένο πρόβλημα στην περιοχή και μεγάλη διαφορά ρολογιού / Τροχονόμου (knowledge-base/results/experiment-ride-time.md).
+  const DAY = '2026-11-03', DET = H.det === 'now' ? 'now' : 'all', SEED = +H.seed || (window.RIDENUM && RIDENUM.seed) || 7;   // ο σπόρος που δίνει στο φανάρι όσα αυτοκίνητα μετρήθηκαν (ride-numbers.js)
+  const START = hms(H.t || '08:00'), T0 = START - 1800, T1 = 22 * 3600;
+  DATA.sites = DATA.sites.filter(s => s.id === 'alex');
+  [CORRIDOR, SOFIAS].forEach(X => { DATA.sites.push(X.site); for (const d in X.detectors) DATA.detectors[d] = X.detectors[d]; });
+  const AX = [{ id: 'kifx', ctrl: 'optimal', now: true }, { id: 'alex', ctrl: 'adaptive', now: false }, { id: 'sofias', ctrl: 'adaptive', now: true }];
+
+  let sites = [], mode = 'clock';
+  // Ξαναχτίζει τις προσομοιώσεις από το T0· η γεωμετρία κάθε άξονα (s.g, s.P, φανάρια) μένει.
+  function buildSims() {
+    AX.forEach((X, i) => {
+      const def = DATA.sites.filter(s => s.id === X.id)[0], p = { seed: SEED, blind: DET === 'all' ? 0 : 1 };
+      const ctrl = DET === 'now' && !X.now ? 'fixed' : X.ctrl;
+      const s = sites[i] || (sites[i] = { id: X.id, def });
+      s.clock = SimCore.createSim(DATA, X.id, DAY, T0, T1, p, 'fixed', null); s.ours = SimCore.createSim(DATA, X.id, DAY, T0, T1, p, ctrl, null);
+      s.vis = null;
+    });
+  }
+  const now = () => sites[0].clock.t;
+  function stepAll() {
+    sites.forEach(s => { if (!s.clock.done) { s.clock.step(); s.ours.step(); } });
+    sites.forEach(s => syncVis(s));
+  }
+
+  /* ================= γεωμετρία των προσβάσεων ================= */
+  // Τοπικές συντεταγμένες σε μέτρα (ανατολικά e, βόρεια n), ίδιο σημείο αναφοράς με το demo.html. Στη σκηνή: x = e, z = −n.
+  const LAT0 = 37.9842, LON0 = 23.7522, COS = Math.cos(LAT0 * Math.PI / 180), MPD = 110540;
+  const m = (lat, lon) => [(lon - LON0) * COS * MPD, (lat - LAT0) * MPD];
+  const unit = v => { const l = Math.hypot(v[0], v[1]) || 1; return [v[0] / l, v[1] / l]; };
+  const LW = 3.2, SP = 7.0;
+  function sideDir(P, axisU, detId) {
+    if (detId) { const d = MAP.dets.filter(x => x.id === detId)[0]; if (d) { const q = m(d.lat, d.lon), v = [q[0] - P[0], q[1] - P[1]]; if (Math.hypot(v[0], v[1]) > 15) return unit(v); } }
+    const nrm = [-axisU[1], axisU[0]], score = [0, 0];
+    MAP.roads.forEach(r => r.p.forEach(pt => { const q = m(pt[1], pt[0]), v = [q[0] - P[0], q[1] - P[1]], l = Math.hypot(v[0], v[1]); if (l < 40 || l > 180) return; const c = (v[0] * nrm[0] + v[1] * nrm[1]) / l; if (c > 0.85) score[0]++; else if (c < -0.85) score[1]++; }));
+    return score[0] >= score[1] ? nrm : [-nrm[0], -nrm[1]];
+  }
+  function geom(s) {
+    const net = s.ours.net, J = s.def.junctions.map(j => m(j.lat, j.lon));
+    s.P = J;
+    const mainLanes = J.map((_, j) => net.apps.filter(A => A.j === j && A.phase === 0).reduce((x, A) => x + A.lanes, 0));
+    s.mainHalf = J.map((_, j) => mainLanes[j] * LW / 2 + 0.8);
+    s.ax = J.map((P, j) => J.length > 1 ? unit(j + 1 < J.length ? [J[j + 1][0] - P[0], J[j + 1][1] - P[1]] : [P[0] - J[j - 1][0], P[1] - J[j - 1][1]]) : [1, 0]);
+    s.g = net.apps.map(A => {
+      const j = A.j, P = J[j], def = s.def.junctions[j].approaches.filter(x => x.id === A.id)[0] || {};
+      let u, L, arm;
+      if (A.phase === 0) {
+        if (A.up >= 0) { const Q = J[net.apps[A.up].j]; u = unit([P[0] - Q[0], P[1] - Q[1]]); L = Math.hypot(P[0] - Q[0], P[1] - Q[1]); }
+        else { u = A.dir === 'E' ? s.ax[j] : [-s.ax[j][0], -s.ax[j][1]]; L = 260; }
+      } else { const n = sideDir(P, s.ax[j], def.det); u = [-n[0], -n[1]]; L = 220; }
+      const stopOff = A.phase === 0 ? 9 : s.mainHalf[j] + 3;
+      const r = [u[1], -u[0]];
+      if (A.phase === 0) arm = A.up >= 0 ? L - stopOff - 9 : L - stopOff; else arm = L - stopOff;
+      const lat = k => A.phase === 0 ? 0.8 + (k + 0.5) * LW : 0.4 + (k + 0.5) * 3.0;
+      return { P, u, r, L, arm, stopOff, lanes: A.lanes || 1, lat, phase: A.phase, up: A.up, down: A.down, j };
+    });
+  }
+
+  /* ================= σκηνή: φως, ουρανός, ομίχλη ================= */
+  THREE.ColorManagement.legacyMode = false;
+  const C = { bg: 0x0f1318, ground: 0x191c22, road: 0x33373d, white: 0xe8eaed, brake: 0xe5413b, pole: 0x5b6068 };
+  const view = $('view');
+  const renderer = new THREE.WebGLRenderer({ antialias: true, logarithmicDepthBuffer: true, preserveDrawingBuffer: !!H.rec });
+  // τουλάχιστον 1,5 φορές την ανάλυση της οθόνης (υπερδειγματοληψία): οι λεπτές γραμμές από ψηλά βγαίνουν πιο λείες. #px=1 για αδύναμο υπολογιστή.
+  renderer.setPixelRatio(H.px ? +H.px : Math.min(2, Math.max(1.5, window.devicePixelRatio || 1)));
+  renderer.outputEncoding = THREE.sRGBEncoding;
+  renderer.physicallyCorrectLights = true;
+  view.appendChild(renderer.domElement);
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color(C.bg);
+  scene.fog = new THREE.FogExp2(C.bg, 0.0022);
+  const camera = new THREE.PerspectiveCamera(52, 16 / 9, 0.5, 40000);
+  scene.add(new THREE.HemisphereLight(0xc2cad4, 0x0d0f13, 0.95));
+  const key = new THREE.DirectionalLight(0xffffff, 0.55); key.position.set(80, 160, 40); scene.add(key);
+  const sky = new THREE.Mesh(new THREE.SphereGeometry(20000, 32, 18), new THREE.ShaderMaterial({
+    side: THREE.BackSide, fog: false, depthWrite: false,
+    uniforms: { top: { value: new THREE.Color(0x080b10) }, horizon: { value: new THREE.Color(0x1a2432) }, base: { value: new THREE.Color(C.bg) } },
+    vertexShader: 'varying vec3 vP; void main(){ vP=position; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0); }',
+    fragmentShader: 'varying vec3 vP; uniform vec3 top,horizon,base; void main(){ float h=normalize(vP).y; vec3 c = h<0.0 ? base : mix(horizon, top, smoothstep(0.0,0.42,h)); c += vec3(0.045,0.075,0.13) * exp(-abs(h)*9.0); gl_FragColor = vec4(c,1.0); }'
+  }));
+  sky.renderOrder = -10; sky.frustumCulled = false; scene.add(sky);
+  const V3 = (e, y, n) => new THREE.Vector3(e, y, -n);
+
+  const ground = new THREE.Mesh(new THREE.PlaneGeometry(60000, 60000), new THREE.MeshBasicMaterial({ color: C.ground }));
+  ground.rotation.x = -Math.PI / 2; scene.add(ground);
+
+  function ribbon(pts, w, y, pos, col, rgb) {
+    const n = pts.length; if (n < 2) return 0;
+    const h = w / 2, Lp = [], Rp = [];
+    for (let i = 0; i < n; i++) {
+      const a = pts[Math.max(0, i - 1)], b = pts[Math.min(n - 1, i + 1)];
+      const t = unit([b[0] - a[0], b[1] - a[1]]), nx = -t[1], ny = t[0];
+      let k = 1;
+      if (i > 0 && i < n - 1) { const s0 = unit([pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]]); k = 1 / Math.max(0.35, nx * -s0[1] + ny * s0[0]); }
+      Lp.push([pts[i][0] + nx * h * k, pts[i][1] + ny * h * k]); Rp.push([pts[i][0] - nx * h * k, pts[i][1] - ny * h * k]);
+    }
+    let c = 0;
+    const put = p => { pos.push(p[0], y, -p[1]); if (col) col.push(rgb[0], rgb[1], rgb[2]); c++; };
+    for (let i = 0; i < n - 1; i++) { put(Lp[i]); put(Rp[i]); put(Rp[i + 1]); put(Lp[i]); put(Rp[i + 1]); put(Lp[i + 1]); }
+    return c;
+  }
+  function meshFrom(pos, col, mat) {
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+    if (col) g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
+    const me = new THREE.Mesh(g, mat); me.frustumCulled = false; return me;
+  }
+  function segDist(p, a, b) {
+    const vx = b[0] - a[0], vy = b[1] - a[1], L2 = vx * vx + vy * vy || 1;
+    const t = clamp(((p[0] - a[0]) * vx + (p[1] - a[1]) * vy) / L2, 0, 1);
+    return Math.hypot(p[0] - a[0] - vx * t, p[1] - a[1] - vy * t);
+  }
+
+  /* ---------- δρόμοι από το OpenStreetMap, και το μετρημένο χρώμα για τη θέα από ψηλά ---------- */
+  const ROADW = [0, 5.5, 8, 12, 18];
+  let measured = null;
+  const normName = s => (s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toUpperCase().replace(/[^Α-ΩA-Z0-9 ]/g, ' ').split(/\s+/).filter(t => t.length > 1 && !/^(ΛΕΩΦ|ΛΕΩΦΟΡΟΣ|ΟΔΟΣ|ΠΛΑΤΕΙΑ)$/.test(t)).pop() || '';
+  function buildRoads(corr) {
+    const pos = [], mp = [], mc = [], mroads = [];
+    const dk = MAP.dets.map(d => ({ d, k: normName(d.odos), p: m(d.lat, d.lon) }));
+    MAP.roads.forEach(r => {
+      const pts = r.p.map(pt => m(pt[1], pt[0]));
+      ribbon(pts, ROADW[r.c] || 6, 0.05, pos, null);
+      if (r.c < 2) return;
+      // στους τρεις άξονες δεν βάζουμε μετρημένο χρώμα: εκεί δείχνουμε τις ουρές της προσομοίωσης
+      if (pts.every(p => corr.some(c => c.main && segDist(p, c.a, c.b) < c.hw + 18))) return;
+      const k = normName(r.n); if (!k) return;
+      const ds = dk.filter(x => x.k === k && pts.some(p => Math.hypot(p[0] - x.p[0], p[1] - x.p[1]) < 450)).map(x => x.d);
+      if (!ds.length) return;
+      const start = mp.length / 3, cnt = ribbon(pts, (ROADW[r.c] || 6) * 1.4 + 8, 0.4, mp, mc, [1, 1, 1]);
+      mroads.push({ ds, start, cnt });
+    });
+    scene.add(meshFrom(pos, null, new THREE.MeshBasicMaterial({ color: C.road, side: THREE.DoubleSide })));
+    const mat = new THREE.MeshBasicMaterial({ vertexColors: true, transparent: true, opacity: 0, depthTest: false, depthWrite: false, side: THREE.DoubleSide, fog: false });
+    measured = { mesh: meshFrom(mp, mc, mat), roads: mroads, slot: -1 };
+    measured.mesh.renderOrder = 4; scene.add(measured.mesh);
+  }
+  const MCOL = { red: new THREE.Color(0xe5413b), amb: new THREE.Color(0xffb020), grn: new THREE.Color(0x46d06a), none: new THREE.Color(0x5b616b) };
+  function paintMeasured(t) {
+    const slot = clamp(Math.floor(t / 300), 0, 287); if (slot === measured.slot) return; measured.slot = slot;
+    const ca = measured.mesh.geometry.getAttribute('color');
+    measured.roads.forEach(R => {
+      let s = 0, n = 0; R.ds.forEach(d => { const v = d.v[slot]; if (v != null && d.ff) { s += v / d.ff; n++; } });
+      const c = !n ? MCOL.none : s / n < 0.45 ? MCOL.red : s / n < 0.7 ? MCOL.amb : MCOL.grn;
+      for (let i = 0; i < R.cnt; i++) { const k = (R.start + i) * 3; ca.array[k] = c.r; ca.array[k + 1] = c.g; ca.array[k + 2] = c.b; }
+    });
+    ca.needsUpdate = true;
+  }
+
+  /* ---------- οι τρεις άξονες: άσφαλτος, διαγράμμιση, γραμμές στάσης ---------- */
+  let corridors = [], axisTop = null;
+  function buildAxes() {
+    const asph = [], mark = [], top = [];
+    corridors = [];
+    sites.forEach(s => {
+      const J = s.P, n = J.length, a0 = s.ax[0], an = s.ax[n - 1];
+      const line = [[J[0][0] - a0[0] * 260, J[0][1] - a0[1] * 260]].concat(J).concat([[J[n - 1][0] + an[0] * 260, J[n - 1][1] + an[1] * 260]]);
+      const hw = Math.max.apply(null, s.mainHalf) + 0.4;
+      for (let i = 0; i < line.length - 1; i++) corridors.push({ a: line[i], b: line[i + 1], hw: hw + 2.5, main: true });
+      ribbon(line, hw * 2, 0.08, asph, null);
+      ribbon(line, 10, 0.6, top, null);
+      for (let i = 0; i < line.length - 1; i++) {
+        const A = line[i], B = line[i + 1], u = unit([B[0] - A[0], B[1] - A[1]]), nr = [-u[1], u[0]], L = Math.hypot(B[0] - A[0], B[1] - A[1]);
+        [0.35, -0.35].forEach(o => ribbon([[A[0] + nr[0] * o, A[1] + nr[1] * o], [B[0] + nr[0] * o, B[1] + nr[1] * o]], 0.15, 0.1, mark, null));
+        for (let k = 1; k < 3; k++) [1, -1].forEach(sg => {
+          const o = sg * (0.8 + k * LW);
+          for (let d = 4; d < L - 4; d += 12) ribbon([[A[0] + u[0] * d + nr[0] * o, A[1] + u[1] * d + nr[1] * o], [A[0] + u[0] * (d + 4) + nr[0] * o, A[1] + u[1] * (d + 4) + nr[1] * o]], 0.15, 0.1, mark, null);
+        });
+      }
+      s.g.forEach(G => {
+        if (G.phase === 1) {
+          const far = [G.P[0] - G.u[0] * G.L, G.P[1] - G.u[1] * G.L], w = Math.max(7, G.lanes * 3.0 * 2 + 1);
+          ribbon([far, G.P], w, 0.07, asph, null);
+          corridors.push({ a: far, b: G.P, hw: w / 2 + 2, main: false });
+        }
+        const S = [G.P[0] - G.u[0] * G.stopOff, G.P[1] - G.u[1] * G.stopOff], w0 = G.lat(0) - (G.phase === 0 ? LW / 2 : 1.5), w1 = G.lat(G.lanes - 1) + (G.phase === 0 ? LW / 2 : 1.5);
+        ribbon([[S[0] + G.r[0] * w0, S[1] + G.r[1] * w0], [S[0] + G.r[0] * w1, S[1] + G.r[1] * w1]], 0.5, 0.11, mark, null);
+      });
+    });
+    scene.add(meshFrom(asph, null, new THREE.MeshBasicMaterial({ color: C.road, side: THREE.DoubleSide })));
+    scene.add(meshFrom(mark, null, new THREE.MeshBasicMaterial({ color: C.white, side: THREE.DoubleSide })));
+    axisTop = meshFrom(top, null, new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0, depthTest: false, depthWrite: false, side: THREE.DoubleSide, fog: false }));
+    axisTop.renderOrder = 5; scene.add(axisTop);
+  }
+
+  /* ---------- κτίρια: εξώθηση περιγραμμάτων OSM, γκρι παλέτα και κατακόρυφη διαβάθμιση ---------- */
+  function buildBuildings() {
+    const S = BLD.scale, list = [];
+    let nv = 0;
+    BLD.b.forEach(b => {
+      const h = b[0], ring = [];
+      for (let i = 1; i < b.length; i += 2) ring.push([b[i] * S, b[i + 1] * S]);
+      let cx = 0, cy = 0; ring.forEach(p => { cx += p[0]; cy += p[1]; }); cx /= ring.length; cy /= ring.length;
+      for (const c of corridors) {
+        if (segDist([cx, cy], c.a, c.b) < c.hw + 4) return;
+        for (const p of ring) if (segDist(p, c.a, c.b) < c.hw) return;
+      }
+      let A = 0; for (let i = 0; i < ring.length; i++) { const p = ring[i], q = ring[(i + 1) % ring.length]; A += p[0] * q[1] - q[0] * p[1]; }
+      if (A < 0) ring.reverse();
+      list.push({ h, ring });
+      nv += ring.length * 6 + (ring.length - 2) * 3;
+    });
+    const pos = new Float32Array(nv * 3), nor = new Float32Array(nv * 3), col = new Float32Array(nv * 3);
+    let k = 0;
+    const PAL = [0x545b66, 0x5b626d, 0x4f565f, 0x606877].map(c => new THREE.Color(c));
+    const put = (x, y, z, nx, ny, nz, c, f) => { pos[k] = x; pos[k + 1] = y; pos[k + 2] = z; nor[k] = nx; nor[k + 1] = ny; nor[k + 2] = nz; col[k] = c.r * f; col[k + 1] = c.g * f; col[k + 2] = c.b * f; k += 3; };
+    list.forEach((B, bi) => {
+      const r = B.ring, h = B.h, c = PAL[(bi * 7 + 3) % PAL.length], n = r.length;
+      for (let i = 0; i < n; i++) {
+        const p = r[i], q = r[(i + 1) % n], dx = q[0] - p[0], dy = q[1] - p[1], l = Math.hypot(dx, dy) || 1;
+        const nx = dy / l, nz = dx / l;
+        put(p[0], 0, -p[1], nx, 0, nz, c, 0.78); put(q[0], 0, -q[1], nx, 0, nz, c, 0.78); put(q[0], h, -q[1], nx, 0, nz, c, 1.08);
+        put(p[0], 0, -p[1], nx, 0, nz, c, 0.78); put(q[0], h, -q[1], nx, 0, nz, c, 1.08); put(p[0], h, -p[1], nx, 0, nz, c, 1.08);
+      }
+      const faces = THREE.ShapeUtils.triangulateShape(r.map(p => new THREE.Vector2(p[0], p[1])), []);
+      faces.forEach(f => {
+        let a = r[f[0]], b = r[f[1]], d = r[f[2]];
+        if ((b[0] - a[0]) * (d[1] - a[1]) - (d[0] - a[0]) * (b[1] - a[1]) < 0) { const t = b; b = d; d = t; }
+        [a, b, d].forEach(p => put(p[0], h, -p[1], 0, 1, 0, c, 1.12));
+      });
+    });
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.BufferAttribute(pos.subarray(0, k), 3));
+    g.setAttribute('normal', new THREE.BufferAttribute(nor.subarray(0, k), 3));
+    g.setAttribute('color', new THREE.BufferAttribute(col.subarray(0, k), 3));
+    const me = new THREE.Mesh(g, new THREE.MeshLambertMaterial({ vertexColors: true }));
+    me.frustumCulled = false; scene.add(me);
+    let e0 = 1e9, e1 = -1e9, n0 = 1e9, n1 = -1e9;
+    list.forEach(B => B.ring.forEach(p => { e0 = Math.min(e0, p[0]); e1 = Math.max(e1, p[0]); n0 = Math.min(n0, p[1]); n1 = Math.max(n1, p[1]); }));
+    return { n: list.length, box: [e0, n0, e1, n1] };
+  }
+
+  /* ---------- φανάρια ---------- */
+  const LAMP = { r: [new THREE.Color(0x2a1212), new THREE.Color(0xff3b2f)], a: [new THREE.Color(0x2a2010), new THREE.Color(0xffb020)], g: [new THREE.Color(0x10261a), new THREE.Color(0x2cff8a)] };
+  const poleMat = new THREE.MeshLambertMaterial({ color: C.pole }), headMat = new THREE.MeshLambertMaterial({ color: 0x1a1d22 });
+  function buildSignals() {
+    sites.forEach(s => {
+      s.heads = s.g.map(G => {
+        const S = [G.P[0] - G.u[0] * G.stopOff, G.P[1] - G.u[1] * G.stopOff];
+        const edge = G.lat(G.lanes - 1) + (G.phase === 0 ? LW / 2 : 1.5) + 0.9;
+        const base = [S[0] + G.r[0] * edge, S[1] + G.r[1] * edge];
+        const grp = new THREE.Group(); grp.position.copy(V3(base[0], 0, base[1])); grp.rotation.y = Math.atan2(-G.u[0], G.u[1]); scene.add(grp);
+        const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.13, 6.2, 8), poleMat); pole.position.y = 3.1; grp.add(pole);
+        const reach = edge - G.lat(Math.floor((G.lanes - 1) / 2));
+        const arm = new THREE.Mesh(new THREE.BoxGeometry(reach, 0.14, 0.14), poleMat); arm.position.set(-reach / 2, 6.0, 0); grp.add(arm);
+        const mk = (x, y) => {
+          const head = new THREE.Mesh(new THREE.BoxGeometry(0.42, 1.2, 0.34), headMat); head.position.set(x, y, 0); grp.add(head);
+          return ['r', 'a', 'g'].map((c, i) => { const l = new THREE.Mesh(new THREE.CircleGeometry(0.14, 14), new THREE.MeshBasicMaterial({ color: LAMP[c][0], fog: false })); l.position.set(x, y + 0.38 - i * 0.38, 0.18); grp.add(l); return l; });
+        };
+        return [mk(-reach, 5.3), mk(0, 3.1)];
+      });
+    });
+  }
+  function paintSignals() {
+    sites.forEach(s => {
+      const sim = s[mode];
+      s.g.forEach((G, a) => {
+        const S = sim.sig[G.j], st = S.g === G.phase ? 'g' : (S.g === -1 && S.amber === G.phase ? 'a' : 'r');
+        s.heads[a].forEach(h => h.forEach((l, i) => l.material.color.copy(LAMP['rag'[i]]['rag'[i] === st ? 1 : 0])));
+      });
+    });
+  }
+
+  /* ---------- ουρές από ψηλά (σχηματικά, 10 m ανά σταματημένο όχημα) ---------- */
+  // Κάθε ουρά είναι μια κάψουλα (στρογγυλές άκρες) που σβήνει προς το τέλος της. Το μήκος δεν πηδά κατά 6 m σε κάθε
+  // βήμα της προσομοίωσης: ακολουθεί την ουρά με ελατήριο (smoothDamp, 0,7 s), οπότε από ψηλά «αναπνέει» ομαλά.
+  let qbars = null;
+  const QN = 10, QC = 10, QV = QN * 6 + QC * 6, QM = 10;   // σχηματικά 10 m ανά σταματημένο όχημα, για να φαίνεται από ψηλά
+  function buildQueueBars() {
+    let n = 0; sites.forEach(s => { n += s.g.length; s.qd = s.g.map(() => 0); s.qv = s.g.map(() => 0); });
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(n * QV * 3), 3));
+    g.setAttribute('color', new THREE.BufferAttribute(new Float32Array(n * QV * 4), 4));
+    qbars = new THREE.Mesh(g, new THREE.MeshBasicMaterial({ vertexColors: true, transparent: true, opacity: 0, depthTest: false, depthWrite: false, side: THREE.DoubleSide, fog: false }));
+    qbars.frustumCulled = false; qbars.renderOrder = 6; scene.add(qbars);
+  }
+  const QCOL = new THREE.Color(C.brake);
+  function paintQueueBars(dt) {
+    const P = qbars.geometry.getAttribute('position'), A = P.array, CA = qbars.geometry.getAttribute('color').array;
+    let k = 0, c = 0;
+    const put = (p, al) => { A[k++] = p[0]; A[k++] = 0.9; A[k++] = -p[1]; CA[c++] = QCOL.r; CA[c++] = QCOL.g; CA[c++] = QCOL.b; CA[c++] = al; };
+    sites.forEach(s => {
+      const sim = s[mode];
+      s.g.forEach((G, a) => {
+        const target = Math.min(G.phase === 0 ? G.L - 10 : G.L, sim.qlen(a) * QM);
+        const steps = Math.max(1, Math.ceil(dt / 0.05));
+        for (let i = 0; i < steps; i++) { const r = smoothDamp(s.qd[a], target, s.qv[a], 0.7, dt / steps); s.qd[a] = r[0]; s.qv[a] = r[1]; }
+        const len = Math.max(0, s.qd[a]), w = 20, rad = w / 2, off = G.phase === 0 ? 9 : 0;
+        const S = [G.P[0] - G.u[0] * (G.stopOff + rad / 2) + G.r[0] * off, G.P[1] - G.u[1] * (G.stopOff + rad / 2) + G.r[1] * off];
+        const at = d => [S[0] - G.u[0] * d, S[1] - G.u[1] * d];
+        const side = (p, sg) => [p[0] + G.r[0] * rad * sg, p[1] + G.r[1] * rad * sg];
+        const alpha = d => len < 1 ? 0 : Math.min(1, len / 8) * (1 - 0.45 * d / Math.max(1, len));
+        for (let i = 0; i < QN; i++) {
+          const d0 = len * i / QN, d1 = len * (i + 1) / QN, p0 = at(d0), p1 = at(d1), a0 = alpha(d0), a1 = alpha(d1);
+          put(side(p0, 1), a0); put(side(p0, -1), a0); put(side(p1, -1), a1); put(side(p0, 1), a0); put(side(p1, -1), a1); put(side(p1, 1), a1);
+        }
+        // μισοί κύκλοι στις δύο άκρες
+        const cap = (Cc, fw, al) => { for (let i = 0; i < QC / 2; i++) {
+          const t0 = Math.PI * i / (QC / 2), t1 = Math.PI * (i + 1) / (QC / 2);
+          const q = t => [Cc[0] + G.r[0] * rad * Math.cos(t) + fw[0] * rad * Math.sin(t), Cc[1] + G.r[1] * rad * Math.cos(t) + fw[1] * rad * Math.sin(t)];
+          put(Cc, al); put(q(t0), al); put(q(t1), al);
+        } };
+        cap(at(0), G.u, alpha(0)); cap(at(len), [-G.u[0], -G.u[1]], alpha(len));
+      });
+    });
+    P.needsUpdate = true; qbars.geometry.getAttribute('color').needsUpdate = true;
+  }
+
+  /* ================= αυτοκίνητα ================= */
+  // Ένα δικό μας ουδέτερο μοντέλο για όλα: λευκό, ημιδιάφανο, φωτεινό στις ακμές, σαν ολόγραμμα. Σχήμα αυτοκινήτου
+  // (αμάξωμα, καμπίνα με κεκλιμένο παρμπρίζ, τροχοί), χωρίς μάρκα. Όλα τα αυτοκίνητα είναι μία InstancedMesh, οπότε
+  // δεν υπάρχουν εναλλαγές μοντέλων καθώς κινείται η κάμερα.
+  function carGeometry() {
+    const parts = [];
+    // πλαϊνό προφίλ (L μπροστά, y πάνω), εξώθηση στο πλάτος με στρογγυλεμένες ακμές· στη σκηνή μπροστά είναι το −z
+    const prof = (pts, width, bevel) => {
+      const g = new THREE.ExtrudeGeometry(new THREE.Shape(pts.map(p => new THREE.Vector2(p[0], p[1]))),
+        { depth: width - 2 * bevel, bevelEnabled: true, bevelThickness: bevel, bevelSize: bevel, bevelSegments: 3, curveSegments: 6 });
+      g.rotateY(Math.PI / 2); g.translate(-(width - 2 * bevel) / 2, 0, 0); parts.push(g);
+    };
+    prof([[-2.14, 0.36], [-2.2, 0.72], [-1.98, 0.9], [-1.3, 0.94], [1.15, 0.92], [2.0, 0.8], [2.2, 0.6], [2.12, 0.36]], 1.78, 0.1);
+    prof([[-1.5, 0.9], [-0.95, 1.36], [0.22, 1.4], [0.98, 0.9]], 1.5, 0.08);
+    [[0.8, 1.42], [-0.8, 1.42], [0.8, -1.38], [-0.8, -1.38]].forEach(w => {
+      const g = new THREE.CylinderGeometry(0.33, 0.33, 0.24, 18); g.rotateZ(Math.PI / 2); g.translate(w[0], 0.33, w[1]); parts.push(g);
+    });
+    const pos = [], nor = [];
+    parts.forEach(g => { const n = g.index ? g.toNonIndexed() : g; pos.push.apply(pos, n.getAttribute('position').array); nor.push.apply(nor, n.getAttribute('normal').array); });
+    const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute('normal', new THREE.Float32BufferAttribute(nor, 3)); return g;
+  }
+  const G_CAR = carGeometry();
+  function boxes(list) {
+    const pos = [], nor = [];
+    list.forEach(b => { const g = new THREE.BoxGeometry(b[0], b[1], b[2]).toNonIndexed(); g.translate(b[3], b[4], b[5]); pos.push.apply(pos, g.getAttribute('position').array); nor.push.apply(nor, g.getAttribute('normal').array); });
+    const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute('normal', new THREE.Float32BufferAttribute(nor, 3)); return g;
+  }
+  const G_TAIL = boxes([[0.4, 0.12, 0.06, 0.58, 0.8, 2.28], [0.4, 0.12, 0.06, -0.58, 0.8, 2.28]]);
+  const G_SHAD = (() => { const g = new THREE.PlaneGeometry(2.2, 4.9); g.rotateX(-Math.PI / 2); g.translate(0, 0.13, 0); return g; })();
+  // υλικό ολογράμματος: διάχυτο φως από πάνω, φωτεινότερο και πιο αδιαφανές εκεί που η επιφάνεια γυρίζει από την κάμερα (ακμές)
+  const holoUniforms = () => ({ uColor: { value: new THREE.Color(0xf4f6f8) }, uRim: { value: new THREE.Color(0xffffff) }, uOpacity: { value: 0.38 },
+    uLight: { value: new THREE.Vector3(0.35, 1, 0.25).normalize() }, fogColor: { value: new THREE.Color(C.bg) }, fogDensity: { value: 0.0022 } });
+  // η σκηνή έχει λογαριθμικό βάθος (logarithmicDepthBuffer): ο shader γράφει βάθος με τον ίδιο τρόπο, αλλιώς τα αυτοκίνητα χάνονται κάτω από τον δρόμο
+  const HOLO_V = '#include <common>\n#include <logdepthbuf_pars_vertex>\nvarying vec3 vN; varying vec3 vV; varying float vD; varying vec3 vTint;\n' +
+    'void main(){\n#ifdef USE_INSTANCING_COLOR\n vTint = instanceColor;\n#else\n vTint = vec3(1.0);\n#endif\n#ifdef USE_INSTANCING\n mat4 im = instanceMatrix;\n#else\n mat4 im = mat4(1.0);\n#endif\n' +
+    ' vec4 wp = modelMatrix * im * vec4(position, 1.0); vN = normalize(mat3(modelMatrix * im) * normal); vV = cameraPosition - wp.xyz; vD = length(vV);\n' +
+    ' gl_Position = projectionMatrix * viewMatrix * wp;\n#include <logdepthbuf_vertex>\n}';
+  const HOLO_F = '#include <logdepthbuf_pars_fragment>\nuniform vec3 uColor; uniform vec3 uRim; uniform float uOpacity; uniform vec3 uLight; uniform vec3 fogColor; uniform float fogDensity;\n' +
+    'varying vec3 vN; varying vec3 vV; varying float vD; varying vec3 vTint;\n' +
+    'void main(){\n#include <logdepthbuf_fragment>\n vec3 n = normalize(vN); float ndl = max(dot(n, uLight), 0.0); float rim = pow(1.0 - abs(dot(n, normalize(vV))), 2.0);\n' +
+    ' vec3 c = uColor * vTint * (0.5 + 0.5 * ndl) + uRim * mix(vec3(1.0), vTint, 0.6) * rim * 0.8; float a = uOpacity + (1.0 - uOpacity) * rim * 0.8;\n' +
+    ' float f = 1.0 - exp(-fogDensity * fogDensity * vD * vD); c = mix(c, fogColor, f);\n' +
+    ' gl_FragColor = linearToOutputTexel(vec4(c, a * (1.0 - 0.7 * f))); }';
+  const holo = (opts) => { const u = holoUniforms(); if (opts) for (const k in opts) u[k].value = opts[k]; return new THREE.ShaderMaterial({ uniforms: u, vertexShader: HOLO_V, fragmentShader: HOLO_F, transparent: true, depthWrite: true }); };
+  const MAXV = 6000;
+  const mats = {
+    car: holo(), tail: new THREE.MeshBasicMaterial({ color: 0xffffff }),
+    shad: new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.3, depthWrite: false })
+  };
+  const IM = {};
+  [['shad', G_SHAD], ['tail', G_TAIL], ['car', G_CAR]].forEach(([k, g]) => {
+    const me = new THREE.InstancedMesh(g, mats[k], MAXV); me.instanceMatrix.setUsage(THREE.DynamicDrawUsage); me.frustumCulled = false; me.count = 0; IM[k] = me; scene.add(me);
+  });
+  IM.car.renderOrder = 2;
+  ['tail', 'car'].forEach(k => { IM[k].instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(MAXV * 3), 3); IM[k].instanceColor.setUsage(THREE.DynamicDrawUsage); });
+  const CARCOL = [new THREE.Color(0xffffff)];
+  const TAIL_ON = new THREE.Color(0xff2a1f), TAIL_OFF = new THREE.Color(0x6a1812);
+  // Όσο περισσότερο έχει μείνει σταματημένο ένα αυτοκίνητο σε αυτή τη διαδρομή, τόσο πιο κόκκινο: λευκό ως 8 s, κόκκινο από το ενάμισι λεπτό περίπου.
+  // Έτσι ο χαμένος χρόνος των αριθμών φαίνεται και στον δρόμο. Μετρά από τη στιγμή που μπαίνει στην εικόνα ή στην ουρά.
+  const STUCK_W = new THREE.Color(0xf4f6f8), STUCK_R = new THREE.Color(0xff5a4a), TINT = new THREE.Color();
+  const tintOf = w => TINT.copy(STUCK_W).lerp(STUCK_R, smooth(8, 75, w));
+  // το αυτοκίνητο που ακολουθεί η κάμερα: ίδιο σχήμα, λίγο πιο συμπαγές, με μπλε περίγραμμα (το χρώμα του Τροχονόμου)
+  const hero = new THREE.Group(); hero.visible = false; scene.add(hero);
+  const heroMat = holo({ uOpacity: 0.55, uRim: new THREE.Color(0x3da5ff) });
+  { const b = new THREE.Mesh(G_CAR, heroMat); b.renderOrder = 3; hero.add(b); }
+  const heroTail = new THREE.Mesh(G_TAIL, new THREE.MeshBasicMaterial({ color: 0xff2a1f })); hero.add(heroTail);
+  hero.add(new THREE.Mesh(G_SHAD, mats.shad));
+  function releaseLod() {}
+
+  /* ---------- ορατά αυτοκίνητα που ακολουθούν την προσομοίωση ---------- */
+  // Για κάθε πρόσβαση η προσομοίωση ξέρει πόσα περιμένουν (qlen), πόσα έρχονται και πότε φτάνουν (transit), πόσα πέρασαν (served).
+  // Κρατάμε ουρά FIFO από ορατά αυτοκίνητα με το ίδιο πλήθος. Όποιο περνά στο επόμενο φανάρι του άξονα συνεχίζει ως το ίδιο
+  // αυτοκίνητο. Όποιο δεν συνεχίζει στρίβει δεξιά, κάνει την καμπή του και χάνεται πίσω από τα κτίρια της κάθετης οδού.
+  const V = 40 / 3.6;
+  let nextId = 1, heroV = null;
+  const newVeh = (si, a) => ({ id: nextId++, si, a, s: 0, v: 0, lane: 0, lat: 0, st: 't', col: CARCOL[(nextId * 7919) % CARCOL.length], e: 0, n: 0, h: [1, 0], sc: 1, t0: 0, turn: false, lod: null, w: 0 });
+  function visReset(s) {
+    const sim = s[mode], nA = sim.net.apps.length;
+    if (s.vis) s.vis.list.concat([s.vis.dep]).forEach(L => L.forEach(releaseLod));
+    s.vis = { list: [], pend: [], dep: [], served: sim.st.served.slice(), rr: new Array(nA).fill(0) };
+    const tf = sim.t;
+    for (let a = 0; a < nA; a++) {
+      const G = s.g[a], L = [], N = sim.qlen(a) + sim.transit[a].length;
+      for (let i = 0; i < N; i++) { const v = newVeh(s.si, a); v.lane = s.vis.rr[a]++ % G.lanes; v.lat = G.lat(v.lane); L.push(v); }
+      s.vis.list.push(L); s.vis.pend.push([]);
+      targets(s, a, tf);
+      L.forEach((v, i) => { v.s = v.tgt; v.v = i < sim.qlen(a) ? 0 : V; if (i < sim.qlen(a)) v.w = Math.max(0, tf - sim.q[a][sim.qh[a] + i]); place(s, v); });
+    }
+  }
+  const TURN_R = 9;
+  function place(s, v) {
+    const G = s.g[v.a];
+    if (v.st === 'dep' && (G.phase === 1 || v.turn)) {
+      // δεξιά στροφή: τόξο ακτίνας TURN_R από τη γραμμή στάσης, μετά ευθεία στη νέα κατεύθυνση
+      const R = TURN_R, d = -v.s, S0 = [G.P[0] - G.u[0] * G.stopOff + G.r[0] * v.lat, G.P[1] - G.u[1] * G.stopOff + G.r[1] * v.lat];
+      if (d <= 0) { v.e = S0[0] - G.u[0] * v.s; v.n = S0[1] - G.u[1] * v.s; v.h = G.u; return; }
+      if (d < R * Math.PI / 2) {
+        const th = d / R, Cc = [S0[0] + G.r[0] * R, S0[1] + G.r[1] * R];
+        v.e = Cc[0] - G.r[0] * R * Math.cos(th) + G.u[0] * R * Math.sin(th); v.n = Cc[1] - G.r[1] * R * Math.cos(th) + G.u[1] * R * Math.sin(th);
+        v.h = [G.u[0] * Math.cos(th) + G.r[0] * Math.sin(th), G.u[1] * Math.cos(th) + G.r[1] * Math.sin(th)]; return;
+      }
+      const x = d - R * Math.PI / 2;
+      v.e = S0[0] + G.r[0] * (R + x) + G.u[0] * R; v.n = S0[1] + G.r[1] * (R + x) + G.u[1] * R; v.h = G.r; return;
+    }
+    const b = G.stopOff + v.s;
+    v.e = G.P[0] - G.u[0] * b + G.r[0] * v.lat; v.n = G.P[1] - G.u[1] * b + G.r[1] * v.lat; v.h = G.u;
+  }
+  function targets(s, a, tf) {
+    const sim = s[mode], q = sim.qlen(a), tr = sim.transit[a], L = s.vis.list[a], last = [], cnt = [];
+    for (let i = 0; i < L.length; i++) {
+      const v = L[i], k = v.lane;
+      let t;
+      if (i < q) { t = (cnt[k] || 0) * SP + 0.6; cnt[k] = (cnt[k] || 0) + 1; }
+      else t = Math.max(0.6, (tr[i - q] - tf) * V);
+      if (last[k] != null) t = Math.max(t, last[k] + SP);
+      v.tgt = t; last[k] = t;
+    }
+  }
+  function syncVis(s) {
+    if (!s.vis) return;
+    const sim = s[mode], net = sim.net, X = s.vis;
+    for (let a = 0; a < net.apps.length; a++) {
+      let d = sim.st.served[a] - X.served[a]; X.served[a] = sim.st.served[a];
+      while (d-- > 0 && X.list[a].length) {
+        const v = X.list[a].shift(); v.st = 'dep'; v.t0 = sim.t; v.v = Math.max(v.v, 1.5); X.dep.push(v);
+        if (s.g[a].down >= 0) X.pend[a].push(v);
+      }
+    }
+    for (let a = 0; a < net.apps.length; a++) {
+      const G = s.g[a], L = X.list[a], N = sim.qlen(a) + sim.transit[a].length;
+      while (L.length < N) {
+        let v = null;
+        if (G.up >= 0 && X.pend[G.up].length) {
+          const P = X.pend[G.up]; let k = P.indexOf(heroV); if (k < 0) k = 0;
+          v = P.splice(k, 1)[0];
+          v.a = a; v.st = 't'; v.turn = false; v.s = (G.P[0] - v.e) * G.u[0] + (G.P[1] - v.n) * G.u[1] - G.stopOff;
+          v.lat = (v.e - G.P[0]) * G.r[0] + (v.n - G.P[1]) * G.r[1];
+          X.dep.splice(X.dep.indexOf(v), 1);
+        } else { v = newVeh(s.si, a); v.s = G.arm; v.v = V; v.st = 't'; }
+        v.lane = X.rr[a]++ % G.lanes; if (!v.lat) v.lat = G.lat(v.lane);
+        L.push(v);
+      }
+      while (L.length > N) { const v = L.pop(); releaseLod(v); if (v === heroV) heroLost(); }
+    }
+    // όσα έφυγαν σε αυτό το βήμα και δεν πέρασαν στο επόμενο φανάρι στρίβουν· το κεντρικό αυτοκίνητο περιμένει πάντα να συνεχίσει ευθεία
+    for (let a = 0; a < net.apps.length; a++) X.pend[a] = X.pend[a].filter(v => { if (v === heroV && sim.t - v.t0 < 30) return true; v.turn = true; return false; });
+  }
+  function physics(s, dt, tf) {
+    const X = s.vis; if (!X) return;
+    for (let a = 0; a < X.list.length; a++) {
+      const G = s.g[a], L = X.list[a]; targets(s, a, tf);
+      const ahead = [], q = s[mode].qlen(a);
+      for (let i = 0; i < L.length; i++) {
+        const v = L[i], k = v.lane;
+        let tgt = v.tgt; if (ahead[k] != null) tgt = Math.max(tgt, ahead[k] + SP * 0.9);
+        // πάνω από τα 40 km/h μόνο αν έχει μείνει πολύ πίσω, και ποτέ το αυτοκίνητο που ακολουθεί η κάμερα
+        const gap = v.s - tgt, vmax = v === heroV ? V : i >= q ? (gap > 40 ? V * 1.25 : V) : V * 1.1;
+        const vdes = gap > 0 ? Math.min(vmax, Math.sqrt(2 * 3.0 * gap)) : 0;
+        v.v = Math.max(0, v.v + clamp(vdes - v.v, -6 * dt, 2.2 * dt));
+        v.s -= v.v * dt; if (v.s < tgt) { v.s = tgt; v.v = Math.min(v.v, 0.5); }
+        v.lat += (G.lat(k) - v.lat) * Math.min(1, dt * 1.2);
+        ahead[k] = v.s; v.sc = v.s > G.arm + 3 ? 0 : 1; if (v.v < 2 && v.sc > 0) v.w += dt;
+        place(s, v);
+      }
+    }
+    for (let i = X.dep.length - 1; i >= 0; i--) {
+      const v = X.dep[i], G = s.g[v.a];
+      v.v = Math.min(V, v.v + 2.2 * dt); v.s -= v.v * dt;
+      const d = -v.s, turning = G.phase === 1 || v.turn;
+      const end = turning ? [TURN_R * Math.PI / 2 + 30, TURN_R * Math.PI / 2 + 48] : G.down < 0 ? [180, 210] : [1e9, 1e9];
+      v.sc = 1 - smooth(end[0], end[1], d);
+      place(s, v);
+      if (v.sc <= 0) { X.dep.splice(i, 1); releaseLod(v); if (v === heroV) heroLost(); }
+    }
+  }
+  const M4 = new THREE.Matrix4(), Q = new THREE.Quaternion(), P3 = new THREE.Vector3(), S3 = new THREE.Vector3(), UP = new THREE.Vector3(0, 1, 0);
+  function drawVehicles(dt) {
+    let n = 0;
+    const put = v => {
+      if (v === heroV || v.sc <= 0 || n >= MAXV) return;
+      Q.setFromAxisAngle(UP, Math.atan2(-v.h[0], v.h[1])); P3.set(v.e, 0, -v.n); S3.set(v.sc, v.sc, v.sc); M4.compose(P3, Q, S3);
+      IM.car.setMatrixAt(n, M4); IM.tail.setMatrixAt(n, M4); IM.shad.setMatrixAt(n, M4);
+      IM.tail.setColorAt(n, v.v < 2 ? TAIL_ON : TAIL_OFF); IM.car.setColorAt(n, tintOf(v.w)); n++;
+    };
+    sites.forEach(s => { if (!s.vis) return; s.vis.list.forEach(L => L.forEach(put)); s.vis.dep.forEach(put); });
+    for (const k in IM) { IM[k].count = n; IM[k].instanceMatrix.needsUpdate = true; }
+    IM.tail.instanceColor.needsUpdate = true; IM.car.instanceColor.needsUpdate = true;
+    const fd = scene.fog.density; mats.car.uniforms.fogDensity.value = fd; heroMat.uniforms.fogDensity.value = fd;
+    if (heroV) {
+      hero.visible = true; hero.position.set(heroV.e, 0, -heroV.n); hero.rotation.y = Math.atan2(-heroV.h[0], heroV.h[1]);
+      hero.scale.setScalar(Math.max(0.01, heroV.sc));
+      heroTail.material.color.copy(heroV.v < 2 ? TAIL_ON : TAIL_OFF); heroMat.uniforms.uColor.value.copy(tintOf(heroV.w));
+    } else hero.visible = false;
+  }
+
+  /* ---------- το κεντρικό αυτοκίνητο ---------- */
+  const SOF = 2;
+  let heroApp = -1;
+  function heroLost() { heroV = null; }
+  // Αρχή: στιγμή που ο άξονας μόλις πήρε κόκκινο και έχει ουρά. Το αυτοκίνητο είναι τέταρτο στη μεσαία λωρίδα.
+  // Πρώτο πέρασμα: σε 15 λεπτά από την ώρα αρχής βρίσκουμε τη στιγμή με τη μεγαλύτερη ουρά σε κατεύθυνση του άξονα που μόλις πήρε
+  // κόκκινο (προτίμηση προς το κέντρο). Δεύτερο πέρασμα: ξαναχτίζουμε την προσομοίωση και σταματάμε ακριβώς εκεί.
+  function findStuckMoment() {
+    let best = null;
+    const lim = START + 900;
+    while (now() < lim) {
+      const sim = sites[SOF].clock;
+      sim.net.apps.forEach((A, a) => {
+        if (A.phase !== 0 || (window.RIDENUM && A.id !== RIDENUM.app)) return;   // το φανάρι όπου μετρήθηκαν τα αυτοκίνητα των αριθμών
+        const S = sim.sig[A.j]; if (S.g !== 1 || S.el > 1) return;
+        const sc = sim.qlen(a) + (A.dir === 'W' ? 4 : 0);
+        if (!best || sc > best.sc) best = { a, sc, t: now() };
+      });
+      stepAll();
+    }
+    buildSims();
+    while (now() < (best ? best.t : START)) stepAll();
+    return best ? best.a : 0;
+  }
+  function pickHeroQueued(a) {
+    const s = sites[SOF], L = s.vis.list[a], q = s[mode].qlen(a), lane = Math.min(1, s.g[a].lanes - 1);
+    let rank = 0, cand = null;
+    for (let i = 0; i < Math.min(q, L.length); i++) if (L[i].lane === lane) { cand = L[i]; if (++rank >= 4) break; }
+    setHero(cand || L[0] || null); heroApp = a;
+  }
+  function setHero(v) { if (v) releaseLod(v); heroV = v; }
+  // Κοντά στο `near`: πρώτα αυτοκίνητο μπροστά στη γραμμή στάσης τη στιγμή που ανάβει πράσινο· αλλιώς ένα που κινείται προς πράσινο.
+  function pickHeroMoving(near, freshOnly) {
+    const s = sites[SOF], sim = s[mode];
+    let best = null, bs = -1e9;
+    s.vis.list.forEach((L, a) => {
+      const G = s.g[a]; if (G.phase !== 0) return;
+      const S = sim.sig[G.j], green = S.g === 0, same = sim.net.apps[a].dir === sim.net.apps[heroApp].dir;
+      const nextGreen = G.down >= 0 && sim.sig[s.g[G.down].j].g === 0;
+      const queued = [], rank = []; for (let i = 0; i < Math.min(sim.qlen(a), L.length); i++) queued[L[i].lane] = 1;
+      if (green && S.el <= 3) for (let i = 0; i < Math.min(sim.qlen(a), L.length); i++) {
+        const v = L[i], r = rank[v.lane] = (rank[v.lane] || 0) + 1; if (r < 2 || r > 3) continue;
+        const d = near ? Math.hypot(v.e - near[0], v.n - near[1]) : 0; if (d > 500) continue;
+        const sc = 200 + (same ? 30 : 0) + (v.lane === 1 ? 10 : 0) - d / 8 + (G.down >= 0 ? 20 : 0);
+        if (sc > bs) { bs = sc; best = v; }
+      }
+      if (freshOnly) return;
+      L.forEach((v, i) => {
+        if (i < sim.qlen(a) || v.s < 15 || v.s > G.arm - 10 || v.v < V * 0.6) return;
+        let sc = (green ? 60 - Math.min(30, S.el) : 0) + (nextGreen ? 25 : 0) + (queued[v.lane] ? -40 : 0) + (same ? 30 : 0) - Math.abs(v.s - 60) * 0.25 + (G.down >= 0 ? 20 : 0);
+        if (near) sc -= Math.hypot(v.e - near[0], v.n - near[1]) / 8;
+        if (sc > bs) { bs = sc; best = v; }
+      });
+    });
+    if (best) { setHero(best); heroApp = best.a; }
+  }
+
+  /* ================= κάμερα ================= */
+  // Ελατήρια με κρίσιμη απόσβεση (smoothDamp, η γνωστή μέθοδος του Game Programming Gems 4, §1.10): κάθε στάδιο περιγράφει πού θέλει την
+  // κάμερα και τα ελατήρια την πηγαίνουν εκεί, κρατώντας την ταχύτητά τους. Έτσι μια στροφή ή μια αλλαγή αυτοκινήτου δεν τινάζει την εικόνα.
+  function smoothDamp(cur, target, vel, smoothTime, dt) {
+    const st = Math.max(1e-4, smoothTime), omega = 2 / st, x = omega * dt, exp = 1 / (1 + x + 0.48 * x * x + 0.235 * x * x * x);
+    const change = cur - target, temp = (vel + omega * change) * dt;
+    let nextVel = (vel - omega * temp) * exp, value = target + (change + temp) * exp;
+    if ((target - cur > 0) === (value > target)) { value = target; nextVel = dt > 0 ? (value - target) / dt : 0; }
+    return [value, nextVel];
+  }
+  const RIG = { p: null, l: null, vp: [0, 0, 0], vl: [0, 0, 0] };
+  function applyCam(c, dt, smoothT) {
+    if (!RIG.p || smoothT <= 0) { RIG.p = c.cam.slice(); RIG.l = c.look.slice(); }
+    else for (let i = 0; i < 3; i++) {
+      const steps = Math.max(1, Math.ceil(dt / 0.05)), h = dt / steps;
+      for (let k = 0; k < steps; k++) { let r = smoothDamp(RIG.p[i], c.cam[i], RIG.vp[i], smoothT, h); RIG.p[i] = r[0]; RIG.vp[i] = r[1]; r = smoothDamp(RIG.l[i], c.look[i], RIG.vl[i], smoothT, h); RIG.l[i] = r[0]; RIG.vl[i] = r[1]; }
+    }
+    camera.position.set(RIG.p[0], RIG.p[1], -RIG.p[2]); camera.lookAt(RIG.l[0], RIG.l[1], -RIG.l[2]); alt = RIG.p[1];
+  }
+
+  /* ================= στάδια ================= */
+  // intro: πίσω από το αυτοκίνητο, πραγματικός χρόνος · rise: η κάμερα ανεβαίνει, ο χρόνος επιταχύνεται ·
+  // top: όλη η περιοχή · ours: ίδια στιγμή με τον Ψηφιακό Τροχονόμο · dive: η κάμερα κατεβαίνει · follow: ξανά στο αυτοκίνητο.
+  const STAGES = ['intro', 'rise', 'top', 'ours', 'dive', 'follow'];
+  const DUR = { intro: 9, rise: 24, dive: 13 };
+  const AUTO = { top: 7, ours: 10, follow: 1e9 };
+  const TOPSPEED = 40;
+  let stage = 'intro', stT = 0, playing = true, speed = 1, alt = 3;
+  let C0 = [0, 0], H0 = null, F0 = null, heroH = [1, 0], pickT = -1;
+  const TOP = { alt: 2250, back: 1100 };
+  const CH = { back: 8.5, up: 3.3, ahead: 38, lookY: 0.6 };
+  function chase(Hp, f) { return { cam: [Hp[0] - f[0] * CH.back, CH.up, Hp[1] - f[1] * CH.back], look: [Hp[0] + f[0] * CH.ahead, CH.lookY, Hp[1] + f[1] * CH.ahead] }; }
+  function rig(p, Hp, f) {
+    const e = ease(clamp(p, 0, 1)), w = smooth(0.3, 0.95, e);   // κοιτάζει τον δρόμο του αυτοκινήτου ως αργά στην άνοδο
+    const a = CH.up * Math.pow(TOP.alt / CH.up, e), back = CH.back * Math.pow(TOP.back / CH.back, e);
+    const bd = unit([lerp(-f[0], 0, w), lerp(-f[1], -1, w)]);
+    const anc = [lerp(Hp[0], C0[0], w), lerp(Hp[1], C0[1], w)];
+    const lk = [lerp(Hp[0] + f[0] * CH.ahead, C0[0], w), lerp(CH.lookY, 0, w), lerp(Hp[1] + f[1] * CH.ahead, C0[1], w)];
+    return { cam: [anc[0] + bd[0] * back, a, anc[1] + bd[1] * back], look: lk };
+  }
+  const heroPos = () => heroV ? [heroV.e, heroV.n] : H0;
+  function updHeading(dt) { if (!heroV) return; const k = Math.min(1, dt * 2.5); heroH = unit([lerp(heroH[0], heroV.h[0], k), lerp(heroH[1], heroV.h[1], k)]); }
+
+  function go(st) {
+    stage = st; stT = 0;
+    if (st === 'rise') { H0 = heroPos(); F0 = heroH.slice(); }
+    if (st === 'ours') setMode('ours');
+    if (st === 'dive') { setHero(null); pickT = -1; }
+    hud();
+  }
+  function next() { const i = STAGES.indexOf(stage); if (i >= 0 && i < STAGES.length - 1) go(STAGES[i + 1]); }
+  function setMode(v) {
+    if (v === mode) return; mode = v;
+    sites.forEach(visReset); heroV = null;
+    if (stage === 'intro') pickHeroQueued(heroApp); else if (stage === 'follow') pickHeroMoving(heroPos());
+    $('mClock').setAttribute('aria-pressed', v === 'clock'); $('mOurs').setAttribute('aria-pressed', v === 'ours');
+  }
+
+  function stageTick(dt) {
+    stT += dt;
+    if (stage === 'intro') { speed = 1; applyCam(chase(heroPos(), heroH), dt, 0.35); if (stT > DUR.intro && !H.hold) go('rise'); }
+    else if (stage === 'rise') {
+      const p = stT / DUR.rise; applyCam(rig(p, H0, F0), dt, 0.12);
+      speed = 1 + (TOPSPEED - 1) * Math.pow(smooth(0.1, 1, p), 2);
+      if (p >= 1) go('top');
+    } else if (stage === 'top' || stage === 'ours') {
+      speed = TOPSPEED; applyCam(rig(1, H0, F0), dt, 0.3);
+      if (H.auto && stT > AUTO[stage]) next();
+    } else if (stage === 'dive') {
+      const p = 1 - stT / DUR.dive;
+      if (pickT < 0 && p < 0.55) { pickHeroMoving(H0, p > 0.3); if (heroV) pickT = stT; }
+      let Hp = H0, f = F0;
+      if (heroV) { const k = smooth(pickT, pickT + 2.5, stT); Hp = [lerp(H0[0], heroV.e, k), lerp(H0[1], heroV.n, k)]; f = unit([lerp(F0[0], heroH[0], k), lerp(F0[1], heroH[1], k)]); }
+      applyCam(rig(p, Hp, f), dt, 0.12);
+      speed = 1 + 2 * smooth(0.3, 1, p);
+      if (p <= 0) go('follow');
+    } else if (stage === 'follow') {
+      speed = 1;
+      // στο τέλος του άξονα ή αν χαθεί, η κάμερα περνά ομαλά σε άλλο αυτοκίνητο που κινείται κοντά
+      if (heroV && heroV.st === 'dep' && sites[SOF].g[heroV.a].down < 0 && -heroV.s > 60) pickHeroMoving(heroPos());
+      if (!heroV) pickHeroMoving([RIG.p[0], RIG.p[2]]);
+      applyCam(chase(heroPos(), heroH), dt, 0.45);
+    }
+  }
+
+  /* ================= κείμενα ================= */
+  // Οι αριθμοί έρχονται από το ride-numbers.js (experiment-ride-numbers.js): μετρημένα αυτοκίνητα και χαμένος χρόνος στη
+  // Βασ. Σοφίας 08:00–09:00, και τι αλλάζει με τον Ψηφιακό Τροχονόμο. Κανένας αριθμός δεν γράφεται με το χέρι εδώ.
+  const RN = window.RIDENUM;
+  const int = x => String(Math.round(x)).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  const half = x => { const r = Math.round(x * 2) / 2; return r % 1 ? String(r).replace('.', ',') : String(r); };
+  const dec = x => (Math.round(x * 10) / 10).toFixed(1).replace('.', ',').replace(/,0$/, '');
+  function facts(after) {
+    if (!RN) return null;
+    const M = RN.meas, O = RN.ours;
+    return {
+      when: 'Μεταξύ ' + RN.from + ' και ' + RN.to,
+      rows: after ? [
+        [int(RN.cars), 'τα ίδια αυτοκίνητα, στο ίδιο φανάρι'],
+        ['<s>' + half(M.lostMin) + '</s>' + half(O.lostMin) + '<small>λεπτά</small>', 'χάνει το καθένα στα ' + dec(RN.km) + ' km ως τους Αμπελόκηπους'],
+        ['<s>' + int(M.hours) + '</s>' + int(O.hours) + '<small>ώρες</small>', int(M.hours - O.hours) + ' ώρες λιγότερες χαμένες, όλα μαζί']
+      ] : [
+        [int(RN.cars), 'αυτοκίνητα πέρασαν από το φανάρι που περιμένουμε'],
+        [half(M.lostMin) + '<small>λεπτά</small>', 'έχασε το καθένα στα ' + dec(RN.km) + ' km ως τους Αμπελόκηπους'],
+        [int(M.hours) + '<small>ώρες</small>', 'χαμένες, όλα μαζί, μέσα σε μία ώρα']
+      ]
+    };
+  }
+  let factsKey = '';
+  function drawFacts(show) {
+    const F = facts(mode === 'ours');
+    $('facts').classList.toggle('off', !show || !F);
+    if (!F) return;
+    const k = mode;
+    if (k === factsKey) return; factsKey = k;
+    $('facts').classList.toggle('ours', mode === 'ours');
+    $('fWhen').textContent = F.when;
+    F.rows.forEach((r, i) => { $('f' + (i + 1)).innerHTML = r[0]; $('f' + (i + 1) + 'l').textContent = r[1]; });
+  }
+  const CAPS = {
+    intro: () => '',
+    rise: () => stT / DUR.rise < 0.45 ? 'Δεν είναι μόνο αυτό το φανάρι.' : 'Είναι όλη η πόλη.',
+    top: () => 'Όλη η πόλη, την ίδια ώρα.',
+    ours: () => 'Ίδια ώρα, ίδια αυτοκίνητα, με τον Ψηφιακό Τροχονόμο.',
+    dive: () => '',
+    follow: () => ''
+  };
+  let capKey = '';
+  function hud() {
+    const up = stage === 'top' || stage === 'ours';
+    $('switch').classList.toggle('off', !(up || stage === 'dive' || stage === 'follow'));
+    drawFacts(stage === 'intro' ? stT > 1.5 : stage === 'rise' ? stT / DUR.rise < 0.3 : stage === 'ours' ? stT > 1 : stage === 'follow' ? stT > 1.5 : false);
+    const c = H.nocap ? '' : CAPS[stage]();
+    if (c !== capKey) { capKey = c; $('cap').innerHTML = c; }
+    $('cap').classList.toggle('off', !c);
+    $('clock').textContent = hm(now());
+  }
+
+  /* ================= βρόχος ================= */
+  let acc = 0;
+  function tick(dt) {
+    stageTick(dt);
+    updHeading(dt);
+    if (playing) {
+      acc += dt * speed;
+      while (acc >= 1) { stepAll(); acc -= 1; if (sites[0].clock.done) { acc = 0; break; } }
+      const simDt = dt * speed, n = Math.max(1, Math.ceil(simDt / 0.2)), tf = now() + acc;
+      for (let i = 0; i < n; i++) sites.forEach(s => physics(s, simDt / n, tf));
+    }
+    const o = smooth(120, 600, alt);
+    measured.mesh.material.opacity = 0.92 * o; axisTop.material.opacity = 0.75 * o; qbars.material.opacity = o;
+    paintMeasured(now()); paintQueueBars(dt); paintSignals();
+    scene.fog.density = 0.0022 * Math.pow(3.3 / Math.max(3.3, alt), 0.75);
+    sky.position.copy(camera.position);
+    drawVehicles(dt); hud();
+    renderer.render(scene, camera);
+  }
+  function resize() {
+    const W = innerWidth, Hh = innerHeight;
+    document.documentElement.style.fontSize = Math.min(W / 160, Hh / 90) + 'px';
+    renderer.setSize(W, Hh); camera.aspect = W / Hh; camera.updateProjectionMatrix();
+  }
+  addEventListener('resize', resize);
+  addEventListener('keydown', e => {
+    const k = e.key.toLowerCase();
+    if (k === 'arrowright' || k === 'pagedown' || k === 'enter' || k === 'n') { next(); e.preventDefault(); }
+    else if (k === ' ') { playing = !playing; e.preventDefault(); }
+    else if (k === 't' || k === 'τ') setMode(mode === 'ours' ? 'clock' : 'ours');
+    else if (k === '1') setMode('clock');
+    else if (k === '2') setMode('ours');
+    else if (k === 'r' || k === 'ρ') location.reload();
+  });
+  $('mClock').addEventListener('click', () => setMode('clock'));
+  $('mOurs').addEventListener('click', () => setMode('ours'));
+
+  /* ================= εκκίνηση ================= */
+  function init() {
+    buildSims();
+    sites.forEach((s, i) => { s.si = i; geom(s); });
+    buildAxes(); buildRoads(corridors);
+    const B = buildBuildings();
+    buildSignals(); buildQueueBars();
+    while (now() < START) stepAll();
+    const a = findStuckMoment();
+    sites.forEach(visReset);
+    pickHeroQueued(a);
+    // κέντρο της θέας από ψηλά: οι τρεις άξονες, μετατοπισμένο λίγο νότια ώστε η κάμερα να βλέπει μέσα στην περιοχή με τα κτίρια
+    let n = 0, ce = 0, cn = 0; sites.forEach(s => s.P.forEach(P => { ce += P[0]; cn += P[1]; n++; })); C0 = [ce / n - 150, cn / n - 380];
+    if (heroV) heroH = heroV.h.slice();
+    resize();
+    $('load').hidden = true;
+    if (H.rec) document.body.classList.add('rec');
+    console.log('κτίρια ' + B.n + ', αρχή ' + hm(now()) + ', πρόσβαση ' + sites[SOF].clock.net.apps[a].id);
+    start();
+  }
+  function start() {
+    if (H.rec) {
+      window.REC = { advance: n => { for (let i = 0; i < n; i++) tick(1 / 30); return { stage, t: now(), alt: Math.round(alt), heroKmh: heroV ? Math.round(heroV.v * 3.6) : null, heroApp: heroV ? sites[SOF].ours.net.apps[heroV.a].id : null }; }, next, go, setMode, dbg: { IM, mats, renderer, scene, G_CAR } };
+      tick(1 / 30);
+    } else {
+      let last = 0;
+      const frame = ts => { const dt = last ? Math.min(0.1, (ts - last) / 1000) : 1 / 60; last = ts; tick(dt); requestAnimationFrame(frame); };
+      requestAnimationFrame(frame);
+    }
+  }
+  init();
+})();
+</script>
+</body>
+</html>
