@@ -98,6 +98,9 @@ button:focus-visible{outline:.2rem solid var(--accent);outline-offset:.3rem}
 .flow{display:block;width:100%;height:auto;margin-top:4rem}
 .flowsteps{margin-top:2.4rem;text-align:center;gap:0}
 .flowsteps div{border-top:0;padding:0 2rem}
+.uses{display:grid;grid-template-columns:1fr 1fr;gap:3rem;margin-top:4rem}
+.uses p{padding:2rem 2.4rem;border-radius:1.4rem;background:rgba(232,234,237,.07);border:1px solid var(--line);font-size:2.2rem;line-height:1.35;color:var(--label)}
+.uses b{display:block;font-size:2.6rem;color:#fff;margin-bottom:.6rem}
 .screens{display:grid;grid-template-columns:1fr 1fr;gap:4rem;margin-top:3.6rem}
 .screens figcaption{font-size:2.6rem;font-weight:700;color:var(--label);margin-bottom:1.4rem}
 .screens figcaption.ours{color:var(--accent)}
@@ -137,8 +140,11 @@ button:focus-visible{outline:.2rem solid var(--accent);outline-offset:.3rem}
       <div><b>Αποφασίζει</b><span>Κάθε δευτερόλεπτο: πότε αλλάζει το πράσινο.</span></div>
       <div><b>Εφαρμόζει</b><span>Στο φανάρι, πάντα μέσα στα όρια ασφαλείας.</span></div>
     </div>
-    <p class="lead" style="margin-top:4rem;max-width:none">Ζωντανά δεδομένα: Περιφέρεια Αττικής, data.gov.gr · ~620 ανιχνευτές · κάθε λεπτό</p>
-    <p class="src" style="margin-top:2rem">Ανοιχτά δεδομένα, CC BY 4.0 (attica-region-traffic-data). Στο demo: οι μετρήσεις της Τρίτης 3/11/2026, ξαναπαιγμένες σαν ζωντανά.</p>
+    <div class="uses">
+      <p><b>Δεδομένα</b>Ανοιχτά δεδομένα κυκλοφορίας από το data.gov.gr, ζωντανά κάθε λεπτό. Ποιότητα αέρα από το opendata.cityofathens.gr.</p>
+      <p><b>Εξοπλισμός</b>Οι ~620 ανιχνευτές που υπάρχουν ήδη μέσα στους δρόμους και τα σημερινά φανάρια. Ξεκινά χωρίς νέο εξοπλισμό και χωρίς κάμερες.</p>
+    </div>
+    <p class="src" style="margin-top:2rem">Ανοιχτά δεδομένα, CC BY 4.0. Στο demo: οι μετρήσεις της Τρίτης 3/11/2026, ξαναπαιγμένες σαν ζωντανά.</p>
   </section>
   <section class="slide wide" data-d="B" data-ev="1">
     <h2>Όταν περνά ασθενοφόρο</h2>
@@ -157,7 +163,7 @@ button:focus-visible{outline:.2rem solid var(--accent);outline-offset:.3rem}
         <p><i style="background:var(--accent)"></i><span>Όρια που δεν σπάνε<small>Πράσινο πεζών, ενδιάμεσος χρόνος, κόκκινο έως 90 s.</small></span></p>
         <p><i style="background:var(--accent)"></i><span>Βλάβη; Πίσω στο ρολόι<small>Αν χαλάσει ανιχνευτής, γυρίζει μόνο του στο ρολόι.</small></span></p>
         <p><i style="background:var(--accent)"></i><span>Πρώτα μόνο προτείνει<small>Τρέχει δίπλα στα σημερινά φανάρια, χωρίς να αγγίξει κανένα.</small></span></p>
-        <p><i style="background:var(--accent)"></i><span>Η εντολή μένει στον φορέα<small>Στο Κέντρο Διαχείρισης Κυκλοφορίας της Περιφέρειας.</small></span></p>
+        <p><i style="background:var(--accent)"></i><span>Η εντολή μένει στον φορέα<small>Σε αυτόν που λειτουργεί σήμερα τα φανάρια.</small></span></p>
       </div>
       <div class="zero"><b>0</b><span>παραβάσεις των ορίων ασφαλείας, σε κάθε δευτερόλεπτο κάθε προσομοίωσης.</span></div>
     </div>
