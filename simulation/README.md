@@ -34,6 +34,7 @@
 | `node experiment-ride-numbers.js` | ~10 s | οι αριθμοί του `../app/ride.html` από τα ακατέργαστα δεδομένα της 3/11 και από 10 σπόρους· γράφει το `../app/ride-numbers.js` |
 | `node experiment-ride-time.js` | ~1 λεπτό | ποια ώρα δείχνει το `../app/ride.html` |
 | `node build_buildings.js [overpass.json]` | ~1 λεπτό | κτίρια από το OpenStreetMap (Overpass) → `../app/buildings-data.js` |
+| `node build_air.js` | ~1 λεπτό | ωριαίες μετρήσεις NO₂ των σταθμών του Δήμου Αθηναίων για την 3/11 → `../app/air-data.js` (θέλει σύνδεση) |
 | `node build_signals.js` | δευτερόλεπτα | `../app/osm-signals.json` → `../app/signals-data.js`: οι θέσεις των φαναριών για τον χάρτη |
 
 `site`: `alex` (Λ. Αλεξάνδρας), `kif` (Κηφισίας × Πανόρμου), `iera` (Ιερά Οδός). `blind`: 1 = ο ελεγκτής βλέπει μόνο προσβάσεις με ανιχνευτή (σημερινή κατάσταση), 0 = ανιχνευτής σε κάθε πρόσβαση.

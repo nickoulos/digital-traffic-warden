@@ -81,11 +81,23 @@ const avgLostOurs = Math.max(0, avgLost - saved);
 const year = { workdays: WORKDAYS, days: days.length, avgLostMin: avgLost / 60, avgCars,
   personH: avgLost * WORKDAYS / 3600, personHOurs: avgLostOurs * WORKDAYS / 3600,
   allH: avgCars * avgLost * WORKDAYS / 3600, allHOurs: avgCars * avgLostOurs * WORKDAYS / 3600 };
+// ---- CO₂ στους τρεις άξονες του ride.html (20 φανάρια), 08:00–09:00: ώρες αναμονής στα φανάρια × 1 kg CO₂ την ώρα ρελαντί ----
+// Ίδια εκτίμηση με το experiment-impact.js (κάτω άκρο των πηγών, facts.md Δ1–Δ2). Όπως στο ride.html: ανιχνευτής σε κάθε κάθετη.
+const AXES = [['kifx', 'optimal'], ['alex', 'adaptive'], ['sofias', 'adaptive']], KG_PER_H = 1;
+const waitH = (ctrl, seed) => AXES.reduce((sum, [id, c]) => {
+  const sim = SimCore.createSim(DATA, id, DAY, W0 * 60 - 1800, W1 * 60 + 60, { seed, blind: 0 }, ctrl === 'fixed' ? 'fixed' : c, null);
+  while (sim.t < W0 * 60) sim.step(); const q0 = sim.summary().qInt; while (sim.t < W1 * 60) sim.step();
+  return sum + (sim.summary().qInt - q0) / 3600;
+}, 0);
+const co2 = SEEDS.map(seed => ({ seed, clock: waitH('fixed', seed) * KG_PER_H, ours: waitH('ours', seed) * KG_PER_H }));
+const co2Clock = co2.reduce((s, r) => s + r.clock, 0) / co2.length, co2Ours = co2.reduce((s, r) => s + r.ours, 0) / co2.length;
+
 const R = {
   day: DAY, from: '08:00', to: '09:00', app: apps.find(a => a.det === COUNT_DET && a.own).id, cars, seed: pick.seed, km: len / 1000,
   meas: { min: tt / 60, kmh: len / tt * 3.6, lostMin: lostMeas / 60, freeMin: tff / 60, hours: cars * lostMeas / 3600 },
   ours: { min: ttOurs / 60, kmh: len / ttOurs * 3.6, lostMin: lostOurs / 60, hours: cars * lostOurs / 3600 },
   year,
+  co2: { axes: 3, signals: 20, kgPerH: KG_PER_H, clockKg: co2Clock, oursKg: co2Ours },
   sim: { waitClockS: waitClock, waitOursS: waitOurs, savedS: saved, carsAtKo: simCars, carsAtKoSeed: pick.clock.served }
 };
 const r1 = x => Math.round(x * 10) / 10;
@@ -122,6 +134,10 @@ const out = [
   '- Όποιος κάνει τη διαδρομή κάθε εργάσιμη στις 08:00–09:00 χάνει περίπου **' + Math.round(year.personH) + ' ώρες τον χρόνο**. Με τον Τροχονόμο (εκτίμηση) **' + Math.round(year.personHOurs) + '**.',
   '- Όλα τα αυτοκίνητα μαζί: περίπου **' + Math.round(year.allH) + ' ώρες τον χρόνο**. Με τον Τροχονόμο (εκτίμηση) **' + Math.round(year.allHOurs) + '**, δηλαδή ' + Math.round(year.allH - year.allHOurs) + ' ώρες λιγότερες.',
   '- Με τον Τροχονόμο αφαιρείται κάθε μέρα το κέρδος της προσομοίωσης της 3/11 (' + Math.round(saved) + ' s ανά αυτοκίνητο). Οι άλλες μέρες δεν έχουν προσομοιωθεί.',
+  '',
+  '## CO₂ στους τρεις άξονες (εκτίμηση)',
+  '',
+  'Βασ. Σοφίας, Αλεξάνδρας, Κηφισίας, 20 φανάρια, ' + R.from + '–' + R.to + ', ' + SEEDS.length + ' σπόροι. Ώρες αναμονής στα φανάρια × ' + KG_PER_H + ' kg CO₂ την ώρα ρελαντί (κάτω άκρο των πηγών, όπως στο experiment-impact.js): ρολόι περίπου **' + Math.round(co2Clock) + ' kg**, Τροχονόμος περίπου **' + Math.round(co2Ours) + ' kg** μέσα σε αυτή την ώρα. Η αναμονή δεν είναι όλη ρελαντί· αυτοκίνητα με start-stop, υβριδικά ή ηλεκτρικά βγάζουν λιγότερο.',
   '',
   '## Με τον Ψηφιακό Τροχονόμο (προσομοίωση)',
   '',

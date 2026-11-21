@@ -55,6 +55,13 @@ button:focus-visible{outline:.3rem solid var(--yellow);outline-offset:.3rem}
 .evbtn::after{left:1.9rem;top:50%;width:4rem;height:1.2rem;margin-top:-.6rem}
 .evbtn:disabled{opacity:.55;cursor:default}
 
+/* #focus=ev: μόνο η διαδρομή του ασθενοφόρου, για ενσωμάτωση σε διαφάνεια (ride.html) */
+.focus .switch,.focus .card,.focus .evbtn,.focus .fine,.focus .banner,.focus .head h1,.focus .head span{display:none!important}
+.focus .head b{font-size:7rem}
+.evstat{position:absolute;left:3.2rem;bottom:3.2rem;background:rgba(6,36,90,.92);border-radius:1.8rem;padding:2rem 2.8rem;box-shadow:0 .6rem 2.4rem rgba(3,18,48,.5)}
+.evstat b{display:block;font-size:11rem;font-weight:600;line-height:1}
+.evstat span{display:block;font-size:3.4rem;color:var(--soft);margin-top:.8rem;line-height:1.2}
+.evstat.done b{color:var(--yellow)}
 .fine{position:absolute;left:3.2rem;right:3.2rem;bottom:1.8rem;font-size:1.45rem;line-height:1.35;color:rgba(197,213,241,.8);text-align:center}
 </style>
 </head>
@@ -77,6 +84,7 @@ button:focus-visible{outline:.3rem solid var(--yellow);outline-offset:.3rem}
     <div class="cmp" id="cmp2"></div>
     <div class="legend"><span><i class="q"></i>ουρά: όσο μακρύτερη, τόσα περισσότερα αυτοκίνητα</span><span><i class="c"></i>αυτοκίνητο σε κίνηση</span></div>
   </div>
+  <div class="evstat" id="evstat" hidden><b id="evT">0:00</b><span id="evL"></span></div>
   <button class="evbtn" id="evb">Όχημα έκτακτης ανάγκης<span>Λ. Βασ. Σοφίας, προς το Ιπποκράτειο</span></button>
   <p class="fine" id="fine">Ροές: πραγματικές μετρήσεις ανιχνευτών της Περιφέρειας Αττικής, Τρίτη 3/11/2026. Ουρές και αναμονή: προσομοίωση. «Ρολόι»: σταθερό πρόγραμμα δικού μας σχεδιασμού, όχι το ισχύον. Δρόμοι © OpenStreetMap.</p>
 </div>
@@ -104,6 +112,8 @@ button:focus-visible{outline:.3rem solid var(--yellow);outline-offset:.3rem}
   var AX = [{ id: 'kifx', ctrl: 'optimal', now: true }, { id: 'alex', ctrl: 'adaptive', now: false }, { id: 'sofias', ctrl: 'adaptive', now: true }];
   if (DET === 'now') $('fine').textContent += ' Σημερινοί ανιχνευτές.'; else $('fine').textContent += ' Σενάριο: ανιχνευτής σε κάθε κάθετη οδό (15 νέοι).';
 
+  var FOCUS = H.focus === 'ev';   // μόνο το ασθενοφόρο και η διαδρομή του, σε επανάληψη
+  if (FOCUS) document.body.classList.add('focus');
   var sites = [], mode = H.mode === 'ours' ? 'ours' : 'clock', base = { clock: 0, ours: 0 }, ema = { clock: 0, ours: 0 };
   function build() {
     sites = AX.map(function (X) {
@@ -152,6 +162,7 @@ button:focus-visible{outline:.3rem solid var(--yellow);outline-offset:.3rem}
     if (EV.run) return;
     var s = sites[2], t = now(), T = t + EV.notice;
     EV.run = { ours: s.ours.addEV(EV.route, T, { preempt: true, notice: EV.notice }), clock: s.clock.addEV(EV.route, T), t0: t, told: false };
+    if (FOCUS) return;
     setMode('ours');
     banner('<b>Όχημα έκτακτης ανάγκης</b> στη Λ. Βασ. Σοφίας, προς το Ιπποκράτειο. Τα φανάρια μπροστά του αδειάζουν τις ουρές πριν φτάσει.');
     $('evb').disabled = true;
@@ -159,7 +170,8 @@ button:focus-visible{outline:.3rem solid var(--yellow);outline-offset:.3rem}
   function freeTime(sim) { return sim.P.lookahead + EV.route.slice(1).reduce(function (x, a) { return x + sim.net.apps[idx(sim, a)].travel; }, 0); }
   function idx(sim, id) { for (var a = 0; a < sim.net.apps.length; a++) if (sim.net.apps[a].id === id) return a; return -1; }
   function evCheck() {
-    var r = EV.run; if (!r || r.told || !r.ours.done) return;
+    var r = EV.run; if (FOCUS) { if (r && r.clock.done && r.ours.done && now() - Math.max(r.clock.tEnd, r.ours.tEnd) > 24) focusRun(); return; }
+    if (!r || r.told || !r.ours.done) return;
     var sim = sites[2].ours, mine = Math.max(0, r.ours.tEnd - r.ours.t0 - freeTime(sim));
     if (!r.clock.done && now() - r.ours.tEnd < 200) return;
     r.told = true;
@@ -174,9 +186,87 @@ button:focus-visible{outline:.3rem solid var(--yellow);outline-offset:.3rem}
     remPx = Math.min(innerWidth / 160, innerHeight / 90); document.documentElement.style.fontSize = remPx + 'px';
     var dpr = window.devicePixelRatio || 1; PW = 160 * remPx; PH = 90 * remPx; cv.width = Math.round(PW * dpr); cv.height = Math.round(PH * dpr); cx.setTransform(dpr, 0, 0, dpr, 0, 0);
     PPM = (PH * 0.8) / 2300; roadKey = '';
+    if (FOCUS && sites.length) focusFit();
   }
-  function X(p) { return PW * 0.585 + p[0] * PPM; }
-  function Y(p) { return PH * 0.5 - p[1] * PPM; }
+  var VIEW = { ox: 0, oy: 0, sx: 0.585, sy: 0.5 };
+  function X(p) { return PW * VIEW.sx + (p[0] - VIEW.ox) * PPM; }
+  function Y(p) { return PH * VIEW.sy - (p[1] - VIEW.oy) * PPM; }
+  function routePts() {
+    var s = sites[2], sim = s.ours, G0 = s.g[idx(sim, EV.route[0])], pts = [[G0.P[0] - G0.u[0] * G0.L, G0.P[1] - G0.u[1] * G0.L]];
+    EV.route.forEach(function (id) { pts.push(s.g[idx(sim, id)].P); });
+    return pts;
+  }
+  function focusFit() {
+    var pts = routePts(), x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9;
+    pts.forEach(function (q) { x0 = Math.min(x0, q[0]); x1 = Math.max(x1, q[0]); y0 = Math.min(y0, q[1]); y1 = Math.max(y1, q[1]); });
+    VIEW = { ox: (x0 + x1) / 2, oy: (y0 + y1) / 2, sx: 0.5, sy: 0.42 };
+    PPM = Math.min(PW * 0.84 / (x1 - x0), PH * 0.5 / Math.max(1, y1 - y0)); roadKey = '';
+  }
+  function drawRoute() {
+    var pts = routePts();
+    cx.lineCap = 'round'; cx.lineJoin = 'round'; cx.beginPath();
+    pts.forEach(function (q, i) { if (i) cx.lineTo(X(q), Y(q)); else cx.moveTo(X(q), Y(q)); });
+    cx.strokeStyle = 'rgba(255,255,255,.13)'; cx.lineWidth = 4.2 * remPx; cx.stroke();
+    var e = pts[pts.length - 1], R = 2.4 * remPx;   // το νοσοκομείο στο τέλος της διαδρομής
+    cx.fillStyle = '#fbfcfd'; cx.beginPath(); cx.arc(X(e), Y(e) - 5 * remPx, R, 0, 6.2832); cx.fill();
+    cx.fillStyle = '#e0261b'; cx.fillRect(X(e) - R * 0.2, Y(e) - 5 * remPx - R * 0.62, R * 0.4, R * 1.24); cx.fillRect(X(e) - R * 0.62, Y(e) - 5 * remPx - R * 0.2, R * 1.24, R * 0.4);
+    cx.font = '600 ' + 2.6 * remPx + 'px Bahnschrift, "Segoe UI", sans-serif'; cx.textAlign = 'center'; cx.fillStyle = '#fbfcfd'; cx.fillText('Ιπποκράτειο', X(e), Y(e) - 9.4 * remPx);
+  }
+  /* Στη λειτουργία #focus=ev το ασθενοφόρο κινείται πάνω σε προϋπολογισμένη τροχιά: η προσομοίωση τρέχει πρώτα μία φορά ως το τέλος,
+     καταγράφεται πόσο έχει προχωρήσει στη διαδρομή κάθε δευτερόλεπτο και η καμπύλη εξομαλύνεται. Μετά η ίδια προσομοίωση ξαναπαίζει
+     (ίδιος σπόρος, ίδια αποτελέσματα) και το όχημα ακολουθεί την ομαλή καμπύλη αντί να πηδά από ουρά σε ουρά. */
+  var TRAJ = null;
+  function routeCum() { var pts = routePts(), c = [0]; for (var i = 1; i < pts.length; i++) c.push(c[i - 1] + Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1])); return { pts: pts, cum: c, total: c[c.length - 1] }; }
+  function evDist(k, R) {
+    var s = sites[2], sim = s[k], ev = EV.run[k], V = sim.P.cruise / 3.6;
+    if (ev.done) return R.total; if (ev.state === 'wait') return 0;
+    var kk = ev.k || 0, a = idx(sim, EV.route[kk]), G = s.g[a];
+    var back = ev.state === 'queue' ? Math.max(0, ev.target - sim.st.served[a]) * 6 : Math.min(G.L * 0.95, Math.max(0, ev.arr - now()) * V);
+    return Math.max(0, R.cum[kk + 1] - back);
+  }
+  function smoothMono(a) {
+    var i, o = []; for (i = 1; i < a.length; i++) a[i] = Math.max(a[i], a[i - 1]);
+    for (i = 0; i < a.length; i++) { var n = 0, x = 0; for (var j = Math.max(0, i - 5); j <= Math.min(a.length - 1, i + 5); j++) { x += a[j]; n++; } o.push(x / n); }
+    return o;
+  }
+  function focusRun() {
+    if (!TRAJ) {
+      dispatch();
+      var R = routeCum(), T = { tA: now(), clock: [], ours: [], R: R }, r = EV.run, g = 0;
+      while ((!r.clock.done || !r.ours.done) && g++ < 1800) { stepAll(); T.clock.push(evDist('clock', R)); T.ours.push(evDist('ours', R)); }
+      T.clock = smoothMono(T.clock); T.ours = smoothMono(T.ours);
+      T.first = 0; while (T.first < T.ours.length && T.ours[T.first] <= 0 && T.clock[T.first] <= 0) T.first++;
+      TRAJ = T;
+    }
+    restart(); dispatch();
+    while (now() < TRAJ.tA + TRAJ.first - 1) stepAll();   // χωρίς αναμονή: ξεκινά τη στιγμή που το όχημα μπαίνει στον δρόμο
+  }
+  function trajAt(k, tf) { var a = TRAJ[k], x = Math.max(0, tf - TRAJ.tA - 1), i = Math.floor(x); if (i >= a.length - 1) return a[a.length - 1]; return a[i] + (a[i + 1] - a[i]) * (x - i); }
+  function ptAt(R, d) {
+    var i = 1; while (i < R.cum.length - 1 && R.cum[i] < d) i++;
+    var A = R.pts[i - 1], B = R.pts[i], L = R.cum[i] - R.cum[i - 1], f = (d - R.cum[i - 1]) / L;
+    return [A[0] + (B[0] - A[0]) * f, A[1] + (B[1] - A[1]) * f];
+  }
+  function drawEVFocus(tf) {
+    if (!TRAJ || !EV.run) return;
+    var R = TRAJ.R, d = trajAt(mode, tf), q = ptAt(R, d), x = X(q), y = Y(q), col = mode === 'ours' ? '#ffd42a' : '#ff5a4c';
+    // ίχνος: όσο έχει διανύσει
+    cx.lineCap = 'round'; cx.lineJoin = 'round'; cx.beginPath(); cx.moveTo(X(R.pts[0]), Y(R.pts[0]));
+    for (var i = 1; i < R.pts.length && R.cum[i] < d; i++) cx.lineTo(X(R.pts[i]), Y(R.pts[i]));
+    cx.lineTo(x, y); cx.strokeStyle = col; cx.globalAlpha = 0.85; cx.lineWidth = 1.5 * remPx; cx.stroke(); cx.globalAlpha = 1;
+    // το όχημα: λευκό με κόκκινο σταυρό, και φάρος που αναβοσβήνει ομαλά
+    var ph = (Math.sin(tf * 2.2) + 1) / 2, Rr = 2.6 * remPx;
+    cx.beginPath(); cx.arc(x, y, Rr * (1.9 + 0.5 * ph), 0, 6.2832); cx.fillStyle = 'rgba(47,139,255,' + (0.18 + 0.3 * ph) + ')'; cx.fill();
+    cx.beginPath(); cx.arc(x, y, Rr * 1.25, 0, 6.2832); cx.fillStyle = 'rgba(255,90,76,' + (0.45 - 0.3 * ph) + ')'; cx.fill();
+    cx.fillStyle = '#fbfcfd'; cx.beginPath(); if (cx.roundRect) cx.roundRect(x - Rr, y - Rr, 2 * Rr, 2 * Rr, 0.7 * remPx); else cx.rect(x - Rr, y - Rr, 2 * Rr, 2 * Rr); cx.fill();
+    cx.fillStyle = '#e0261b'; cx.fillRect(x - Rr * 0.2, y - Rr * 0.64, Rr * 0.4, Rr * 1.28); cx.fillRect(x - Rr * 0.64, y - Rr * 0.2, Rr * 1.28, Rr * 0.4);
+  }
+  function evStat(tf) {
+    var r = EV.run, el = $('evstat'); el.hidden = !r; if (!r) return;
+    var ev = r[mode], sim = sites[2][mode], t = ev.done ? ev.tEnd - ev.t0 : ev.state === 'wait' ? 0 : Math.max(0, tf - ev.t0), mm = Math.floor(t / 60), ss = Math.floor(t % 60);
+    $('evT').textContent = mm + ':' + (ss < 10 ? '0' : '') + ss; el.classList.toggle('done', !!ev.done);
+    $('evL').textContent = ev.done ? 'Έφτασε. Πίσω από ουρές: ' + Math.max(0, Math.round(ev.tEnd - ev.t0 - freeTime(sim))) + ' s' : mode === 'ours' ? 'Τα φανάρια ανοίγουν μπροστά του' : 'Κανείς δεν ξέρει ότι έρχεται';
+  }
   var LABELS = [['Λ. Βασ. Σοφίας', 37.9772, 23.7432, -0.05], ['Λ. Αλεξάνδρας', 37.9898, 23.7525, 0.245], ['Λ. Κηφισίας', 37.9905, 23.7682, -1.0],
     ['Σύνταγμα', 37.9752, 23.7352, 0], ['Λυκαβηττός', 37.9818, 23.7432, 0], ['Πεδίον Άρεως', 37.9937, 23.7362, 0], ['Αμπελόκηποι', 37.9872, 23.7640, 0], ['Ερυθρός Σταυρός', 37.9945, 23.7722, 0], ['Ιπποκράτειο', 37.9808, 23.7520, 0]];
   function drawRoads() {
@@ -219,9 +309,9 @@ button:focus-visible{outline:.3rem solid var(--yellow);outline-offset:.3rem}
       cx.beginPath(); cx.arc(x, y, 0.62 * remPx, 0, 6.2832); cx.fillStyle = '#fbfcfd'; cx.fill(); cx.lineWidth = 0.22 * remPx; cx.strokeStyle = pre ? '#2f8bff' : '#06245a'; cx.stroke();
     });
   }
-  function drawEV(tf) {
+  function drawEV(tf, which) {
     var r = EV.run; if (!r) return;
-    var s = sites[2], sim = s.ours, ev = r.ours, p = null, V = sim.P.cruise / 3.6;
+    var s = sites[2], sim = s[which || 'ours'], ev = r[which || 'ours'], p = null, V = sim.P.cruise / 3.6;
     if (ev.done) { var G = s.g[idx(sim, EV.route[EV.route.length - 1])], d = (tf - ev.tEnd) * V; if (d > 260) return; p = [X(G.P) + G.u[0] * d * PPM, Y(G.P) - G.u[1] * d * PPM]; }
     else {
       var a = idx(sim, EV.route[ev.k || 0]), G2 = s.g[a];
@@ -238,8 +328,8 @@ button:focus-visible{outline:.3rem solid var(--yellow);outline-offset:.3rem}
     var key = PW + '|' + remPx; if (key !== roadKey) { roadKey = key; drawRoads(); }
     cx.save(); cx.setTransform(1, 0, 0, 1, 0, 0); cx.drawImage(roadCv, 0, 0); cx.restore();
     var tf = now() + (frac || 0);
-    sites.forEach(function (s) { drawSite(s, s[mode], tf); });
-    if (mode === 'ours') drawEV(tf);
+    if (FOCUS) { drawRoute(); drawSite(sites[2], sites[2][mode], tf); drawEVFocus(tf); evStat(tf); }
+    else { sites.forEach(function (s) { drawSite(s, s[mode], tf); }); if (mode === 'ours') drawEV(tf); }
     var t = now(); $('clock').textContent = hm(t);
     $('stopped').textContent = Math.round(ema[mode]);
     var h = (qint(mode) - base[mode]) / 3600, hc = (qint('clock') - base.clock) / 3600;
@@ -251,7 +341,7 @@ button:focus-visible{outline:.3rem solid var(--yellow);outline-offset:.3rem}
   function setMode(v) { mode = v; $('mClock').setAttribute('aria-pressed', v === 'clock'); $('mOurs').setAttribute('aria-pressed', v === 'ours'); render(0); }
 
   /* ---------- χειρισμός ---------- */
-  var playing = H.play !== '0', speed = +H.speed || 30;
+  var playing = H.play !== '0', speed = +H.speed || (FOCUS ? 8 : 30);
   $('mClock').addEventListener('click', function () { setMode('clock'); });
   $('mOurs').addEventListener('click', function () { setMode('ours'); });
   $('evb').addEventListener('click', dispatch);
@@ -278,7 +368,8 @@ button:focus-visible{outline:.3rem solid var(--yellow);outline-offset:.3rem}
     render(playing ? carry : 0); requestAnimationFrame(frame);
   }
   addEventListener('resize', function () { fit(); render(0); });
-  fit(); start(); setMode(mode);
+  fit(); start(); if (FOCUS) focusFit(); setMode(mode);
+  if (FOCUS) focusRun();
   if (H.until) { var u = hms(H.until); while (now() < u) { stepAll(); evCheck(); } }
   if (H.ev) { dispatch(); for (var w = 0; w < (+H.evrun || 0); w++) { stepAll(); evCheck(); } }
   if (H.rec) document.body.classList.add('rec');

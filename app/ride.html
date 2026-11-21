@@ -49,11 +49,133 @@ button:focus-visible{outline:.2rem solid var(--accent);outline-offset:.3rem}
 .facts .row span{display:block;font-size:1.7rem;color:var(--label);line-height:1.3;margin-top:.4rem}
 .facts .row.year{padding-top:1.5rem;border-top:1px solid var(--line)}
 .facts.ours .row b{color:var(--accent)}
+/* διαφάνειες πάνω στη ζωντανή σκηνή: σκούρο πέπλο από αριστερά, η κίνηση φαίνεται δεξιά */
+.deck{position:fixed;inset:0;pointer-events:none;opacity:0;transition:opacity .9s}
+.deckon .deck{opacity:1}
+.deckon .head,.deckon .switch,.deckon .facts,.deckon .cap{opacity:0!important}
+.deck::before{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(15,19,24,.94) 0%,rgba(15,19,24,.86) 48%,rgba(15,19,24,.35) 78%,rgba(15,19,24,.15) 100%)}
+.slide{position:absolute;left:9rem;top:50%;transform:translateY(-50%);width:118rem;opacity:0;transition:opacity .7s}
+.rec .slide,.rec .deck{transition:none}
+.slide.on{opacity:1}
+.slide h2{font-size:6.2rem;font-weight:700;line-height:1.05;letter-spacing:-.01em;color:#fff}
+.slide .lead{font-size:2.6rem;color:var(--label);margin-top:1.6rem;line-height:1.35;max-width:70rem}
+.slide .src{font-size:1.4rem;color:var(--muted);margin-top:4rem;max-width:84rem;line-height:1.4}
+.slide.cover h1{font-size:12rem;font-weight:800;line-height:.95;letter-spacing:-.02em;color:#fff}
+.slide.cover .lead{font-size:3.4rem;color:#c9d3df}
+.chip{display:inline-block;margin-top:5rem;padding:.8rem 1.6rem;border-radius:.8rem;background:#ffd52e;color:#0f1318;font-size:2rem;font-weight:700}
+.items{margin-top:4.4rem;display:grid;gap:2.6rem}
+.items p{display:flex;align-items:baseline;gap:2rem;font-size:3.4rem;font-weight:600;color:#fff;line-height:1.2}
+.items p small{display:block;font-size:2.1rem;font-weight:400;color:var(--label);margin-top:.5rem;line-height:1.35}
+.items i{flex:none;width:1.8rem;height:1.8rem;border-radius:50%;transform:translateY(-.2rem)}
+.big{font-size:13rem;font-weight:800;line-height:1;color:var(--accent);margin-top:3.6rem;letter-spacing:-.02em}
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:3rem;margin-top:5rem}
+.steps div{border-top:.3rem solid var(--accent);padding-top:2rem}
+.steps b{display:block;font-size:3.2rem;color:#fff}
+.steps span{display:block;font-size:2.1rem;color:var(--label);margin-top:.8rem;line-height:1.35}
+.bars{display:flex;align-items:flex-end;gap:.5rem;height:26rem;margin-top:4rem;width:62rem;border-bottom:.2rem solid var(--muted);position:relative}
+.bars i{flex:1;background:#6f86a6;border-radius:.3rem .3rem 0 0}
+.bars i.best{background:var(--accent)}
+.bars em{position:absolute;font-style:normal;font-size:1.9rem;font-weight:700;color:var(--accent);transform:translateX(-50%)}
+.axis{display:flex;justify-content:space-between;width:62rem;font-size:1.8rem;color:var(--label);margin-top:1rem}
+.two{display:grid;grid-template-columns:62rem 1fr;gap:7rem;align-items:end;margin-top:2rem}
+.two .items p{font-size:2.5rem;font-weight:500}
+.callout{margin-top:3rem;padding:2.2rem 2.6rem;border-radius:1.4rem;background:rgba(61,165,255,.16);border:1px solid rgba(61,165,255,.45);font-size:2.6rem;font-weight:600;color:#fff;line-height:1.3}
+.zero{display:flex;align-items:center;gap:3rem;margin-top:3rem}
+.zero b{font-size:15rem;font-weight:800;line-height:1;color:var(--accent)}
+.zero span{font-size:2.4rem;color:var(--label);max-width:34rem;line-height:1.3}
+.cmpbar{display:grid;grid-template-columns:22rem 1fr 18rem;align-items:center;gap:2rem;margin-top:2.4rem;font-size:3rem;font-weight:700;color:#fff}
+.cmpbar div{height:4.6rem;border-radius:.8rem;background:#6f86a6;position:relative}
+.cmpbar div.ours{background:var(--accent)}
+.cmpbar div s{position:absolute;top:0;bottom:0;border:.25rem dashed var(--accent);border-left:0;border-radius:0 .8rem .8rem 0;text-decoration:none;font-size:2.2rem;color:var(--accent);display:flex;align-items:center;justify-content:center}
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:2.6rem;margin-top:4.4rem}
+.tiles div{padding:2.4rem 2.6rem;border-radius:1.4rem;background:rgba(232,234,237,.07);border:1px solid var(--line)}
+.tiles b{display:block;white-space:nowrap;font-size:5rem;font-weight:800;color:#fff;line-height:1}
+.tiles span{display:block;font-size:2.1rem;color:var(--label);margin-top:1rem;line-height:1.3}
+.slide.wide{width:142rem}
+.vign{display:grid;grid-template-columns:repeat(3,1fr);gap:3.2rem;margin-top:5rem}
+.vign svg{display:block;width:100%;height:auto;border-radius:2rem;box-shadow:0 1rem 3rem rgba(0,0,0,.45)}
+.vign figcaption{font-size:2.9rem;font-weight:700;color:#fff;margin-top:1.8rem;line-height:1.2}
+.flow{display:block;width:100%;height:auto;margin-top:4rem}
+.flowsteps{margin-top:2.4rem;text-align:center;gap:0}
+.flowsteps div{border-top:0;padding:0 2rem}
+.screens{display:grid;grid-template-columns:1fr 1fr;gap:4rem;margin-top:3.6rem}
+.screens figcaption{font-size:2.6rem;font-weight:700;color:var(--label);margin-bottom:1.4rem}
+.screens figcaption.ours{color:var(--accent)}
+/* πλαίσιο οθόνης: όπως θα το έβλεπε ο χειριστής */
+.monitor{position:relative;aspect-ratio:16/9;background:#06245a;border:1.1rem solid #05070a;border-radius:1.8rem;box-shadow:0 0 0 .2rem #2b323c,0 2rem 5rem rgba(0,0,0,.6);overflow:hidden}
+.monitor::after{content:"";position:absolute;right:1.4rem;bottom:.9rem;width:.7rem;height:.7rem;border-radius:50%;background:var(--m-grn);box-shadow:0 0 .8rem var(--m-grn)}
+.monitor iframe{position:absolute;inset:0;width:100%;height:100%;border:0;pointer-events:none}
+.screens figure{position:relative;padding-bottom:3rem}
+.screens figure::after{content:"";position:absolute;left:50%;bottom:0;width:18rem;height:3rem;transform:translateX(-50%);background:linear-gradient(#0b0e12,#1a1f27);clip-path:polygon(22% 0,78% 0,100% 100%,0 100%)}
+.curtain{position:fixed;inset:0;background:#0f1318;opacity:0;pointer-events:none;transition:opacity .45s}
+.curtain.on{opacity:1}
 .load{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;font-size:2rem;color:var(--muted);background:#0f1318}
 </style>
 </head>
 <body>
 <div id="view"></div>
+<div class="deck" id="deck" aria-live="polite">
+  <section class="slide cover" data-d="A">
+    <h1>Ψηφιακός<br>Τροχονόμος</h1>
+    <p class="lead">Φανάρια που βλέπουν την κίνηση.</p>
+    <span class="chip">Apps4Athens 3.0</span>
+  </section>
+  <section class="slide wide" data-d="A">
+    <h2>Τα φανάρια της Αθήνας δεν βλέπουν.</h2>
+    <div class="vign">
+      <figure><svg aria-label="Άδειος δρόμος με αναμμένο πράσινο" viewBox="0 0 520 320" xmlns="http://www.w3.org/2000/svg"><rect width="520" height="320" rx="24" fill="#1c232d"/><rect x="0" y="150" width="520" height="120" fill="#2b3038"/><path d="M10 210 H390" stroke="#FBFCFD" stroke-opacity=".35" stroke-width="4" stroke-dasharray="24 18"/><rect x="398" y="150" width="8" height="120" fill="#FBFCFD" opacity=".85"/><rect x="430" y="14" width="56" height="132" rx="16" fill="#0b0e12"/><circle cx="458" cy="46" r="13" fill="#4D2230"/><circle cx="458" cy="80" r="13" fill="#4D4422"/><circle cx="458" cy="114" r="24" fill="#36D17C" opacity=".3"/><circle cx="458" cy="114" r="13" fill="#36D17C"/></svg><figcaption>Πράσινο σε άδειο δρόμο.</figcaption></figure>
+      <figure><svg aria-label="Μεγάλη ουρά αυτοκινήτων μπροστά σε κόκκινο" viewBox="0 0 520 320" xmlns="http://www.w3.org/2000/svg"><rect width="520" height="320" rx="24" fill="#1c232d"/><rect x="0" y="150" width="520" height="120" fill="#2b3038"/><path d="M10 210 H390" stroke="#FBFCFD" stroke-opacity=".35" stroke-width="4" stroke-dasharray="24 18"/><rect x="398" y="150" width="8" height="120" fill="#FBFCFD" opacity=".85"/><rect x="430" y="14" width="56" height="132" rx="16" fill="#0b0e12"/><circle cx="458" cy="46" r="24" fill="#FF5A47" opacity=".3"/><circle cx="458" cy="46" r="13" fill="#FF5A47"/><circle cx="458" cy="80" r="13" fill="#4D4422"/><circle cx="458" cy="114" r="13" fill="#1E4A3A"/><rect x="326" y="162" width="62" height="36" rx="10" fill="#C5D5F1"/><rect x="256" y="162" width="62" height="36" rx="10" fill="#8FA9D6"/><rect x="186" y="162" width="62" height="36" rx="10" fill="#C5D5F1"/><rect x="116" y="162" width="62" height="36" rx="10" fill="#8FA9D6"/><rect x="46" y="162" width="62" height="36" rx="10" fill="#C5D5F1"/><rect x="326" y="222" width="62" height="36" rx="10" fill="#8FA9D6"/><rect x="256" y="222" width="62" height="36" rx="10" fill="#C5D5F1"/><rect x="186" y="222" width="62" height="36" rx="10" fill="#8FA9D6"/><rect x="116" y="222" width="62" height="36" rx="10" fill="#C5D5F1"/><rect x="46" y="222" width="62" height="36" rx="10" fill="#8FA9D6"><animateTransform attributeName="transform" type="translate" from="-140 0" to="0 0" dur="1.2s" begin="0.6s"/></rect><rect x="-24" y="162" width="62" height="36" rx="10" fill="#8FA9D6"/></svg><figcaption>Κόκκινο σε ουρά που μεγαλώνει.</figcaption></figure>
+      <figure><svg aria-label="Ασθενοφόρο κολλημένο πίσω από ουρά αυτοκινήτων στο κόκκινο" viewBox="0 0 520 320" xmlns="http://www.w3.org/2000/svg"><rect width="520" height="320" rx="24" fill="#1c232d"/><rect x="0" y="150" width="520" height="120" fill="#2b3038"/><path d="M10 210 H390" stroke="#FBFCFD" stroke-opacity=".35" stroke-width="4" stroke-dasharray="24 18"/><rect x="398" y="150" width="8" height="120" fill="#FBFCFD" opacity=".85"/><rect x="430" y="14" width="56" height="132" rx="16" fill="#0b0e12"/><circle cx="458" cy="46" r="24" fill="#FF5A47" opacity=".3"/><circle cx="458" cy="46" r="13" fill="#FF5A47"/><circle cx="458" cy="80" r="13" fill="#4D4422"/><circle cx="458" cy="114" r="13" fill="#1E4A3A"/><rect x="326" y="162" width="62" height="36" rx="10" fill="#C5D5F1"/><rect x="256" y="162" width="62" height="36" rx="10" fill="#8FA9D6"/><rect x="186" y="162" width="62" height="36" rx="10" fill="#C5D5F1"/><rect x="326" y="222" width="62" height="36" rx="10" fill="#8FA9D6"/><rect x="256" y="222" width="62" height="36" rx="10" fill="#C5D5F1"/><rect x="186" y="222" width="62" height="36" rx="10" fill="#8FA9D6"/><rect x="116" y="222" width="62" height="36" rx="10" fill="#C5D5F1"/><rect x="46" y="222" width="62" height="36" rx="10" fill="#8FA9D6"/><rect x="92" y="160" width="86" height="40" rx="8" fill="#FBFCFD"/><rect x="128" y="168" width="10" height="24" fill="#E04A3A"/><rect x="121" y="175" width="24" height="10" fill="#E04A3A"/><rect x="160" y="164" width="10" height="32" rx="3" fill="#4C8DFF"><animate attributeName="opacity" values="1;0.25;1" dur="1.2s" repeatCount="indefinite"/></rect><rect x="22" y="162" width="62" height="36" rx="10" fill="#C5D5F1"/></svg><figcaption>Ασθενοφόρο κολλημένο στην ουρά.</figcaption></figure>
+    </div>
+  </section>
+  <section class="slide wide" data-d="B">
+    <h2>Το AI λύνει το πρόβλημα</h2>
+    <svg class="flow" aria-label="Τέσσερα βήματα σε σειρά, με δεδομένα που ρέουν από αριστερά προς τα δεξιά: ανιχνευτής στον δρόμο, ουρά αυτοκινήτων, σύγκριση σχεδίων, φανάρι με πράσινο" viewBox="0 0 1664 260" xmlns="http://www.w3.org/2000/svg"><path d="M178 130 H1486" stroke="#3a4656" stroke-width="8" stroke-linecap="round"/><circle cx="178" cy="130" r="10" fill="#3da5ff"><animateMotion path="M0 0 H1308" dur="4s" begin="0s" repeatCount="indefinite"/></circle><circle cx="178" cy="130" r="10" fill="#3da5ff"><animateMotion path="M0 0 H1308" dur="4s" begin="1.33s" repeatCount="indefinite"/></circle><circle cx="178" cy="130" r="10" fill="#3da5ff"><animateMotion path="M0 0 H1308" dur="4s" begin="2.67s" repeatCount="indefinite"/></circle><circle cx="178" cy="130" r="112" fill="#FBFCFD" stroke="#D5DCE6" stroke-width="4"/><circle cx="614" cy="130" r="112" fill="#FBFCFD" stroke="#D5DCE6" stroke-width="4"/><circle cx="1050" cy="130" r="112" fill="#FBFCFD" stroke="#D5DCE6" stroke-width="4"/><circle cx="1486" cy="130" r="112" fill="#FBFCFD" stroke="#D5DCE6" stroke-width="4"/><rect x="93" y="118" width="170" height="64" rx="10" fill="#2A3550"/><rect x="176" y="126" width="48" height="48" rx="6" fill="none" stroke="#FFD42A" stroke-width="5"/><rect x="104" y="133" width="56" height="34" rx="9" fill="#8FA9D6"/><path d="M182 104 A18 18 0 0 1 218 104" fill="none" stroke="#0B3F91" stroke-width="6" stroke-linecap="round"/><path d="M166 104 A34 34 0 0 1 234 104" fill="none" stroke="#0B3F91" stroke-width="6" stroke-linecap="round"/><rect x="520" y="108" width="188" height="60" rx="10" fill="#2A3550"/><rect x="694" y="108" width="6" height="60" fill="#FBFCFD"/><rect x="640" y="121" width="44" height="34" rx="8" fill="#8FA9D6"/><rect x="590" y="121" width="44" height="34" rx="8" fill="#8FA9D6"/><rect x="540" y="121" width="44" height="34" rx="8" fill="#8FA9D6"/><path d="M540 96 V86 H684 V96" fill="none" stroke="#0B3F91" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><path d="M612 86 V72" stroke="#0B3F91" stroke-width="6" stroke-linecap="round"/><circle cx="612" cy="60" r="11" fill="#0B3F91"/><path d="M962 192 H1138" stroke="#8FA0B8" stroke-width="3"/><rect x="970" y="120" width="16" height="70" rx="3" fill="#C5D5F1"/><rect x="994" y="138" width="16" height="52" rx="3" fill="#C5D5F1"/><rect x="1018" y="152" width="16" height="38" rx="3" fill="#C5D5F1"/><rect x="1042" y="162" width="16" height="28" rx="3" fill="#0B3F91"/><rect x="1066" y="154" width="16" height="36" rx="3" fill="#C5D5F1"/><rect x="1090" y="138" width="16" height="52" rx="3" fill="#C5D5F1"/><rect x="1114" y="116" width="16" height="74" rx="3" fill="#C5D5F1"/><path d="M1042 140 H1058 L1050 152 Z" fill="#0B3F91"/><rect x="1454" y="36" width="64" height="168" rx="18" fill="#14213D"/><circle cx="1486" cy="72" r="18" fill="#5A2B3A"/><circle cx="1486" cy="120" r="18" fill="#5A5130"/><circle cx="1486" cy="168" r="30" fill="#36D17C" opacity=".3"/><circle cx="1486" cy="168" r="18" fill="#36D17C"/></svg>
+    <div class="steps flowsteps">
+      <div><b>Μετρά</b><span>Πόσα αυτοκίνητα περνούν, κάθε λεπτό.</span></div>
+      <div><b>Βλέπει</b><span>Πόσα περιμένουν σε κάθε δρόμο του κόμβου.</span></div>
+      <div><b>Αποφασίζει</b><span>Κάθε δευτερόλεπτο: πότε αλλάζει το πράσινο.</span></div>
+      <div><b>Εφαρμόζει</b><span>Στο φανάρι, πάντα μέσα στα όρια ασφαλείας.</span></div>
+    </div>
+    <p class="lead" style="margin-top:4rem;max-width:none">Ζωντανά δεδομένα: Περιφέρεια Αττικής, data.gov.gr · ~620 ανιχνευτές · κάθε λεπτό</p>
+    <p class="src" style="margin-top:2rem">Ανοιχτά δεδομένα, CC BY 4.0 (attica-region-traffic-data). Στο demo: οι μετρήσεις της Τρίτης 3/11/2026, ξαναπαιγμένες σαν ζωντανά.</p>
+  </section>
+  <section class="slide wide" data-d="B" data-ev="1">
+    <h2>Όταν περνά ασθενοφόρο</h2>
+    <div class="screens">
+      <figure><figcaption>Σήμερα: με το ρολόι</figcaption><div class="monitor"><iframe title="Ασθενοφόρο με το ρολόι" data-src="demo.html#focus=ev&amp;mode=clock&amp;t=10:13"></iframe></div></figure>
+      <figure><figcaption class="ours">Με τον Ψηφιακό Τροχονόμο</figcaption><div class="monitor"><iframe title="Ασθενοφόρο με τον Ψηφιακό Τροχονόμο" data-src="demo.html#focus=ev&amp;mode=ours&amp;t=10:13"></iframe></div></figure>
+    </div>
+    <p class="lead" style="max-width:none;margin-top:3rem"><b style="color:#fff">125 → 19 s</b> πίσω από ουρές, Βασ. Σοφίας προς Ιπποκράτειο. Έτσι το βλέπει ο χειριστής στο κέντρο ελέγχου.</p>
+    <p class="src" style="margin-top:1.6rem">Προσομοίωση, Τρίτη 3/11/2026: διάμεσος 10 εκτελέσεων. Οι δύο οθόνες παίζουν ζωντανά μία από αυτές.</p>
+  </section>
+  <section class="slide" data-d="B">
+    <h2>Τι το κάνει ασφαλές</h2>
+    <div class="two" style="grid-template-columns:1fr 40rem;align-items:center">
+      <div class="items">
+        <p><i style="background:var(--accent)"></i><span>Χωρίς κάμερες<small>Μόνο ανοιχτά δεδομένα, κανένα προσωπικό στοιχείο.</small></span></p>
+        <p><i style="background:var(--accent)"></i><span>Όρια που δεν σπάνε<small>Πράσινο πεζών, ενδιάμεσος χρόνος, κόκκινο έως 90 s.</small></span></p>
+        <p><i style="background:var(--accent)"></i><span>Βλάβη; Πίσω στο ρολόι<small>Αν χαλάσει ανιχνευτής, γυρίζει μόνο του στο ρολόι.</small></span></p>
+        <p><i style="background:var(--accent)"></i><span>Πρώτα μόνο προτείνει<small>Τρέχει δίπλα στα σημερινά φανάρια, χωρίς να αγγίξει κανένα.</small></span></p>
+        <p><i style="background:var(--accent)"></i><span>Η εντολή μένει στον φορέα<small>Στο Κέντρο Διαχείρισης Κυκλοφορίας της Περιφέρειας.</small></span></p>
+      </div>
+      <div class="zero"><b>0</b><span>παραβάσεις των ορίων ασφαλείας, σε κάθε δευτερόλεπτο κάθε προσομοίωσης.</span></div>
+    </div>
+  </section>
+  <section class="slide" data-d="B">
+    <h2>Τι κερδίζει η πόλη, κάθε μέρα</h2>
+    <p class="lead" style="font-size:2.1rem;margin-top:3rem">Ώρες αναμονής τη μέρα, 20 φανάρια σε 3 άξονες</p>
+    <div class="cmpbar"><span>Ρολόι</span><div style="width:100%"></div><span>3.536 ώρες</span></div>
+    <div class="cmpbar"><span>Τροχονόμος</span><div class="ours" style="width:78.8%"><s style="left:100%;width:26.9%">−749</s></div><span>2.787 ώρες</span></div>
+    <div class="tiles">
+      <div><b>0,75 τόνοι</b><span>CO₂ λιγότερο</span></div>
+      <div><b>450 λίτρα</b><span>καύσιμο λιγότερο</span></div>
+      <div><b>125 → 19 s</b><span>ασθενοφόρο πίσω από ουρές, Βασ. Σοφίας</span></div>
+    </div>
+    <p class="src">Προσομοίωση, Τρίτη 3/11/2026, 10 εκτελέσεις, με 15 νέους ανιχνευτές σε κάθετες οδούς (−21%)· με τους σημερινούς: 181 ώρες. CO₂ και καύσιμο: εκτίμηση με 1 kg και 0,6 λίτρα ανά ώρα ρελαντί. «Ρολόι»: πρόγραμμα δικού μας σχεδιασμού.</p>
+  </section>
+</div>
+<div class="curtain" id="curtain"></div>
 <div class="load" id="load">Χτίζεται η πόλη…</div>
 <div class="hud">
   <div class="head"><h1>Ψηφιακός Τροχονόμος</h1><b id="clock">--:--</b><span>Τρίτη 3 Νοεμβρίου 2026</span></div>
@@ -68,6 +190,7 @@ button:focus-visible{outline:.2rem solid var(--accent);outline-offset:.3rem}
     <div class="row"><b id="f2"></b><span id="f2l"></span></div>
     <div class="row"><b id="f3"></b><span id="f3l"></span></div>
     <div class="row"><b id="f4"></b><span id="f4l"></span></div>
+    <div class="row"><b id="f5"></b><span id="f5l"></span></div>
   </div>
 </div>
 <!-- Αριθμοί: knowledge-base/results/experiment-ride-numbers.md. Ρολόι: σταθερό πρόγραμμα δικού μας σχεδιασμού. Κτίρια και δρόμοι © OpenStreetMap. -->
@@ -78,6 +201,7 @@ button:focus-visible{outline:.2rem solid var(--accent);outline-offset:.3rem}
 <script src="corridor-data.js"></script>
 <script src="sofias-data.js"></script>
 <script src="ride-numbers.js"></script>
+<script src="air-data.js"></script>
 <script src="buildings-data.js"></script>
 <script>
 (function () {
@@ -228,6 +352,50 @@ button:focus-visible{outline:.2rem solid var(--accent);outline-offset:.3rem}
     const mat = new THREE.MeshBasicMaterial({ vertexColors: true, transparent: true, opacity: 0, depthTest: false, depthWrite: false, side: THREE.DoubleSide, fog: false });
     measured = { mesh: meshFrom(mp, mc, mat), roads: mroads, slot: -1 };
     measured.mesh.renderOrder = 4; scene.add(measured.mesh);
+  }
+  /* ---------- ο αέρας: NO₂ από τους σταθμούς Smart Sense του Δήμου Αθηναίων (air-data.js, build_air.js) ---------- */
+  // Ένα ημιδιάφανο στρώμα πάνω από την πόλη. Η τιμή σε κάθε σημείο είναι ο σταθμισμένος μέσος των γειτονικών σταθμών
+  // (Gauss, σ = 450 m) και σβήνει μακριά από σταθμούς. Δύο καταστάσεις, νύχτα 02:00–06:00 και 08:00–09:00, και ο shader περνά από τη μία στην άλλη.
+  let air = null;
+  function buildAir() {
+    const A = window.AIR; if (!A || !A.stations.length) return;
+    const st = A.stations.map(x => ({ p: m(x.lat, x.lon), now: x.no2, night: x.no2Night }));
+    const c0 = m(37.950, 23.700), c1 = m(38.015, 23.805), N = 256, SIG = 450, VMAX = 90;
+    const data = new Uint8Array(N * N * 4);
+    for (let j = 0; j < N; j++) for (let i = 0; i < N; i++) {
+      const e = lerp(c0[0], c1[0], (i + 0.5) / N), n = lerp(c0[1], c1[1], (j + 0.5) / N);
+      let w = 0, a = 0, b = 0;
+      for (const x of st) { const d2 = (x.p[0] - e) ** 2 + (x.p[1] - n) ** 2, k = Math.exp(-d2 / (2 * SIG * SIG)); w += k; a += k * x.night; b += k * x.now; }
+      const o = (j * N + i) * 4;
+      data[o] = w > 1e-6 ? clamp(a / w / VMAX, 0, 1) * 255 : 0; data[o + 1] = w > 1e-6 ? clamp(b / w / VMAX, 0, 1) * 255 : 0;
+      data[o + 2] = (1 - Math.exp(-w * 2.2)) * 255; data[o + 3] = 255;
+    }
+    const tex = new THREE.DataTexture(data, N, N, THREE.RGBAFormat); tex.magFilter = tex.minFilter = THREE.LinearFilter; tex.needsUpdate = true;
+    const g = new THREE.PlaneGeometry(c1[0] - c0[0], c1[1] - c0[1]); g.rotateX(-Math.PI / 2); g.translate((c0[0] + c1[0]) / 2, 32, -(c0[1] + c1[1]) / 2);
+    const mat = new THREE.ShaderMaterial({
+      uniforms: { uTex: { value: tex }, uMix: { value: 0 }, uOpacity: { value: 0 }, uVmax: { value: VMAX } },
+      vertexShader: '#include <common>\n#include <logdepthbuf_pars_vertex>\nvarying vec2 vUv;\nvoid main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);\n#include <logdepthbuf_vertex>\n}',
+      fragmentShader: '#include <logdepthbuf_pars_fragment>\nuniform sampler2D uTex; uniform float uMix; uniform float uOpacity; uniform float uVmax; varying vec2 vUv;\n' +
+        'void main(){\n#include <logdepthbuf_fragment>\n vec4 t = texture2D(uTex, vUv); float v = mix(t.r, t.g, uMix) * uVmax; float k = smoothstep(22.0, 62.0, v);\n' +
+        ' vec3 c = mix(vec3(0.55, 0.45, 0.85), vec3(1.0, 0.62, 0.25), smoothstep(0.0, 0.6, k)); c = mix(c, vec3(1.0, 0.30, 0.22), smoothstep(0.6, 1.0, k));\n' +
+        ' float a = t.b * (0.03 + 0.62 * pow(k, 1.6)) * uOpacity; gl_FragColor = linearToOutputTexel(vec4(c, a)); }',
+      transparent: true, depthTest: false, depthWrite: false
+    });
+    const mesh = new THREE.Mesh(g, mat); mesh.renderOrder = 3; mesh.frustumCulled = false; scene.add(mesh);
+    // οι σταθμοί: μικρές λευκές κουκκίδες, για να φαίνεται ότι ο χάρτης είναι μετρήσεις
+    const dots = new THREE.Points(new THREE.BufferGeometry().setAttribute('position', new THREE.Float32BufferAttribute(st.flatMap(x => [x.p[0], 34, -x.p[1]]), 3)),
+      new THREE.PointsMaterial({ color: 0xffffff, size: 6, sizeAttenuation: false, transparent: true, opacity: 0, depthTest: false, depthWrite: false }));
+    dots.renderOrder = 7; dots.frustumCulled = false; scene.add(dots);
+    const mean = k => A.stations.reduce((a, x) => a + x[k], 0) / A.stations.length;
+    air = { mesh, mat, dots, o: 0, mix: 0, n: A.stations.length, now: mean('no2'), night: mean('no2Night'), mav: A.stations.find(x => /Μαβίλη/.test(x.name)) };
+  }
+  function paintAir(dt) {
+    if (!air) return;
+    const want = stage === 'air' ? 1 : 0, k = Math.min(1, dt * 1.6);
+    air.o += (want - air.o) * k;
+    air.mix = stage === 'air' ? smooth(0.8, 4.5, stT) : air.mix;          // νύχτα → 08:00 μέσα στα πρώτα δευτερόλεπτα
+    air.mat.uniforms.uOpacity.value = air.o; air.mat.uniforms.uMix.value = air.mix; air.dots.material.opacity = 0.85 * air.o;
+    air.mesh.visible = air.dots.visible = air.o > 0.005;
   }
   const MCOL = { red: new THREE.Color(0xe5413b), amb: new THREE.Color(0xffb020), grn: new THREE.Color(0x46d06a), none: new THREE.Color(0x5b616b) };
   function paintMeasured(t) {
@@ -602,6 +770,7 @@ button:focus-visible{outline:.2rem solid var(--accent);outline-offset:.3rem}
   // Αρχή: στιγμή που ο άξονας μόλις πήρε κόκκινο και έχει ουρά. Το αυτοκίνητο είναι τέταρτο στη μεσαία λωρίδα.
   // Πρώτο πέρασμα: σε 15 λεπτά από την ώρα αρχής βρίσκουμε τη στιγμή με τη μεγαλύτερη ουρά σε κατεύθυνση του άξονα που μόλις πήρε
   // κόκκινο (προτίμηση προς το κέντρο). Δεύτερο πέρασμα: ξαναχτίζουμε την προσομοίωση και σταματάμε ακριβώς εκεί.
+  let STUCK = null;   // η στιγμή της αρχής: ώρα, πρόσβαση, θέση του αυτοκινήτου (για να ξαναγυρίσουμε εκεί μετά τις πρώτες διαφάνειες)
   function findStuckMoment() {
     let best = null;
     const lim = START + 900;
@@ -617,7 +786,8 @@ button:focus-visible{outline:.2rem solid var(--accent);outline-offset:.3rem}
     }
     buildSims();
     while (now() < (best ? best.t : START)) stepAll();
-    return best ? best.a : 0;
+    STUCK = { t: best ? best.t : START, a: best ? best.a : 0 };
+    return STUCK.a;
   }
   function pickHeroQueued(a) {
     const s = sites[SOF], L = s.vis.list[a], q = s[mode].qlen(a), lane = Math.min(1, s.g[a].lanes - 1);
@@ -675,15 +845,19 @@ button:focus-visible{outline:.2rem solid var(--accent);outline-offset:.3rem}
   /* ================= στάδια ================= */
   // intro: πίσω από το αυτοκίνητο, πραγματικός χρόνος · rise: η κάμερα ανεβαίνει, ο χρόνος επιταχύνεται ·
   // top: όλη η περιοχή · ours: ίδια στιγμή με τον Ψηφιακό Τροχονόμο · dive: η κάμερα κατεβαίνει · follow: ξανά στο αυτοκίνητο.
-  const STAGES = ['intro', 'rise', 'top', 'ours', 'dive', 'follow'];
+  const STAGES = ['intro', 'rise', 'top', 'air', 'ours', 'dive', 'follow'];
   const DUR = { intro: 9, rise: 24, dive: 13 };
-  const AUTO = { top: 7, ours: 10, follow: 1e9 };
+  const AUTO = { top: 7, air: 9, ours: 10, follow: 1e9 };
   const TOPSPEED = 40;
-  let stage = 'intro', stT = 0, playing = true, speed = 1, alt = 3;
+  let stage = H.nodeck ? 'intro' : 'deckA', stT = 0, playing = true, speed = 1, alt = 3;
   let C0 = [0, 0], H0 = null, F0 = null, heroH = [1, 0], pickT = -1;
   const TOP = { alt: 2250, back: 1100 };
   const CH = { back: 8.5, up: 3.3, ahead: 38, lookY: 0.6 };
-  function chase(Hp, f) { return { cam: [Hp[0] - f[0] * CH.back, CH.up, Hp[1] - f[1] * CH.back], look: [Hp[0] + f[0] * CH.ahead, CH.lookY, Hp[1] + f[1] * CH.ahead] }; }
+  const FAR = { back: 46, up: 22, ahead: 90, lookY: 0 };   // στις τελικές διαφάνειες: λίγο πιο ψηλά και πίσω από το αυτοκίνητο
+  function chase(Hp, f, k) {
+    const c = k ? { back: lerp(CH.back, FAR.back, k), up: lerp(CH.up, FAR.up, k), ahead: lerp(CH.ahead, FAR.ahead, k), lookY: lerp(CH.lookY, FAR.lookY, k) } : CH;
+    return { cam: [Hp[0] - f[0] * c.back, c.up, Hp[1] - f[1] * c.back], look: [Hp[0] + f[0] * c.ahead, c.lookY, Hp[1] + f[1] * c.ahead] };
+  }
   function rig(p, Hp, f) {
     const e = ease(clamp(p, 0, 1)), w = smooth(0.3, 0.95, e);   // κοιτάζει τον δρόμο του αυτοκινήτου ως αργά στην άνοδο
     const a = CH.up * Math.pow(TOP.alt / CH.up, e), back = CH.back * Math.pow(TOP.back / CH.back, e);
@@ -700,9 +874,40 @@ button:focus-visible{outline:.2rem solid var(--accent);outline-offset:.3rem}
     if (st === 'rise') { H0 = heroPos(); F0 = heroH.slice(); }
     if (st === 'ours') setMode('ours');
     if (st === 'dive') { setHero(null); pickT = -1; }
-    hud();
+    showSlide(); hud();
   }
-  function next() { const i = STAGES.indexOf(stage); if (i >= 0 && i < STAGES.length - 1) go(STAGES[i + 1]); }
+  /* ---------- διαφάνειες ---------- */
+  // deckA: πριν την αρχή, η κάμερα γυρίζει αργά γύρω από τον κόμβο ενώ η κίνηση τρέχει. Με το τελευταίο «επόμενο» η σκηνή
+  // ξαναγυρίζει πίσω από κουρτίνα στη στιγμή της αρχής. deckB: μετά το τέλος, η κίνηση με τον Τροχονόμο συνεχίζει από πίσω.
+  const SLIDES = { A: [...document.querySelectorAll('.slide[data-d=A]')], B: [...document.querySelectorAll('.slide[data-d=B]')] };
+  let slide = 0;
+  function showSlide() {
+    const d = stage === 'deckA' ? 'A' : stage === 'deckB' ? 'B' : null;
+    ['A', 'B'].forEach(k => SLIDES[k].forEach((el, i) => el.classList.toggle('on', k === d && i === slide)));
+    document.body.classList.toggle('deckon', !!d);
+    document.querySelectorAll('.slide[data-ev] iframe').forEach(f => { const on = f.closest('.slide').classList.contains('on'); if (on && !f.getAttribute('src')) f.src = f.dataset.src; else if (!on && f.getAttribute('src')) f.removeAttribute('src'); });
+  }
+  function resetToStuck() {
+    buildSims(); while (now() < STUCK.t) stepAll();
+    mode = 'clock'; $('mClock').setAttribute('aria-pressed', true); $('mOurs').setAttribute('aria-pressed', false);
+    sites.forEach(visReset); pickHeroQueued(STUCK.a); if (heroV) heroH = heroV.h.slice();
+    RIG.p = null; acc = 0;
+  }
+  function startIntro() {
+    if (H.rec) { resetToStuck(); go('intro'); return; }
+    $('curtain').classList.add('on');
+    setTimeout(() => { resetToStuck(); go('intro'); requestAnimationFrame(() => $('curtain').classList.remove('on')); }, 480);
+  }
+  function next() {
+    if (stage === 'deckA' || stage === 'deckB') {
+      const L = SLIDES[stage === 'deckA' ? 'A' : 'B'];
+      if (slide < L.length - 1) { slide++; showSlide(); } else if (stage === 'deckA') startIntro();
+      return;
+    }
+    if (stage === 'follow') { slide = 0; go('deckB'); return; }
+    const i = STAGES.indexOf(stage); if (i >= 0 && i < STAGES.length - 1) go(STAGES[i + 1]);
+  }
+  function prev() { if ((stage === 'deckA' || stage === 'deckB') && slide > 0) { slide--; showSlide(); } }
   function setMode(v) {
     if (v === mode) return; mode = v;
     sites.forEach(visReset); heroV = null;
@@ -712,13 +917,19 @@ button:focus-visible{outline:.2rem solid var(--accent);outline-offset:.3rem}
 
   function stageTick(dt) {
     stT += dt;
-    if (stage === 'intro') { speed = 1; applyCam(chase(heroPos(), heroH), dt, 0.35); if (stT > DUR.intro && !H.hold) go('rise'); }
+    if (stage === 'deckA') {
+      // drone πάνω από τον κόμβο, που γυρίζει αργά· ο κόμβος μένει στο δεξί μισό της οθόνης, εκεί που το πέπλο είναι πιο ελαφρύ
+      speed = 1; const P = STUCK.p, th = 0.9 + stT * 0.02, cam = [P[0] + Math.cos(th) * 170, 95, P[1] + Math.sin(th) * 170];
+      const f = unit([P[0] - cam[0], P[1] - cam[2]]), r = [f[1], -f[0]];
+      applyCam({ cam, look: [P[0] - r[0] * 75, 0, P[1] - r[1] * 75] }, dt, 0.8);
+    }
+    else if (stage === 'intro') { speed = 1; applyCam(chase(heroPos(), heroH), dt, 0.35); if (stT > DUR.intro && !H.hold) go('rise'); }
     else if (stage === 'rise') {
       const p = stT / DUR.rise; applyCam(rig(p, H0, F0), dt, 0.12);
       speed = 1 + (TOPSPEED - 1) * Math.pow(smooth(0.1, 1, p), 2);
       if (p >= 1) go('top');
-    } else if (stage === 'top' || stage === 'ours') {
-      speed = TOPSPEED; applyCam(rig(1, H0, F0), dt, 0.3);
+    } else if (stage === 'top' || stage === 'air' || stage === 'ours') {
+      speed = stage === 'air' ? 4 : TOPSPEED; applyCam(rig(1, H0, F0), dt, 0.3);
       if (H.auto && stT > AUTO[stage]) next();
     } else if (stage === 'dive') {
       const p = 1 - stT / DUR.dive;
@@ -728,12 +939,12 @@ button:focus-visible{outline:.2rem solid var(--accent);outline-offset:.3rem}
       applyCam(rig(p, Hp, f), dt, 0.12);
       speed = 1 + 2 * smooth(0.3, 1, p);
       if (p <= 0) go('follow');
-    } else if (stage === 'follow') {
+    } else if (stage === 'follow' || stage === 'deckB') {
       speed = 1;
       // στο τέλος του άξονα ή αν χαθεί, η κάμερα περνά ομαλά σε άλλο αυτοκίνητο που κινείται κοντά
       if (heroV && heroV.st === 'dep' && sites[SOF].g[heroV.a].down < 0 && -heroV.s > 60) pickHeroMoving(heroPos());
       if (!heroV) pickHeroMoving([RIG.p[0], RIG.p[2]]);
-      applyCam(chase(heroPos(), heroH), dt, 0.45);
+      applyCam(chase(heroPos(), heroH, stage === 'deckB' ? smooth(0, 5, stT) : 0), dt, 0.45);
     }
   }
 
@@ -758,7 +969,7 @@ button:focus-visible{outline:.2rem solid var(--accent);outline-offset:.3rem}
         [arrow(half(M.lostMin), half(O.lostMin), 'λεπτά'), 'χάνει το καθένα στα ' + km],
         [arrow(int(Y.personH), int(Y.personHOurs), 'ώρες τον χρόνο'), 'για όποιον κάνει αυτή τη διαδρομή κάθε πρωί', 'year'],
         [arrow(h100(Y.allH), h100(Y.allHOurs), 'ώρες'), 'τον χρόνο, όλοι μαζί: ' + h100(Y.allH - Y.allHOurs) + ' ώρες λιγότερες']
-      ] : [
+      ].concat(RN.co2 ? [[arrow(int(RN.co2.clockKg), int(RN.co2.oursKg), 'kg CO₂'), 'από την αναμονή στα ' + RN.co2.signals + ' φανάρια, μέσα σε αυτή την ώρα', 'year']] : []) : [
         [int(RN.cars), 'αυτοκίνητα πέρασαν από το φανάρι που περιμένουμε'],
         [half(M.lostMin) + '<small>λεπτά</small>', 'έχασε το καθένα στα ' + km],
         [int(Y.personH) + '<small>ώρες τον χρόνο</small>', 'χάνει όποιος κάνει αυτή τη διαδρομή κάθε πρωί', 'year'],
@@ -766,30 +977,47 @@ button:focus-visible{outline:.2rem solid var(--accent);outline-offset:.3rem}
       ]
     };
   }
+  // ο αέρας: μετρήσεις των σταθμών του Δήμου, όχι προσομοίωση
+  function airFacts() {
+    if (!air) return null;
+    const r = air.now / air.night, M = air.mav;
+    return {
+      when: 'NO₂ στον αέρα, ' + window.AIR.now,
+      rows: [
+        ['×' + dec(r), 'σε σχέση με τη νύχτα, μέσος όρος ' + air.n + ' σταθμών του Δήμου'],
+        M ? [Math.round(M.no2) + '<small>µg/m³</small>', 'στην Πλατεία Μαβίλη, δίπλα στη Βασ. Σοφίας· ' + Math.round(M.no2Night) + ' τη νύχτα'] : null
+      ].filter(Boolean)
+    };
+  }
   let factsKey = '';
   function drawFacts(show) {
-    const F = facts(mode === 'ours');
+    const k = stage === 'air' ? 'air' : mode, F = k === 'air' ? airFacts() : facts(mode === 'ours');
     $('facts').classList.toggle('off', !show || !F);
     if (!F) return;
-    const k = mode;
     if (k === factsKey) return; factsKey = k;
-    $('facts').classList.toggle('ours', mode === 'ours');
+    $('facts').classList.toggle('ours', k === 'ours');
     $('fWhen').textContent = F.when;
-    F.rows.forEach((r, i) => { $('f' + (i + 1)).innerHTML = r[0]; $('f' + (i + 1) + 'l').textContent = r[1]; $('f' + (i + 1)).parentNode.classList.toggle('year', r[2] === 'year'); });
+    for (let i = 1; i <= 5; i++) {
+      const r = F.rows[i - 1], b = $('f' + i);
+      b.parentNode.hidden = !r; if (!r) continue;
+      b.innerHTML = r[0]; $('f' + i + 'l').textContent = r[1]; b.parentNode.classList.toggle('year', r[2] === 'year');
+    }
   }
   const CAPS = {
+    deckA: () => '', deckB: () => '',
     intro: () => '',
     rise: () => stT / DUR.rise < 0.45 ? 'Δεν είναι μόνο αυτό το φανάρι.' : 'Είναι όλη η πόλη.',
     top: () => 'Όλη η πόλη, την ίδια ώρα.',
+    air: () => 'Και ο αέρας που αναπνέουμε, την ίδια ώρα.',
     ours: () => 'Ίδια ώρα, ίδια αυτοκίνητα, με τον Ψηφιακό Τροχονόμο.',
     dive: () => '',
     follow: () => ''
   };
   let capKey = '';
   function hud() {
-    const up = stage === 'top' || stage === 'ours';
+    const up = stage === 'top' || stage === 'air' || stage === 'ours';
     $('switch').classList.toggle('off', !(up || stage === 'dive' || stage === 'follow'));
-    drawFacts(stage === 'intro' ? stT > 1.5 : stage === 'rise' ? stT / DUR.rise < 0.3 : stage === 'ours' ? stT > 1 : stage === 'follow' ? stT > 1.5 : false);
+    drawFacts(stage === 'air' ? stT > 1 : stage === 'intro' ? stT > 1.5 : stage === 'rise' ? stT / DUR.rise < 0.3 : stage === 'ours' ? stT > 1 : stage === 'follow' ? stT > 1.5 : false);
     const c = H.nocap ? '' : CAPS[stage]();
     if (c !== capKey) { capKey = c; $('cap').innerHTML = c; }
     $('cap').classList.toggle('off', !c);
@@ -808,7 +1036,8 @@ button:focus-visible{outline:.2rem solid var(--accent);outline-offset:.3rem}
       for (let i = 0; i < n; i++) sites.forEach(s => physics(s, simDt / n, tf));
     }
     const o = smooth(120, 600, alt);
-    measured.mesh.material.opacity = 0.92 * o; axisTop.material.opacity = 0.75 * o; qbars.material.opacity = o;
+    paintAir(dt);
+    measured.mesh.material.opacity = 0.92 * o * (1 - (air ? air.o : 0)); axisTop.material.opacity = 0.75 * o; qbars.material.opacity = o;
     paintMeasured(now()); paintQueueBars(dt); paintSignals();
     scene.fog.density = 0.0022 * Math.pow(3.3 / Math.max(3.3, alt), 0.75);
     sky.position.copy(camera.position);
@@ -824,6 +1053,7 @@ button:focus-visible{outline:.2rem solid var(--accent);outline-offset:.3rem}
   addEventListener('keydown', e => {
     const k = e.key.toLowerCase();
     if (k === 'arrowright' || k === 'pagedown' || k === 'enter' || k === 'n') { next(); e.preventDefault(); }
+    else if (k === 'arrowleft' || k === 'pageup') { prev(); e.preventDefault(); }
     else if (k === ' ') { playing = !playing; e.preventDefault(); }
     else if (k === 't' || k === 'τ') setMode(mode === 'ours' ? 'clock' : 'ours');
     else if (k === '1') setMode('clock');
@@ -839,7 +1069,7 @@ button:focus-visible{outline:.2rem solid var(--accent);outline-offset:.3rem}
     sites.forEach((s, i) => { s.si = i; geom(s); });
     buildAxes(); buildRoads(corridors);
     const B = buildBuildings();
-    buildSignals(); buildQueueBars();
+    buildSignals(); buildQueueBars(); buildAir();
     while (now() < START) stepAll();
     const a = findStuckMoment();
     sites.forEach(visReset);
@@ -847,6 +1077,8 @@ button:focus-visible{outline:.2rem solid var(--accent);outline-offset:.3rem}
     // κέντρο της θέας από ψηλά: οι τρεις άξονες, μετατοπισμένο λίγο νότια ώστε η κάμερα να βλέπει μέσα στην περιοχή με τα κτίρια
     let n = 0, ce = 0, cn = 0; sites.forEach(s => s.P.forEach(P => { ce += P[0]; cn += P[1]; n++; })); C0 = [ce / n - 150, cn / n - 380];
     if (heroV) heroH = heroV.h.slice();
+    STUCK.p = heroPos() || [0, 0];
+    showSlide();
     resize();
     $('load').hidden = true;
     if (H.rec) document.body.classList.add('rec');
@@ -855,7 +1087,7 @@ button:focus-visible{outline:.2rem solid var(--accent);outline-offset:.3rem}
   }
   function start() {
     if (H.rec) {
-      window.REC = { advance: n => { for (let i = 0; i < n; i++) tick(1 / 30); return { stage, t: now(), alt: Math.round(alt), heroKmh: heroV ? Math.round(heroV.v * 3.6) : null, heroApp: heroV ? sites[SOF].ours.net.apps[heroV.a].id : null }; }, next, go, setMode, dbg: { IM, mats, renderer, scene, G_CAR } };
+      window.REC = { advance: n => { for (let i = 0; i < n; i++) tick(1 / 30); return { stage, t: now(), alt: Math.round(alt), heroKmh: heroV ? Math.round(heroV.v * 3.6) : null, heroApp: heroV ? sites[SOF].ours.net.apps[heroV.a].id : null }; }, next, prev, go, setMode, dbg: { IM, mats, renderer, scene, G_CAR } };
       tick(1 / 30);
     } else {
       let last = 0;
