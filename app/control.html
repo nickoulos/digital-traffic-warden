@@ -160,28 +160,28 @@ button:focus-visible{outline:.3rem solid var(--yellow);outline-offset:.2rem}
 <body>
 <div class="stage boot" id="stage">
   <canvas id="map"></canvas>
-  <p class="fine">Μετρήσεις ανιχνευτών: πραγματικές, της Περιφέρειας Αττικής, Τρίτη 3/11/2026, σε αναπαραγωγή. Αναμονή στα φανάρια και αποτέλεσμα των αλλαγών: προσομοίωση.<br>«Ρολόι»: σταθερό πρόγραμμα δικού μας σχεδιασμού, όχι το ισχύον. Λ. Βασ. Σοφίας: η κίνηση στις κάθετες χωρίς ανιχνευτή είναι παραδοχή. Δρόμοι και θέσεις φαναριών © OpenStreetMap.</p>
+  <!-- Μετρήσεις ανιχνευτών: πραγματικές (ανοιχτά δεδομένα data.gov.gr), Τρίτη 3/11/2026, σε αναπαραγωγή. Αναμονή και αποτέλεσμα των αλλαγών: προσομοίωση.
+       «Ρολόι»: σταθερό πρόγραμμα δικού μας σχεδιασμού, όχι το ισχύον. Λ. Βασ. Σοφίας: η κίνηση στις κάθετες χωρίς ανιχνευτή είναι παραδοχή. Δρόμοι και θέσεις φαναριών © OpenStreetMap. -->
   <div class="plate"><h1>Ψηφιακός Τροχονόμος</h1><p>Κέντρο ελέγχου σηματοδότησης</p></div>
   <div class="clock"><b id="clock">--:--</b><span>Τρίτη 3 Νοεμβρίου 2026<i id="mode">αναπαραγωγή ×60</i></span></div>
-  <div class="tally"><b id="saved">0,0<small>ώρες</small></b><span id="savedCap">αναμονής λιγότερες από τη στιγμή που ανέλαβε ο Τροχονόμος</span></div>
-  <div class="legend"><b>Ανιχνευτές</b> (μετρημένη ταχύτητα)<br><i style="background:#2fd07c"></i>κανονική <i style="background:#ffd42a;margin-left:1rem"></i>αργή <i style="background:#ff5a4c;margin-left:1rem"></i>πολύ αργή<br><i class="big" style="background:#2fd07c"></i><b>Φανάρι</b> με υπολογισμένη αναμονή<br><i style="background:#ffd42a;width:2.4rem;height:.5rem;border-radius:.25rem;vertical-align:.25rem"></i>ίδιος άξονας <i style="background:none;border:.2rem solid #c5d5f1;margin-left:1rem"></i>φανάρι εκτός μοντέλου</div>
+  <div class="tally"><b id="saved">0,0<small>ώρες</small></b><span id="savedCap">αναμονής λιγότερες</span></div>
+  <div class="legend"><b>Ανιχνευτές</b><br><i style="background:#2fd07c"></i>κανονική <i style="background:#ffd42a;margin-left:1rem"></i>αργή <i style="background:#ff5a4c;margin-left:1rem"></i>πολύ αργή<br><i class="big" style="background:#2fd07c"></i><b>Φανάρι</b><br><i style="background:#ffd42a;width:2.4rem;height:.5rem;border-radius:.25rem;vertical-align:.25rem"></i>ίδιος άξονας <i style="background:none;border:.2rem solid #c5d5f1;margin-left:1rem"></i>εκτός ελέγχου</div>
   <div id="marks"></div>
   <div class="axc" id="axc">
     <h3>Λ. Βασ. Σοφίας<span id="axcN"></span></h3>
     <div class="big" id="axcH">0,0<small>ώρες αναμονής λιγότερες</small></div>
     <p id="axcP"></p>
-    <label>Ανιχνευτές στις κάθετες οδούς</label>
-    <div class="seg" id="axcDet"><button data-all="0">σημερινοί: 3 από 14</button><button data-all="1">σε όλες: +11 νέοι</button></div>
+    <label>Ανιχνευτές σε κάθετες</label>
+    <div class="seg" id="axcDet"><button data-all="0">σημερινοί</button><button data-all="1">+11 νέοι</button></div>
     <button class="go" id="axcGo" aria-pressed="false"></button>
   </div>
   <div id="evs"></div>
-  <button class="evbtn" id="evb" aria-expanded="false">Όχημα έκτακτης ανάγκης<span>αδειάζει τις ουρές στη διαδρομή του πριν φτάσει</span></button>
+  <button class="evbtn" id="evb" aria-expanded="false">Όχημα έκτακτης ανάγκης<span>προτεραιότητα σε διαδρομή</span></button>
   <div class="evmenu" id="evmenu" hidden></div>
   <div class="feed" id="feed" aria-live="polite"></div>
   <div class="time">
     <div class="ctl"><button id="play" aria-label="Αναπαραγωγή ή παύση">❚❚</button><button id="slow" aria-label="Πιο αργά">−</button><button id="fast" aria-label="Πιο γρήγορα">+</button><button id="auto" aria-pressed="false">Αυτόματη ανάθεση</button></div>
     <div class="track" id="track"><svg id="cong" viewBox="0 0 1000 100" preserveAspectRatio="none"></svg><div class="hrs" id="hrs"></div><div class="head" id="head"></div></div>
-    <div class="cap">Η καμπύλη δείχνει πόσοι ανιχνευτές της περιοχής μετρούν αργή κίνηση. Πατήστε πάνω της για να πάτε σε άλλη ώρα.</div>
   </div>
   <button class="tab" id="tab" aria-expanded="false">Φανάρια και χρόνοι</button>
   <aside class="panel" id="panel" aria-label="Φανάρια και χρόνοι"></aside>
@@ -274,7 +274,7 @@ button:focus-visible{outline:.3rem solid var(--yellow);outline-offset:.2rem}
     if (!o.red && o.wait > RED) {
       o.red = true; o.wasRed = true;
       if (!o.on) {
-        note('alert', t, '<b>Συμφόρηση στην ' + o.name + '</b>: αναμονή ' + Math.round(o.wait) + ' s' + (o.can ? (auto ? '. Ο Τροχονόμος αναλαμβάνει.' : '') : '. Χωρίς ανιχνευτή στην κάθετη, μένει στο ρολόι.'),
+        note('alert', t, '<b>Συμφόρηση στην ' + o.name + '</b>: αναμονή ' + Math.round(o.wait) + ' s' + (o.can ? (auto ? ' · αυτόματη ανάθεση' : '') : ' · χωρίς ανιχνευτή'),
           o.can && !auto ? { label: 'Ανάθεση στον Τροχονόμο', key: o.key } : null);
         if (auto && o.can) o.autoAt = t + 90;
       }
@@ -282,18 +282,18 @@ button:focus-visible{outline:.3rem solid var(--yellow);outline-offset:.2rem}
     if (o.autoAt && t >= o.autoAt) { o.autoAt = 0; assign(o, true, t); }
     if (o.red && o.wait < CLEAR) {
       o.red = false;
-      if (o.on) note('ok', t, '<b>' + o.name + '</b>: η αναμονή έπεσε στα ' + Math.round(o.wait) + ' s. Με το ρολόι θα ήταν ' + Math.round(o.waitSh) + ' s.');
+      if (o.on) note('ok', t, '<b>' + o.name + '</b>: αναμονή ' + Math.round(o.wait) + ' s · ρολόι ' + Math.round(o.waitSh) + ' s');
     }
   }
   function assign(o, on, t) {
     if (!o.can || o.on === on) return;
     o.on = on; o.site.sim.hold(o.j, !on); o.lastChange = t;
-    note(on ? '' : 'alert', t, '<b>' + o.name + '</b>: ' + (on ? 'ο Τροχονόμος ανέλαβε τους χρόνους' : 'επιστροφή στο ρολόι'));
+    note(on ? '' : 'alert', t, '<b>' + o.name + '</b>: ' + (on ? 'ανάθεση στον Τροχονόμο' : 'επιστροφή στο ρολόι'));
     drawPanel(true);
   }
   function assignAxis(site, on, t) {   // όλα τα φανάρια ενός άξονα μαζί, με μία ειδοποίηση
     var n = 0; site.js.forEach(function (o) { if (!o.can) return; n++; o.on = on; site.sim.hold(o.j, !on); o.lastChange = t; });
-    note(on ? '' : 'alert', t, '<b>' + site.def.mainName + '</b>: ' + (on ? 'ο Τροχονόμος ανέλαβε ' + n + ' από τα ' + site.js.length + ' φανάρια' + (n < site.js.length ? '. Τα υπόλοιπα δεν έχουν ανιχνευτή στην κάθετη και μένουν στο ρολόι.' : '') : 'επιστροφή στο ρολόι'));
+    note(on ? '' : 'alert', t, '<b>' + site.def.mainName + '</b>: ' + (on ? 'ανάθεση στον Τροχονόμο, ' + n + ' από ' + site.js.length + ' φανάρια' : 'επιστροφή στο ρολόι'));
     drawPanel(true);
   }
   function axisOn(site) { return site.js.some(function (o) { return o.on; }); }
@@ -301,7 +301,7 @@ button:focus-visible{outline:.3rem solid var(--yellow);outline-offset:.2rem}
   function setDet(all) {             // αλλάζει το σενάριο ανιχνευτών στη Βασ. Σοφίας: ξαναχτίζει τη μέρα ως τώρα
     if (detAll === all) return; var t = now(), was = axisOn(sofias()); detAll = all; goto(t);
     if (was) sofias().js.forEach(function (o) { if (o.can && !o.on) { o.on = true; o.site.sim.hold(o.j, false); } });
-    note('', t, '<b>Λ. Βασ. Σοφίας</b>: ' + (all ? 'σενάριο με ανιχνευτή σε κάθε κάθετη οδό (11 νέοι). Και τα 14 φανάρια μπορούν να ανατεθούν.' : 'σημερινοί ανιχνευτές. Μόνο 3 από τα 14 φανάρια μπορούν να ανατεθούν.'));
+    note('', t, '<b>Λ. Βασ. Σοφίας</b>: ' + (all ? 'ανιχνευτές σε όλες τις κάθετες (+11), ελέγξιμα 14 από 14' : 'σημερινοί ανιχνευτές, ελέγξιμα 3 από 14'));
     drawPanel(true);
   }
   function now() { return sites[0].sim.t; }
@@ -340,15 +340,15 @@ button:focus-visible{outline:.3rem solid var(--yellow);outline-offset:.2rem}
     var pts = [R.from].concat(ev.route.map(function (a) { var o = site.js[sim.net.apps[a].j]; return [o.lat, o.lon]; }), [R.to]);
     var free = sim.P.lookahead + ev.route.slice(1).reduce(function (x, a) { return x + sim.net.apps[a].travel; }, 0);
     evRuns.push({ R: R, site: site, ev: ev, sh: site.sh.addEV(R.route, T), t0: t, seen: 0, told: false, el: el, pts: pts, free: free });
-    note('ev', t, '<b>Προτεραιότητα σε όχημα έκτακτης ανάγκης</b>: ' + R.name + '. Τα φανάρια της διαδρομής αδειάζουν τις ουρές πριν φτάσει.');
+    note('ev', t, '<b>Προτεραιότητα</b>: ' + R.name);
   }
   function evUpdate(t) {
     evRuns.forEach(function (r) {
       var ev = r.ev, sim = r.site.sim;
-      for (; r.seen < ev.log.length && ev.log[r.seen].depart >= 0; r.seen++) { var l = ev.log[r.seen]; note('ev', l.depart, '<b>' + r.site.js[l.j].name + '</b>: το όχημα πέρασε' + (l.depart - l.arrive > 2 ? ', κόλλησε ' + (l.depart - l.arrive) + ' s πίσω από ουρά' : ' χωρίς να σταματήσει')); }
+      for (; r.seen < ev.log.length && ev.log[r.seen].depart >= 0; r.seen++) { var l = ev.log[r.seen]; note('ev', l.depart, '<b>' + r.site.js[l.j].name + '</b>: το όχημα πέρασε' + (l.depart - l.arrive > 2 ? ', καθυστέρηση ' + (l.depart - l.arrive) + ' s' : ' χωρίς στάση')); }
       if (!r.told && ev.done && (r.sh.done || t - ev.tEnd > 240)) {
         r.told = true; var mine = Math.max(0, ev.tEnd - ev.t0 - r.free);
-        note('ok', t, '<b>Το όχημα πέρασε τη διαδρομή</b>, ' + (mine > 2 ? 'κολλημένο πίσω από ουρές ' + mine + ' s' : 'χωρίς να κολλήσει σε ουρά') + '. ' + (r.sh.done ? 'Με το ρολόι και χωρίς προτεραιότητα θα έμενε πίσω από ουρές ' + Math.max(0, r.sh.tEnd - r.sh.t0 - r.free) + ' s.' : 'Με το ρολόι και χωρίς προτεραιότητα είναι ακόμη πίσω από την ουρά.'));
+        note('ok', t, '<b>Τέλος διαδρομής</b>: καθυστέρηση ' + mine + ' s · ρολόι ' + (r.sh.done ? Math.max(0, r.sh.tEnd - r.sh.t0 - r.free) + ' s' : 'ακόμη στον δρόμο'));
       }
       var a, b, k, P = r.pts;
       if (ev.state === 'wait') { a = P[0]; b = P[1]; k = (t - r.t0) / (ev.tStart + sim.P.lookahead - r.t0); }
@@ -359,7 +359,7 @@ button:focus-visible{outline:.3rem solid var(--yellow);outline-offset:.2rem}
       r.el.style.left = p[0] + 'px'; r.el.style.top = p[1] + 'px';
     });
   }
-  $('evmenu').innerHTML = '<p>Από πού περνά το όχημα;</p>' + EVR.map(function (R, i) { return '<button data-i="' + i + '">' + R.name + '</button>'; }).join('');
+  $('evmenu').innerHTML = '<p>Διαδρομή</p>' + EVR.map(function (R, i) { return '<button data-i="' + i + '">' + R.name + '</button>'; }).join('');
   function evMenu(v) { $('evmenu').hidden = !v; $('evb').setAttribute('aria-expanded', v); }
   $('evb').addEventListener('click', function () { evMenu($('evmenu').hidden); });
   $('evmenu').addEventListener('click', function (e) { var i = e.target.getAttribute('data-i'); if (i == null) return; dispatch(+i); evMenu(false); });
@@ -429,7 +429,7 @@ button:focus-visible{outline:.3rem solid var(--yellow);outline-offset:.2rem}
     var p = px(23.7548, 37.9782), el = $('axc'), xmax = (viewW - 33.5) * remPx, tight = p[0] > xmax; el.style.left = Math.min(p[0], xmax) + 'px'; el.style.top = (p[1] + (tight ? 2.5 * remPx : 0)) + 'px';
     $('axcN').textContent = site.js.length + ' φανάρια, ' + n + ' στον Τροχονόμο';
     $('axcH').firstChild.nodeValue = num((a - b) / 3600, 1);
-    $('axcP').textContent = detAll ? 'Σενάριο: ανιχνευτής σε κάθε κάθετη οδό. Οι κίτρινες κουκκίδες δείχνουν πού θα έμπαιναν οι 11 νέοι ανιχνευτές.' : 'Με τους σημερινούς ανιχνευτές ελέγχονται μόνο ' + can + ' από τα ' + site.js.length + ' φανάρια.';
+    $('axcP').textContent = 'Ελέγξιμα: ' + (detAll ? site.js.length : can) + ' από ' + site.js.length;
     var bs = $('axcDet').children; bs[0].setAttribute('aria-pressed', !detAll); bs[1].setAttribute('aria-pressed', detAll);
     $('axcGo').textContent = n ? 'Επιστροφή του άξονα στο ρολόι' : 'Ανάθεση του άξονα στον Τροχονόμο'; $('axcGo').setAttribute('aria-pressed', !!n);
   }
@@ -456,7 +456,7 @@ button:focus-visible{outline:.3rem solid var(--yellow);outline-offset:.2rem}
   }
   function drawPanel(force) {
     if (!open) return; var tNow = performance.now(); if (!force && tNow - panelAt < 400) return; panelAt = tNow;
-    var t = now(), html = '<h2>Φανάρια και χρόνοι</h2><p class="lead">Κάθε άξονας με τα φανάρια του: τι δείχνει τώρα, πόσο πράσινο δίνει, πόση κίνηση έχει κάθε πρόσβαση. Σκούρο μπλε στη λωρίδα είναι το πράσινο του κύριου άξονα τα τελευταία 10 λεπτά, ανοιχτό της κάθετης.</p>';
+    var t = now(), html = '<h2>Φανάρια και χρόνοι</h2>';
     sites.forEach(function (site) {
       html += '<div class="axis">' + site.def.mainName + (site.js.length > 1 && site.js.some(function (o) { return o.can; }) ? '<button data-axis="' + site.id + '">' + (axisOn(site) ? 'όλα στο ρολόι' : 'όλα στον Τροχονόμο') + '</button>' : '') + '<span>' + site.js.length + (site.js.length > 1 ? ' φανάρια' : ' φανάρι') + '</span></div>';
       site.js.forEach(function (o) {
@@ -520,7 +520,7 @@ button:focus-visible{outline:.3rem solid var(--yellow);outline-offset:.2rem}
     $('clock').textContent = hm(t); $('head').style.left = ((t - T0) / (T1 - T0) * 100) + '%';
     var saved = 0, any = false; sites.forEach(function (s) { var a = 0, b = 0; s.sh.st.qInt.forEach(function (v) { a += v; }); s.sim.st.qInt.forEach(function (v) { b += v; }); saved += (a - b) / 3600; }); J.forEach(function (o) { if (o.on) any = true; });
     $('saved').firstChild.nodeValue = num(saved, Math.abs(saved) >= 100 ? 0 : 1);
-    $('savedCap').textContent = any || Math.abs(saved) > 0.05 ? 'αναμονής λιγότερες σε όλα τα φανάρια μαζί, από τη στιγμή που ανέλαβε ο Τροχονόμος' : 'Όλα τα φανάρια είναι στο ρολόι. Ο Τροχονόμος περιμένει ανάθεση.';
+    $('savedCap').textContent = any || Math.abs(saved) > 0.05 ? 'αναμονής λιγότερες, όλα τα φανάρια' : 'όλα τα φανάρια στο ρολόι';
     requestAnimationFrame(frame);
   }
   addEventListener('resize', fit);
