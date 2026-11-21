@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="el">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ψηφιακός Τροχονόμος — ζωντανά</title>
+<style>
+:root{--sign:#0b3f91;--deep:#082f70;--white:#fff;--yellow:#ffd42a;--soft:#c5d5f1;--green:#2fd07c;--red:#ff5a4c;--ink:#17202b}
+*{box-sizing:border-box;margin:0;padding:0}
+[hidden]{display:none!important}
+html{font-size:10px;height:100%}
+body{height:100%;background:var(--sign);color:var(--white);overflow:hidden;display:flex;align-items:center;justify-content:center;
+  font-family:Bahnschrift,"DIN Alternate","Segoe UI",system-ui,sans-serif;font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased}
+.sign{position:relative;width:160rem;height:90rem;padding:3rem 3.8rem 2.2rem;display:grid;grid-template-rows:auto auto 1fr auto;gap:1.6rem}
+.sign::before{content:"";position:absolute;inset:.8rem;border:.3rem solid var(--white);border-radius:2.4rem;pointer-events:none}
+
+.top{display:flex;justify-content:space-between;align-items:center;gap:4rem}
+.brand h1{font-size:3.8rem;font-weight:600;line-height:1}
+.brand p{font-size:1.75rem;color:var(--yellow);margin-top:.5rem;letter-spacing:.02em}
+.live{display:flex;align-items:center;gap:1.8rem;text-align:right}
+.live .txt b{display:block;font-size:2.1rem;font-weight:600;letter-spacing:.06em}
+.live .txt span{display:block;font-size:1.5rem;color:var(--soft);margin-top:.2rem}
+.dot{width:1.6rem;height:1.6rem;border-radius:50%;background:var(--green);box-shadow:0 0 0 0 rgba(47,208,124,.7);animation:pulse 1.6s ease-out infinite}
+.stale .dot{background:var(--yellow);animation:none}
+.stale .live .txt b{color:var(--yellow)}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(47,208,124,.7)}100%{box-shadow:0 0 0 1.8rem rgba(47,208,124,0)}}
+.clock{font-size:6.2rem;font-weight:600;line-height:.9}
+
+.hero{display:grid;grid-template-columns:47rem 1fr;gap:3.4rem;align-items:stretch;background:var(--deep);border-radius:1.6rem;padding:1.5rem 2.6rem}
+.hero .big span{display:block;font-size:1.7rem;color:var(--soft);line-height:1.3}
+.hero .big b{display:block;font-size:9rem;font-weight:600;line-height:.95;color:var(--yellow);margin:.3rem 0}
+.hero .big b small{font-size:3.2rem;font-weight:400;margin-left:.8rem}
+.hero .big b.loss{color:var(--white)}
+.chart{position:relative;min-width:0}
+.chart svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.chart .cap{position:absolute;left:0;top:0;font-size:1.45rem;color:var(--soft)}
+
+.cards{display:grid;grid-template-columns:1fr 1.12fr 1.18fr;gap:1.8rem;min-height:0}
+.card{background:var(--white);color:var(--ink);border-radius:1.6rem;padding:1.6rem 2rem 1.4rem;display:flex;flex-direction:column;gap:.8rem;overflow:hidden;min-height:0;min-width:0}
+.card h2{font-size:2.5rem;font-weight:600;line-height:1.05;color:var(--sign)}
+.card .sub{font-size:1.35rem;color:#5a6675;margin-top:.3rem;min-height:1.7rem}
+.kpi{display:flex;gap:2.4rem;align-items:flex-end}
+.kpi div b{display:block;font-size:4.2rem;font-weight:600;line-height:1;color:var(--sign)}
+.kpi div b small{font-size:1.8rem;font-weight:400;margin-left:.3rem}
+.kpi div b.loss{color:#b3261e}
+.kpi div span{font-size:1.3rem;color:#5a6675}
+.kpi .arrow b{font-size:2.9rem;color:var(--ink)}
+.rows{display:flex;flex-direction:column;border-top:.2rem solid #dfe5ec}
+.rw{display:grid;grid-template-columns:1fr 7.6rem 4.6rem 7.5rem;gap:.9rem;align-items:center;padding:.42rem 0;border-bottom:.1rem solid #e6ebf1;font-size:1.42rem;line-height:1.15}
+.rw.h{font-size:1.15rem;color:#5a6675;text-transform:uppercase;letter-spacing:.05em;padding:.5rem 0 .3rem}
+.rw .n{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rw .n i{font-style:normal;color:#5a6675;font-size:1.15rem;margin-left:.5rem}
+.rw .v{text-align:right;font-weight:600}
+.rw .v.est{font-weight:400;color:#7a8696}
+.rw svg{width:100%;height:1.9rem;display:block}
+.card.many .rw{padding:.16rem 0;font-size:1.32rem}
+.card.many .kpi div b{font-size:3.6rem}
+.split{margin-top:auto;display:flex;flex-direction:column;gap:.45rem}
+.split p{font-size:1.2rem;color:#5a6675;text-transform:uppercase;letter-spacing:.05em}
+.bar{display:grid;grid-template-columns:9.5rem 1fr;gap:1rem;align-items:center;font-size:1.35rem}
+.bar .trk{display:flex;height:1.9rem;border-radius:.5rem;overflow:hidden;background:#e6ebf1}
+.bar .trk i{display:block;height:100%;transition:width .8s ease;font-style:normal;font-size:1.15rem;line-height:1.9rem;color:#fff;text-align:center;overflow:hidden;white-space:nowrap}
+.bar .trk i.m{background:var(--sign)}
+.bar .trk i.s{background:#7fa3de;color:var(--ink)}
+.card .warn{font-size:1.3rem;line-height:1.3;background:var(--yellow);border-radius:.8rem;padding:.45rem 1rem}
+
+.foot{display:flex;justify-content:space-between;gap:3rem;font-size:1.4rem;color:var(--soft);line-height:1.35}
+.foot b{color:var(--white);font-weight:600}
+.wait{grid-row:2 / 4;display:flex;align-items:center;justify-content:center;font-size:3rem;color:var(--soft);text-align:center;line-height:1.4}
+</style>
+</head>
+<body>
+<div class="sign" id="sign">
+  <div class="top">
+    <div class="brand"><h1>ΨΗΦΙΑΚΟΣ ΤΡΟΧΟΝΟΜΟΣ</h1><p>Σκιώδης λειτουργία: τρέχει τώρα πάνω στις μετρήσεις της πόλης, χωρίς να αγγίζει κανένα φανάρι</p></div>
+    <div class="live"><div class="dot"></div><div class="txt"><b id="liveLbl">ΖΩΝΤΑΝΑ</b><span id="liveSub">σύνδεση…</span></div><div class="clock" id="clock">--:--</div></div>
+  </div>
+  <div class="wait" id="wait">Συλλέγω τις σημερινές μετρήσεις των ανιχνευτών…</div>
+  <div class="hero" id="hero" hidden>
+    <div class="big"><span id="heroTop"></span><b id="heroNum">0<small>ώρες</small></b><span id="heroSub"></span></div>
+    <div class="chart"><div class="cap" id="chartCap"></div><svg id="chart" viewBox="0 0 1000 200" preserveAspectRatio="none"></svg></div>
+  </div>
+  <div class="cards" id="cards" hidden></div>
+  <div class="foot"><span><b>Πραγματικά:</b> ροή, ταχύτητα και κατάληψη από τους ανιχνευτές της Περιφέρειας Αττικής (ανοιχτά δεδομένα, data.gov.gr), ανά λεπτό. <b>Προσομοίωση:</b> οι ουρές, η αναμονή και οι δύο τρόποι ελέγχου.</span><span style="text-align:right;flex:none;width:52rem">«Ρολόι» = σταθερό πρόγραμμα δικού μας σχεδιασμού (Webster), όχι το πρόγραμμα που ισχύει στον δρόμο.</span></div>
+</div>
+<script>
+(function () {
+  'use strict';
+  var $ = function (id) { return document.getElementById(id); };
+  function fit() { document.documentElement.style.fontSize = Math.min(innerWidth / 160, innerHeight / 90) + 'px'; }
+  addEventListener('resize', fit); fit();
+  var ORDER = ['kif', 'iera', 'alex'], shown = {}, data = null, skew = 0;
+  function hm(sec) { var h = Math.floor(sec / 3600) % 24, m = Math.floor(sec % 3600 / 60); return (h < 10 ? '0' : '') + h + ':' + (m < 10 ? '0' : '') + m; }
+  function num(x, d) { return x.toFixed(d == null ? 1 : d).replace('.', ',').replace('-', '−'); }
+  function athensHM(ms) { return new Intl.DateTimeFormat('el-GR', { timeZone: 'Europe/Athens', hour: '2-digit', minute: '2-digit', hour12: false }).format(new Date(ms)); }
+  function tween(el, key, to, d, unit) {           // ο αριθμός «τρέχει» ως τη νέα τιμή
+    var from = shown[key] == null ? 0 : shown[key], t0 = performance.now(); shown[key] = to;
+    (function f(now) { var k = Math.min(1, (now - t0) / 900), v = from + (to - from) * (1 - Math.pow(1 - k, 3)); el.firstChild.nodeValue = num(v, d); if (k < 1) requestAnimationFrame(f); })(t0);
+  }
+  function spark(vals, color) {
+    if (!vals.length) return '';
+    var mx = Math.max.apply(null, vals) || 1, n = vals.length, pts = vals.map(function (v, i) { return (n > 1 ? i / (n - 1) * 100 : 0).toFixed(1) + ',' + (18 - v / mx * 16).toFixed(1); }).join(' ');
+    return '<svg viewBox="0 0 100 19" preserveAspectRatio="none"><polyline points="' + pts + '" fill="none" stroke="' + color + '" stroke-width="1.6" vector-effect="non-scaling-stroke"/></svg>';
+  }
+  function split(lbl, g) { var t = g[0] + g[1] || 1, a = Math.round(100 * g[0] / t); return '<div class="bar"><span>' + lbl + '</span><div class="trk"><i class="m" style="width:' + a + '%">κύρια ' + a + '%</i><i class="s" style="width:' + (100 - a) + '%">κάθετη ' + (100 - a) + '%</i></div></div>'; }
+
+  function card(s) {
+    var blindN = s.juncs.filter(function (j) { return j.mode === 'fixed-blind'; }).length, loss = s.savedH < 0;
+    var rows = s.approaches.map(function (a) {
+      return '<div class="rw"><span class="n">' + a.label + (a.measured ? '' : '<i>χωρίς ανιχνευτή</i>') + '</span>' +
+        '<span class="v' + (a.measured ? '' : ' est') + '">' + (a.flow == null ? '—' : (a.measured ? '' : '≈') + a.flow) + '</span>' +
+        '<span class="v' + (a.measured ? '' : ' est') + '">' + (a.speed == null ? '—' : a.speed) + '</span>' + spark(a.spark, a.measured ? '#0b3f91' : '#aab4c0') + '</div>';
+    }).join('');
+    var j = s.juncs[s.juncs.length - 1];       // ο κόμβος που ελέγχεται (στην Αλεξάνδρας μόνο ο τελευταίος έχει ανιχνευτή στην κάθετη)
+    return '<div class="card' + (s.approaches.length > 5 ? ' many' : '') + '"><div><h2>' + s.name + '</h2><p class="sub">' + s.arrived.toLocaleString('el-GR') + ' οχήματα από τις ' + hm(s.t0) + '</p></div>' +
+      '<div class="kpi"><div><b>' + num(s.waitFixed) + '<small>s</small></b><span>αναμονή με το ρολόι</span></div><div class="arrow"><b>→</b></div>' +
+      '<div><b' + (loss ? ' class="loss"' : '') + '>' + num(s.waitOurs) + '<small>s</small></b><span>με τον Τροχονόμο</span></div>' +
+      '<div style="margin-left:auto;text-align:right"><b' + (loss ? ' class="loss"' : '') + '>' + (s.savedH >= 0 ? '' : '−') + num(Math.abs(s.savedH), s.savedH >= 100 ? 0 : 1) + '<small>ώρες</small></b><span>' + (loss ? 'περισσότερη αναμονή σήμερα' : 'λιγότερη αναμονή σήμερα') + '</span></div></div>' +
+      '<div class="rows"><div class="rw h"><span>Πρόσβαση</span><span class="v">οχ./ώρα</span><span class="v">km/h</span><span>σήμερα</span></div>' + rows + '</div>' +
+      (blindN ? '<p class="warn">' + blindN + ' από τους ' + s.juncs.length + ' κόμβους χωρίς ανιχνευτή στην κάθετη: μένουν στο ρολόι.</p>' : '') +
+      '<div class="split"><p>Πού πήγε το πράσινο, τελευταία 15 λεπτά' + (s.juncs.length > 1 ? ' · ' + j.name : '') + '</p>' + split('Ρολόι', j.greenFixed) + split('Τροχονόμος', j.greenOurs) + '</div></div>';
+  }
+  function chart(d) {
+    var n = 0; d.sites.forEach(function (s) { n = Math.max(n, s.cum.length); });
+    var tot = []; for (var i = 0; i < n; i++) { var v = 0; d.sites.forEach(function (s) { v += s.cum[Math.min(i, s.cum.length - 1)] || 0; }); tot.push(v); }
+    var mx = Math.max.apply(null, tot.concat(1)), mn = Math.min.apply(null, tot.concat(0)), X = function (i) { return (n > 1 ? i / (n - 1) : 0) * 1000; }, Y = function (v) { return 190 - (v - mn) / (mx - mn || 1) * 150; };
+    var line = tot.map(function (v, i) { return X(i).toFixed(1) + ',' + Y(v).toFixed(1); }).join(' ');
+    var ticks = ''; for (var h = Math.ceil(d.fromSec / 3600); h * 3600 <= d.nowSec; h += (d.nowSec - d.fromSec > 6 * 3600 ? 2 : 1)) { var x = X((h * 3600 - d.fromSec) / 300); ticks += '<line x1="' + x + '" x2="' + x + '" y1="40" y2="190" stroke="rgba(255,255,255,.14)" vector-effect="non-scaling-stroke"/>'; }
+    $('chart').innerHTML = ticks + '<polygon points="0,' + Y(0) + ' ' + line + ' 1000,' + Y(0) + '" fill="rgba(255,212,42,.22)"/><polyline points="' + line + '" fill="none" stroke="#ffd42a" stroke-width="3" vector-effect="non-scaling-stroke"/>';
+    $('chartCap').textContent = 'Ώρες αναμονής που θα είχαν γλιτώσει σήμερα, ' + hm(d.fromSec) + ' → ' + hm(d.nowSec);
+  }
+  function render(d) {
+    data = d; skew = d.serverNow - Date.now();
+    if (!d.ready) return;
+    $('wait').hidden = true; $('hero').hidden = false; $('cards').hidden = false;
+    var sites = ORDER.map(function (id) { return d.sites.filter(function (s) { return s.id === id; })[0]; }).filter(Boolean);
+    var total = 0; sites.forEach(function (s) { total += s.savedH; });
+    $('heroTop').textContent = 'Σήμερα, από τις ' + hm(d.fromSec) + ' ως τώρα, σε 3 σημεία της Αθήνας';
+    $('heroNum').className = total < 0 ? 'loss' : '';
+    tween($('heroNum'), 'total', total, total >= 100 ? 0 : 1);
+    $('heroSub').textContent = 'ώρες αναμονής λιγότερες στα φανάρια, αν αποφάσιζε ο Ψηφιακός Τροχονόμος';
+    chart(d);
+    $('cards').innerHTML = sites.map(card).join('');
+  }
+  function status() {
+    $('clock').textContent = athensHM(Date.now() + skew);
+    if (!data) return;
+    var ageMin = data.lastOk ? (Date.now() + skew - data.lastOk) / 60000 : Infinity, feed = data.feedTs ? athensHM(Date.parse(data.feedTs)) : '—';
+    var stale = ageMin > 3;
+    document.body.className = stale ? 'stale' : '';
+    $('liveLbl').textContent = stale ? 'ΤΕΛΕΥΤΑΙΑ ΛΗΨΗ' : 'ΖΩΝΤΑΝΑ';
+    $('liveSub').textContent = stale ? 'χωρίς σύνδεση με τη ροή · μετρήσεις ως τις ' + feed : 'τελευταία μέτρηση ανιχνευτών ' + feed;
+  }
+  function load() { fetch('/api/now').then(function (r) { return r.json(); }).then(render).catch(function () { if (data) data.lastOk = 0; }).then(status); }
+  load(); setInterval(load, 15000); setInterval(status, 1000);
+})();
+</script>
+</body>
+</html>

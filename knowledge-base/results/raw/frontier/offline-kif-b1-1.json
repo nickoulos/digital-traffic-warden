@@ -1,0 +1,1 @@
+{"site":"kif","blind":1,"seed":1,"fixed":23.34404761904762,"adaptive":26.49426406926407,"optimal":14.9745670995671,"start":"optimal","offline":14.368722943722943,"safety":0,"maxRed":[47,90],"log":[{"pass":0,"best":134205,"evals":1027,"sec":47},{"pass":1,"best":133187,"evals":2192,"sec":101},{"pass":2,"best":133187,"evals":3409,"sec":155}]}

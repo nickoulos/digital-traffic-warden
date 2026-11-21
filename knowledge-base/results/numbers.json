@@ -1,0 +1,2008 @@
+{
+ "seeds": 30,
+ "controller": "optimal",
+ "note": "ΠΡΟΣΟΜΟΙΩΣΗ. adaptive = ο ελεγκτής της πρότασης (βελτιστοποίηση κυλιόμενου ορίζοντα)· rulesDeltaPct = οι τρεις κανόνες, για σύγκριση. blind=1: ο ελεγκτής βλέπει μόνο προσβάσεις με ανιχνευτή. blind=0: βλέπει όλες τις ουρές.",
+ "runs": [
+  {
+   "site": "alex",
+   "window": "day-wk",
+   "label": "Τυπική καθημερινή, όλη η μέρα",
+   "day": "wk",
+   "from": 0,
+   "to": 24,
+   "blind": 1,
+   "maxRed": 90,
+   "fixed": {
+    "median": 9.3,
+    "min": 8.9,
+    "max": 10
+   },
+   "adaptive": {
+    "median": 10.4,
+    "min": 9.9,
+    "max": 11
+   },
+   "deltaPct": {
+    "median": 10.9,
+    "min": 9.6,
+    "max": 12.2
+   },
+   "rulesDeltaPct": {
+    "median": 4.4,
+    "min": 3.2,
+    "max": 5.3
+   },
+   "savedVehH": {
+    "median": -43.4,
+    "min": -51.2,
+    "max": -38.5
+   },
+   "arrived": 155284,
+   "seedsBetter": 0,
+   "maxRedSide": {
+    "fixed": 70,
+    "adaptive": 90
+   }
+  },
+  {
+   "site": "alex",
+   "window": "day-wk",
+   "label": "Τυπική καθημερινή, όλη η μέρα",
+   "day": "wk",
+   "from": 0,
+   "to": 24,
+   "blind": 0,
+   "maxRed": 90,
+   "fixed": {
+    "median": 9.3,
+    "min": 8.9,
+    "max": 10
+   },
+   "adaptive": {
+    "median": 9,
+    "min": 8.9,
+    "max": 9.1
+   },
+   "deltaPct": {
+    "median": -4.1,
+    "min": -9.7,
+    "max": -0.4
+   },
+   "rulesDeltaPct": {
+    "median": -15.5,
+    "min": -20.6,
+    "max": -12.1
+   },
+   "savedVehH": {
+    "median": 16.4,
+    "min": 1.4,
+    "max": 41
+   },
+   "arrived": 155284,
+   "seedsBetter": 30,
+   "maxRedSide": {
+    "fixed": 70,
+    "adaptive": 90
+   }
+  },
+  {
+   "site": "alex",
+   "window": "day-tue",
+   "label": "Τρίτη 3/11, όλη η μέρα",
+   "day": "2026-11-03",
+   "from": 0,
+   "to": 24,
+   "blind": 1,
+   "maxRed": 90,
+   "fixed": {
+    "median": 10.1,
+    "min": 9.5,
+    "max": 10.9
+   },
+   "adaptive": {
+    "median": 11,
+    "min": 10.5,
+    "max": 11.9
+   },
+   "deltaPct": {
+    "median": 9.1,
+    "min": 7.9,
+    "max": 10.8
+   },
+   "rulesDeltaPct": {
+    "median": 4,
+    "min": 3,
+    "max": 5.7
+   },
+   "savedVehH": {
+    "median": -39.8,
+    "min": -46,
+    "max": -35
+   },
+   "arrived": 154732,
+   "seedsBetter": 0,
+   "maxRedSide": {
+    "fixed": 70,
+    "adaptive": 90
+   }
+  },
+  {
+   "site": "alex",
+   "window": "day-tue",
+   "label": "Τρίτη 3/11, όλη η μέρα",
+   "day": "2026-11-03",
+   "from": 0,
+   "to": 24,
+   "blind": 0,
+   "maxRed": 90,
+   "fixed": {
+    "median": 10.1,
+    "min": 9.5,
+    "max": 10.9
+   },
+   "adaptive": {
+    "median": 9,
+    "min": 8.9,
+    "max": 9.1
+   },
+   "deltaPct": {
+    "median": -10.7,
+    "min": -18.1,
+    "max": -5
+   },
+   "rulesDeltaPct": {
+    "median": -20.6,
+    "min": -26.3,
+    "max": -16.3
+   },
+   "savedVehH": {
+    "median": 46.9,
+    "min": 20.3,
+    "max": 85.8
+   },
+   "arrived": 154732,
+   "seedsBetter": 30,
+   "maxRedSide": {
+    "fixed": 70,
+    "adaptive": 90
+   }
+  },
+  {
+   "site": "alex",
+   "window": "day-fri",
+   "label": "Παρασκευή 6/11, όλη η μέρα",
+   "day": "2026-11-06",
+   "from": 0,
+   "to": 24,
+   "blind": 1,
+   "maxRed": 90,
+   "fixed": {
+    "median": 16.4,
+    "min": 13,
+    "max": 21.5
+   },
+   "adaptive": {
+    "median": 17.3,
+    "min": 14.1,
+    "max": 22.4
+   },
+   "deltaPct": {
+    "median": 6.2,
+    "min": 4.3,
+    "max": 8.5
+   },
+   "rulesDeltaPct": {
+    "median": 2.7,
+    "min": 1.5,
+    "max": 5.2
+   },
+   "savedVehH": {
+    "median": -44.4,
+    "min": -61,
+    "max": -35.1
+   },
+   "arrived": 160721,
+   "seedsBetter": 0,
+   "maxRedSide": {
+    "fixed": 70,
+    "adaptive": 90
+   }
+  },
+  {
+   "site": "alex",
+   "window": "day-fri",
+   "label": "Παρασκευή 6/11, όλη η μέρα",
+   "day": "2026-11-06",
+   "from": 0,
+   "to": 24,
+   "blind": 0,
+   "maxRed": 90,
+   "fixed": {
+    "median": 16.4,
+    "min": 13,
+    "max": 21.5
+   },
+   "adaptive": {
+    "median": 9.1,
+    "min": 9,
+    "max": 9.1
+   },
+   "deltaPct": {
+    "median": -44.6,
+    "min": -57.8,
+    "max": -29.7
+   },
+   "rulesDeltaPct": {
+    "median": -51.3,
+    "min": -63.1,
+    "max": -38.1
+   },
+   "savedVehH": {
+    "median": 326.6,
+    "min": 171.7,
+    "max": 552.5
+   },
+   "arrived": 160721,
+   "seedsBetter": 30,
+   "maxRedSide": {
+    "fixed": 70,
+    "adaptive": 90
+   }
+  },
+  {
+   "site": "alex",
+   "window": "am-tue",
+   "label": "Τρίτη 3/11, 07–10",
+   "day": "2026-11-03",
+   "from": 7,
+   "to": 10,
+   "blind": 1,
+   "maxRed": 90,
+   "fixed": {
+    "median": 9.3,
+    "min": 8.7,
+    "max": 10
+   },
+   "adaptive": {
+    "median": 10.2,
+    "min": 9.6,
+    "max": 11.1
+   },
+   "deltaPct": {
+    "median": 9.9,
+    "min": 7.9,
+    "max": 13
+   },
+   "rulesDeltaPct": {
+    "median": 8.2,
+    "min": 5.9,
+    "max": 10.9
+   },
+   "savedVehH": {
+    "median": -6.4,
+    "min": -8.5,
+    "max": -5.1
+   },
+   "arrived": 25338,
+   "seedsBetter": 0,
+   "maxRedSide": {
+    "fixed": 37,
+    "adaptive": 90
+   }
+  },
+  {
+   "site": "alex",
+   "window": "am-tue",
+   "label": "Τρίτη 3/11, 07–10",
+   "day": "2026-11-03",
+   "from": 7,
+   "to": 10,
+   "blind": 0,
+   "maxRed": 90,
+   "fixed": {
+    "median": 9.3,
+    "min": 8.7,
+    "max": 10
+   },
+   "adaptive": {
+    "median": 9.5,
+    "min": 9.3,
+    "max": 9.9
+   },
+   "deltaPct": {
+    "median": 3.7,
+    "min": -5.5,
+    "max": 8.8
+   },
+   "rulesDeltaPct": {
+    "median": -5.5,
+    "min": -14.9,
+    "max": -1.1
+   },
+   "savedVehH": {
+    "median": -2.4,
+    "min": -5.4,
+    "max": 3.9
+   },
+   "arrived": 25338,
+   "seedsBetter": 5,
+   "maxRedSide": {
+    "fixed": 37,
+    "adaptive": 90
+   }
+  },
+  {
+   "site": "alex",
+   "window": "pm-tue",
+   "label": "Τρίτη 3/11, 16–19",
+   "day": "2026-11-03",
+   "from": 16,
+   "to": 19,
+   "blind": 1,
+   "maxRed": 90,
+   "fixed": {
+    "median": 10,
+    "min": 9.2,
+    "max": 15.1
+   },
+   "adaptive": {
+    "median": 11.3,
+    "min": 10.4,
+    "max": 15.9
+   },
+   "deltaPct": {
+    "median": 12.7,
+    "min": 5.4,
+    "max": 17.1
+   },
+   "rulesDeltaPct": {
+    "median": 5.5,
+    "min": 2.1,
+    "max": 12.5
+   },
+   "savedVehH": {
+    "median": -8.7,
+    "min": -12.5,
+    "max": -5.7
+   },
+   "arrived": 25163,
+   "seedsBetter": 0,
+   "maxRedSide": {
+    "fixed": 35,
+    "adaptive": 90
+   }
+  },
+  {
+   "site": "alex",
+   "window": "pm-tue",
+   "label": "Τρίτη 3/11, 16–19",
+   "day": "2026-11-03",
+   "from": 16,
+   "to": 19,
+   "blind": 0,
+   "maxRed": 90,
+   "fixed": {
+    "median": 10,
+    "min": 9.2,
+    "max": 15.1
+   },
+   "adaptive": {
+    "median": 9.4,
+    "min": 9.2,
+    "max": 9.6
+   },
+   "deltaPct": {
+    "median": -6,
+    "min": -37.9,
+    "max": 4.2
+   },
+   "rulesDeltaPct": {
+    "median": -15.8,
+    "min": -45.1,
+    "max": -8.1
+   },
+   "savedVehH": {
+    "median": 4.1,
+    "min": -2.7,
+    "max": 40.3
+   },
+   "arrived": 25163,
+   "seedsBetter": 29,
+   "maxRedSide": {
+    "fixed": 35,
+    "adaptive": 90
+   }
+  },
+  {
+   "site": "kif",
+   "window": "day-wk",
+   "label": "Τυπική καθημερινή, όλη η μέρα",
+   "day": "wk",
+   "from": 0,
+   "to": 24,
+   "blind": 1,
+   "maxRed": 90,
+   "fixed": {
+    "median": 20.1,
+    "min": 19.4,
+    "max": 21.1
+   },
+   "adaptive": {
+    "median": 12,
+    "min": 11.5,
+    "max": 12.6
+   },
+   "deltaPct": {
+    "median": -40.3,
+    "min": -43.2,
+    "max": -37
+   },
+   "rulesDeltaPct": {
+    "median": -12.8,
+    "min": -17.9,
+    "max": -4.6
+   },
+   "savedVehH": {
+    "median": 165.9,
+    "min": 153.7,
+    "max": 188.1
+   },
+   "arrived": 74532,
+   "seedsBetter": 30,
+   "maxRedSide": {
+    "fixed": 83,
+    "adaptive": 90
+   }
+  },
+  {
+   "site": "kif",
+   "window": "day-wk",
+   "label": "Τυπική καθημερινή, όλη η μέρα",
+   "day": "wk",
+   "from": 0,
+   "to": 24,
+   "blind": 0,
+   "maxRed": 90,
+   "fixed": {
+    "median": 20.1,
+    "min": 19.4,
+    "max": 21.1
+   },
+   "adaptive": {
+    "median": 12,
+    "min": 11.5,
+    "max": 12.6
+   },
+   "deltaPct": {
+    "median": -40.3,
+    "min": -43.2,
+    "max": -37
+   },
+   "rulesDeltaPct": {
+    "median": -12.8,
+    "min": -17.9,
+    "max": -4.6
+   },
+   "savedVehH": {
+    "median": 165.9,
+    "min": 153.7,
+    "max": 188.1
+   },
+   "arrived": 74532,
+   "seedsBetter": 30,
+   "maxRedSide": {
+    "fixed": 83,
+    "adaptive": 90
+   }
+  },
+  {
+   "site": "kif",
+   "window": "day-tue",
+   "label": "Τρίτη 3/11, όλη η μέρα",
+   "day": "2026-11-03",
+   "from": 0,
+   "to": 24,
+   "blind": 1,
+   "maxRed": 90,
+   "fixed": {
+    "median": 21.7,
+    "min": 20,
+    "max": 23.9
+   },
+   "adaptive": {
+    "median": 13.2,
+    "min": 12.2,
+    "max": 14.4
+   },
+   "deltaPct": {
+    "median": -39.1,
+    "min": -43.9,
+    "max": -36.4
+   },
+   "rulesDeltaPct": {
+    "median": -8.8,
+    "min": -13.6,
+    "max": 0.9
+   },
+   "savedVehH": {
+    "median": 169.1,
+    "min": 150.5,
+    "max": 209.5
+   },
+   "arrived": 72235,
+   "seedsBetter": 30,
+   "maxRedSide": {
+    "fixed": 83,
+    "adaptive": 90
+   }
+  },
+  {
+   "site": "kif",
+   "window": "day-tue",
+   "label": "Τρίτη 3/11, όλη η μέρα",
+   "day": "2026-11-03",
+   "from": 0,
+   "to": 24,
+   "blind": 0,
+   "maxRed": 90,
+   "fixed": {
+    "median": 21.7,
+    "min": 20,
+    "max": 23.9
+   },
+   "adaptive": {
+    "median": 13.2,
+    "min": 12.2,
+    "max": 14.4
+   },
+   "deltaPct": {
+    "median": -39.1,
+    "min": -43.9,
+    "max": -36.4
+   },
+   "rulesDeltaPct": {
+    "median": -8.8,
+    "min": -13.6,
+    "max": 0.9
+   },
+   "savedVehH": {
+    "median": 169.1,
+    "min": 150.5,
+    "max": 209.5
+   },
+   "arrived": 72235,
+   "seedsBetter": 30,
+   "maxRedSide": {
+    "fixed": 83,
+    "adaptive": 90
+   }
+  },
+  {
+   "site": "kif",
+   "window": "day-fri",
+   "label": "Παρασκευή 6/11, όλη η μέρα",
+   "day": "2026-11-06",
+   "from": 0,
+   "to": 24,
+   "blind": 1,
+   "maxRed": 90,
+   "fixed": {
+    "median": 53.2,
+    "min": 43.2,
+    "max": 65.8
+   },
+   "adaptive": {
+    "median": 15.6,
+    "min": 14.3,
+    "max": 17.2
+   },
+   "deltaPct": {
+    "median": -70.2,
+    "min": -74.1,
+    "max": -64.1
+   },
+   "rulesDeltaPct": {
+    "median": -49.4,
+    "min": -55.3,
+    "max": -42.1
+   },
+   "savedVehH": {
+    "median": 816.1,
+    "min": 612.5,
+    "max": 1087.4
+   },
+   "arrived": 79722,
+   "seedsBetter": 30,
+   "maxRedSide": {
+    "fixed": 83,
+    "adaptive": 90
+   }
+  },
+  {
+   "site": "kif",
+   "window": "day-fri",
+   "label": "Παρασκευή 6/11, όλη η μέρα",
+   "day": "2026-11-06",
+   "from": 0,
+   "to": 24,
+   "blind": 0,
+   "maxRed": 90,
+   "fixed": {
+    "median": 53.2,
+    "min": 43.2,
+    "max": 65.8
+   },
+   "adaptive": {
+    "median": 15.6,
+    "min": 14.3,
+    "max": 17.2
+   },
+   "deltaPct": {
+    "median": -70.2,
+    "min": -74.1,
+    "max": -64.1
+   },
+   "rulesDeltaPct": {
+    "median": -49.4,
+    "min": -55.3,
+    "max": -42.1
+   },
+   "savedVehH": {
+    "median": 816.1,
+    "min": 612.5,
+    "max": 1087.4
+   },
+   "arrived": 79722,
+   "seedsBetter": 30,
+   "maxRedSide": {
+    "fixed": 83,
+    "adaptive": 90
+   }
+  },
+  {
+   "site": "kif",
+   "window": "am-tue",
+   "label": "Τρίτη 3/11, 07–10",
+   "day": "2026-11-03",
+   "from": 7,
+   "to": 10,
+   "blind": 1,
+   "maxRed": 90,
+   "fixed": {
+    "median": 23.1,
+    "min": 18.9,
+    "max": 32.1
+   },
+   "adaptive": {
+    "median": 14.7,
+    "min": 12.8,
+    "max": 18.3
+   },
+   "deltaPct": {
+    "median": -36.8,
+    "min": -44.9,
+    "max": -27.2
+   },
+   "rulesDeltaPct": {
+    "median": 2.3,
+    "min": -11.8,
+    "max": 27.4
+   },
+   "savedVehH": {
+    "median": 31.5,
+    "min": 21.5,
+    "max": 51.4
+   },
+   "arrived": 13474,
+   "seedsBetter": 30,
+   "maxRedSide": {
+    "fixed": 83,
+    "adaptive": 90
+   }
+  },
+  {
+   "site": "kif",
+   "window": "am-tue",
+   "label": "Τρίτη 3/11, 07–10",
+   "day": "2026-11-03",
+   "from": 7,
+   "to": 10,
+   "blind": 0,
+   "maxRed": 90,
+   "fixed": {
+    "median": 23.1,
+    "min": 18.9,
+    "max": 32.1
+   },
+   "adaptive": {
+    "median": 14.7,
+    "min": 12.8,
+    "max": 18.3
+   },
+   "deltaPct": {
+    "median": -36.8,
+    "min": -44.9,
+    "max": -27.2
+   },
+   "rulesDeltaPct": {
+    "median": 2.3,
+    "min": -11.8,
+    "max": 27.4
+   },
+   "savedVehH": {
+    "median": 31.5,
+    "min": 21.5,
+    "max": 51.4
+   },
+   "arrived": 13474,
+   "seedsBetter": 30,
+   "maxRedSide": {
+    "fixed": 83,
+    "adaptive": 90
+   }
+  },
+  {
+   "site": "kif",
+   "window": "pm-tue",
+   "label": "Τρίτη 3/11, 16–19",
+   "day": "2026-11-03",
+   "from": 16,
+   "to": 19,
+   "blind": 1,
+   "maxRed": 90,
+   "fixed": {
+    "median": 19.3,
+    "min": 18.2,
+    "max": 21
+   },
+   "adaptive": {
+    "median": 12.7,
+    "min": 11.7,
+    "max": 13.8
+   },
+   "deltaPct": {
+    "median": -34.2,
+    "min": -37.6,
+    "max": -29.1
+   },
+   "rulesDeltaPct": {
+    "median": -6.8,
+    "min": -16,
+    "max": 9.3
+   },
+   "savedVehH": {
+    "median": 22.3,
+    "min": 19.1,
+    "max": 26.4
+   },
+   "arrived": 12200,
+   "seedsBetter": 30,
+   "maxRedSide": {
+    "fixed": 68,
+    "adaptive": 90
+   }
+  },
+  {
+   "site": "kif",
+   "window": "pm-tue",
+   "label": "Τρίτη 3/11, 16–19",
+   "day": "2026-11-03",
+   "from": 16,
+   "to": 19,
+   "blind": 0,
+   "maxRed": 90,
+   "fixed": {
+    "median": 19.3,
+    "min": 18.2,
+    "max": 21
+   },
+   "adaptive": {
+    "median": 12.7,
+    "min": 11.7,
+    "max": 13.8
+   },
+   "deltaPct": {
+    "median": -34.2,
+    "min": -37.6,
+    "max": -29.1
+   },
+   "rulesDeltaPct": {
+    "median": -6.8,
+    "min": -16,
+    "max": 9.3
+   },
+   "savedVehH": {
+    "median": 22.3,
+    "min": 19.1,
+    "max": 26.4
+   },
+   "arrived": 12200,
+   "seedsBetter": 30,
+   "maxRedSide": {
+    "fixed": 68,
+    "adaptive": 90
+   }
+  },
+  {
+   "site": "iera",
+   "window": "day-wk",
+   "label": "Τυπική καθημερινή, όλη η μέρα",
+   "day": "wk",
+   "from": 0,
+   "to": 24,
+   "blind": 1,
+   "maxRed": 90,
+   "fixed": {
+    "median": 11.6,
+    "min": 11.5,
+    "max": 11.7
+   },
+   "adaptive": {
+    "median": 10.8,
+    "min": 10.6,
+    "max": 10.9
+   },
+   "deltaPct": {
+    "median": -6.7,
+    "min": -8.6,
+    "max": -5.6
+   },
+   "rulesDeltaPct": {
+    "median": -5.7,
+    "min": -7.3,
+    "max": -4.5
+   },
+   "savedVehH": {
+    "median": 11.3,
+    "min": 9.7,
+    "max": 14.9
+   },
+   "arrived": 53432,
+   "seedsBetter": 30,
+   "maxRedSide": {
+    "fixed": 31,
+    "adaptive": 90
+   }
+  },
+  {
+   "site": "iera",
+   "window": "day-wk",
+   "label": "Τυπική καθημερινή, όλη η μέρα",
+   "day": "wk",
+   "from": 0,
+   "to": 24,
+   "blind": 0,
+   "maxRed": 90,
+   "fixed": {
+    "median": 11.6,
+    "min": 11.5,
+    "max": 11.7
+   },
+   "adaptive": {
+    "median": 10.5,
+    "min": 10.4,
+    "max": 10.6
+   },
+   "deltaPct": {
+    "median": -9.3,
+    "min": -10.4,
+    "max": -8.1
+   },
+   "rulesDeltaPct": {
+    "median": -9.2,
+    "min": -10.2,
+    "max": -7.7
+   },
+   "savedVehH": {
+    "median": 16.1,
+    "min": 13.8,
+    "max": 17.8
+   },
+   "arrived": 53432,
+   "seedsBetter": 30,
+   "maxRedSide": {
+    "fixed": 31,
+    "adaptive": 90
+   }
+  },
+  {
+   "site": "iera",
+   "window": "day-tue",
+   "label": "Τρίτη 3/11, όλη η μέρα",
+   "day": "2026-11-03",
+   "from": 0,
+   "to": 24,
+   "blind": 1,
+   "maxRed": 90,
+   "fixed": {
+    "median": 12,
+    "min": 11.8,
+    "max": 12.2
+   },
+   "adaptive": {
+    "median": 11,
+    "min": 10.9,
+    "max": 11.1
+   },
+   "deltaPct": {
+    "median": -8.1,
+    "min": -9.4,
+    "max": -6.7
+   },
+   "rulesDeltaPct": {
+    "median": -6.7,
+    "min": -9,
+    "max": -5.4
+   },
+   "savedVehH": {
+    "median": 14.6,
+    "min": 11.8,
+    "max": 17.3
+   },
+   "arrived": 54203,
+   "seedsBetter": 30,
+   "maxRedSide": {
+    "fixed": 31,
+    "adaptive": 90
+   }
+  },
+  {
+   "site": "iera",
+   "window": "day-tue",
+   "label": "Τρίτη 3/11, όλη η μέρα",
+   "day": "2026-11-03",
+   "from": 0,
+   "to": 24,
+   "blind": 0,
+   "maxRed": 90,
+   "fixed": {
+    "median": 12,
+    "min": 11.8,
+    "max": 12.2
+   },
+   "adaptive": {
+    "median": 10.6,
+    "min": 10.5,
+    "max": 10.8
+   },
+   "deltaPct": {
+    "median": -11.2,
+    "min": -12.7,
+    "max": -9.2
+   },
+   "rulesDeltaPct": {
+    "median": -9.4,
+    "min": -11.4,
+    "max": -7.6
+   },
+   "savedVehH": {
+    "median": 20.2,
+    "min": 16.5,
+    "max": 23.2
+   },
+   "arrived": 54203,
+   "seedsBetter": 30,
+   "maxRedSide": {
+    "fixed": 31,
+    "adaptive": 90
+   }
+  },
+  {
+   "site": "iera",
+   "window": "day-fri",
+   "label": "Παρασκευή 6/11, όλη η μέρα",
+   "day": "2026-11-06",
+   "from": 0,
+   "to": 24,
+   "blind": 1,
+   "maxRed": 90,
+   "fixed": {
+    "median": 11.9,
+    "min": 11.7,
+    "max": 12.1
+   },
+   "adaptive": {
+    "median": 10.9,
+    "min": 10.8,
+    "max": 11.1
+   },
+   "deltaPct": {
+    "median": -7.8,
+    "min": -10.6,
+    "max": -7
+   },
+   "rulesDeltaPct": {
+    "median": -6.4,
+    "min": -8.3,
+    "max": -4.5
+   },
+   "savedVehH": {
+    "median": 14.6,
+    "min": 12.9,
+    "max": 19.9
+   },
+   "arrived": 56591,
+   "seedsBetter": 30,
+   "maxRedSide": {
+    "fixed": 31,
+    "adaptive": 90
+   }
+  },
+  {
+   "site": "iera",
+   "window": "day-fri",
+   "label": "Παρασκευή 6/11, όλη η μέρα",
+   "day": "2026-11-06",
+   "from": 0,
+   "to": 24,
+   "blind": 0,
+   "maxRed": 90,
+   "fixed": {
+    "median": 11.9,
+    "min": 11.7,
+    "max": 12.1
+   },
+   "adaptive": {
+    "median": 10.6,
+    "min": 10.4,
+    "max": 10.7
+   },
+   "deltaPct": {
+    "median": -10.9,
+    "min": -12.3,
+    "max": -9.6
+   },
+   "rulesDeltaPct": {
+    "median": -9.9,
+    "min": -11.4,
+    "max": -8.5
+   },
+   "savedVehH": {
+    "median": 20.5,
+    "min": 17.9,
+    "max": 23.3
+   },
+   "arrived": 56591,
+   "seedsBetter": 30,
+   "maxRedSide": {
+    "fixed": 31,
+    "adaptive": 90
+   }
+  },
+  {
+   "site": "iera",
+   "window": "am-tue",
+   "label": "Τρίτη 3/11, 07–10",
+   "day": "2026-11-03",
+   "from": 7,
+   "to": 10,
+   "blind": 1,
+   "maxRed": 90,
+   "fixed": {
+    "median": 12.7,
+    "min": 12.3,
+    "max": 13.5
+   },
+   "adaptive": {
+    "median": 11.6,
+    "min": 11.3,
+    "max": 12.2
+   },
+   "deltaPct": {
+    "median": -8.7,
+    "min": -12.5,
+    "max": -5.2
+   },
+   "rulesDeltaPct": {
+    "median": -6.4,
+    "min": -11.8,
+    "max": -1.3
+   },
+   "savedVehH": {
+    "median": 2.9,
+    "min": 1.7,
+    "max": 4.3
+   },
+   "arrived": 9420,
+   "seedsBetter": 30,
+   "maxRedSide": {
+    "fixed": 31,
+    "adaptive": 77
+   }
+  },
+  {
+   "site": "iera",
+   "window": "am-tue",
+   "label": "Τρίτη 3/11, 07–10",
+   "day": "2026-11-03",
+   "from": 7,
+   "to": 10,
+   "blind": 0,
+   "maxRed": 90,
+   "fixed": {
+    "median": 12.7,
+    "min": 12.3,
+    "max": 13.5
+   },
+   "adaptive": {
+    "median": 11.2,
+    "min": 10.9,
+    "max": 11.7
+   },
+   "deltaPct": {
+    "median": -11.7,
+    "min": -16,
+    "max": -8.7
+   },
+   "rulesDeltaPct": {
+    "median": -7.2,
+    "min": -10.6,
+    "max": -4.5
+   },
+   "savedVehH": {
+    "median": 3.9,
+    "min": 2.9,
+    "max": 5.5
+   },
+   "arrived": 9420,
+   "seedsBetter": 30,
+   "maxRedSide": {
+    "fixed": 31,
+    "adaptive": 52
+   }
+  },
+  {
+   "site": "iera",
+   "window": "pm-tue",
+   "label": "Τρίτη 3/11, 16–19",
+   "day": "2026-11-03",
+   "from": 16,
+   "to": 19,
+   "blind": 1,
+   "maxRed": 90,
+   "fixed": {
+    "median": 12.6,
+    "min": 12.3,
+    "max": 12.9
+   },
+   "adaptive": {
+    "median": 11.6,
+    "min": 11.2,
+    "max": 12
+   },
+   "deltaPct": {
+    "median": -8.1,
+    "min": -10.3,
+    "max": -4.2
+   },
+   "rulesDeltaPct": {
+    "median": -6.4,
+    "min": -8.9,
+    "max": -2.4
+   },
+   "savedVehH": {
+    "median": 2.7,
+    "min": 1.4,
+    "max": 3.6
+   },
+   "arrived": 9641,
+   "seedsBetter": 30,
+   "maxRedSide": {
+    "fixed": 30,
+    "adaptive": 75
+   }
+  },
+  {
+   "site": "iera",
+   "window": "pm-tue",
+   "label": "Τρίτη 3/11, 16–19",
+   "day": "2026-11-03",
+   "from": 16,
+   "to": 19,
+   "blind": 0,
+   "maxRed": 90,
+   "fixed": {
+    "median": 12.6,
+    "min": 12.3,
+    "max": 12.9
+   },
+   "adaptive": {
+    "median": 11.2,
+    "min": 10.9,
+    "max": 11.4
+   },
+   "deltaPct": {
+    "median": -11.9,
+    "min": -13.7,
+    "max": -7.7
+   },
+   "rulesDeltaPct": {
+    "median": -6.2,
+    "min": -8.3,
+    "max": -3.7
+   },
+   "savedVehH": {
+    "median": 4,
+    "min": 2.6,
+    "max": 4.6
+   },
+   "arrived": 9641,
+   "seedsBetter": 30,
+   "maxRedSide": {
+    "fixed": 30,
+    "adaptive": 52
+   }
+  }
+ ],
+ "sensitivityMaxRed": [
+  {
+   "site": "alex",
+   "window": "day-tue",
+   "label": "Τρίτη 3/11, όλη η μέρα",
+   "day": "2026-11-03",
+   "from": 0,
+   "to": 24,
+   "blind": 1,
+   "maxRed": 45,
+   "fixed": {
+    "median": 10.1,
+    "min": 9.5,
+    "max": 10.9
+   },
+   "adaptive": {
+    "median": 11.6,
+    "min": 11.1,
+    "max": 12.4
+   },
+   "deltaPct": {
+    "median": 15.1,
+    "min": 13.1,
+    "max": 16.6
+   },
+   "rulesDeltaPct": {
+    "median": 7.4,
+    "min": 6.3,
+    "max": 9.2
+   },
+   "savedVehH": {
+    "median": -65.9,
+    "min": -71.3,
+    "max": -61.3
+   },
+   "arrived": 154732,
+   "seedsBetter": 0,
+   "maxRedSide": {
+    "fixed": 70,
+    "adaptive": 70
+   }
+  },
+  {
+   "site": "alex",
+   "window": "day-tue",
+   "label": "Τρίτη 3/11, όλη η μέρα",
+   "day": "2026-11-03",
+   "from": 0,
+   "to": 24,
+   "blind": 1,
+   "maxRed": 60,
+   "fixed": {
+    "median": 10.1,
+    "min": 9.5,
+    "max": 10.9
+   },
+   "adaptive": {
+    "median": 11.3,
+    "min": 10.7,
+    "max": 12.1
+   },
+   "deltaPct": {
+    "median": 11.8,
+    "min": 10.5,
+    "max": 13.5
+   },
+   "rulesDeltaPct": {
+    "median": 6.2,
+    "min": 4.9,
+    "max": 7.4
+   },
+   "savedVehH": {
+    "median": -50.8,
+    "min": -57.2,
+    "max": -45.7
+   },
+   "arrived": 154732,
+   "seedsBetter": 0,
+   "maxRedSide": {
+    "fixed": 70,
+    "adaptive": 70
+   }
+  },
+  {
+   "site": "alex",
+   "window": "day-tue",
+   "label": "Τρίτη 3/11, όλη η μέρα",
+   "day": "2026-11-03",
+   "from": 0,
+   "to": 24,
+   "blind": 1,
+   "maxRed": 90,
+   "fixed": {
+    "median": 10.1,
+    "min": 9.5,
+    "max": 10.9
+   },
+   "adaptive": {
+    "median": 11,
+    "min": 10.5,
+    "max": 11.9
+   },
+   "deltaPct": {
+    "median": 9.1,
+    "min": 7.9,
+    "max": 10.8
+   },
+   "rulesDeltaPct": {
+    "median": 4,
+    "min": 3,
+    "max": 5.7
+   },
+   "savedVehH": {
+    "median": -39.8,
+    "min": -46,
+    "max": -35
+   },
+   "arrived": 154732,
+   "seedsBetter": 0,
+   "maxRedSide": {
+    "fixed": 70,
+    "adaptive": 90
+   }
+  },
+  {
+   "site": "kif",
+   "window": "day-tue",
+   "label": "Τρίτη 3/11, όλη η μέρα",
+   "day": "2026-11-03",
+   "from": 0,
+   "to": 24,
+   "blind": 1,
+   "maxRed": 45,
+   "fixed": {
+    "median": 21.7,
+    "min": 20,
+    "max": 23.9
+   },
+   "adaptive": {
+    "median": 23.2,
+    "min": 16.9,
+    "max": 30.2
+   },
+   "deltaPct": {
+    "median": 4.6,
+    "min": -15.5,
+    "max": 41.1
+   },
+   "rulesDeltaPct": {
+    "median": 18.2,
+    "min": -4.3,
+    "max": 53.6
+   },
+   "savedVehH": {
+    "median": -20.5,
+    "min": -176.7,
+    "max": 62
+   },
+   "arrived": 72235,
+   "seedsBetter": 13,
+   "maxRedSide": {
+    "fixed": 83,
+    "adaptive": 45
+   }
+  },
+  {
+   "site": "kif",
+   "window": "day-tue",
+   "label": "Τρίτη 3/11, όλη η μέρα",
+   "day": "2026-11-03",
+   "from": 0,
+   "to": 24,
+   "blind": 1,
+   "maxRed": 60,
+   "fixed": {
+    "median": 21.7,
+    "min": 20,
+    "max": 23.9
+   },
+   "adaptive": {
+    "median": 13.9,
+    "min": 12.7,
+    "max": 15.4
+   },
+   "deltaPct": {
+    "median": -35.6,
+    "min": -40.6,
+    "max": -30.7
+   },
+   "rulesDeltaPct": {
+    "median": -8.3,
+    "min": -14.1,
+    "max": 2.7
+   },
+   "savedVehH": {
+    "median": 152.6,
+    "min": 132.3,
+    "max": 194.3
+   },
+   "arrived": 72235,
+   "seedsBetter": 30,
+   "maxRedSide": {
+    "fixed": 83,
+    "adaptive": 60
+   }
+  },
+  {
+   "site": "kif",
+   "window": "day-tue",
+   "label": "Τρίτη 3/11, όλη η μέρα",
+   "day": "2026-11-03",
+   "from": 0,
+   "to": 24,
+   "blind": 1,
+   "maxRed": 90,
+   "fixed": {
+    "median": 21.7,
+    "min": 20,
+    "max": 23.9
+   },
+   "adaptive": {
+    "median": 13.2,
+    "min": 12.2,
+    "max": 14.4
+   },
+   "deltaPct": {
+    "median": -39.1,
+    "min": -43.9,
+    "max": -36.4
+   },
+   "rulesDeltaPct": {
+    "median": -8.8,
+    "min": -13.6,
+    "max": 0.9
+   },
+   "savedVehH": {
+    "median": 169.1,
+    "min": 150.5,
+    "max": 209.5
+   },
+   "arrived": 72235,
+   "seedsBetter": 30,
+   "maxRedSide": {
+    "fixed": 83,
+    "adaptive": 90
+   }
+  },
+  {
+   "site": "iera",
+   "window": "day-tue",
+   "label": "Τρίτη 3/11, όλη η μέρα",
+   "day": "2026-11-03",
+   "from": 0,
+   "to": 24,
+   "blind": 1,
+   "maxRed": 45,
+   "fixed": {
+    "median": 12,
+    "min": 11.8,
+    "max": 12.2
+   },
+   "adaptive": {
+    "median": 11,
+    "min": 10.9,
+    "max": 11.1
+   },
+   "deltaPct": {
+    "median": -8.4,
+    "min": -9.7,
+    "max": -6.4
+   },
+   "rulesDeltaPct": {
+    "median": -8.2,
+    "min": -9.8,
+    "max": -6.9
+   },
+   "savedVehH": {
+    "median": 15,
+    "min": 11.5,
+    "max": 17.8
+   },
+   "arrived": 54203,
+   "seedsBetter": 30,
+   "maxRedSide": {
+    "fixed": 31,
+    "adaptive": 45
+   }
+  },
+  {
+   "site": "iera",
+   "window": "day-tue",
+   "label": "Τρίτη 3/11, όλη η μέρα",
+   "day": "2026-11-03",
+   "from": 0,
+   "to": 24,
+   "blind": 1,
+   "maxRed": 60,
+   "fixed": {
+    "median": 12,
+    "min": 11.8,
+    "max": 12.2
+   },
+   "adaptive": {
+    "median": 11,
+    "min": 10.9,
+    "max": 11.1
+   },
+   "deltaPct": {
+    "median": -8.2,
+    "min": -9.8,
+    "max": -6.7
+   },
+   "rulesDeltaPct": {
+    "median": -7.2,
+    "min": -9.2,
+    "max": -5.8
+   },
+   "savedVehH": {
+    "median": 14.8,
+    "min": 11.9,
+    "max": 17.8
+   },
+   "arrived": 54203,
+   "seedsBetter": 30,
+   "maxRedSide": {
+    "fixed": 31,
+    "adaptive": 60
+   }
+  },
+  {
+   "site": "iera",
+   "window": "day-tue",
+   "label": "Τρίτη 3/11, όλη η μέρα",
+   "day": "2026-11-03",
+   "from": 0,
+   "to": 24,
+   "blind": 1,
+   "maxRed": 90,
+   "fixed": {
+    "median": 12,
+    "min": 11.8,
+    "max": 12.2
+   },
+   "adaptive": {
+    "median": 11,
+    "min": 10.9,
+    "max": 11.1
+   },
+   "deltaPct": {
+    "median": -8.1,
+    "min": -9.4,
+    "max": -6.7
+   },
+   "rulesDeltaPct": {
+    "median": -6.7,
+    "min": -9,
+    "max": -5.4
+   },
+   "savedVehH": {
+    "median": 14.6,
+    "min": 11.8,
+    "max": 17.3
+   },
+   "arrived": 54203,
+   "seedsBetter": 30,
+   "maxRedSide": {
+    "fixed": 31,
+    "adaptive": 90
+   }
+  }
+ ],
+ "stage": {
+  "alex": {
+   "day": "2026-11-03",
+   "seed": 13,
+   "breakDet": "MS421",
+   "savedVehH": -39.9,
+   "deltaPct": 9.1,
+   "fixedDelay": 10.2,
+   "adaptiveDelay": 11.1,
+   "arrived": 154714
+  },
+  "kif": {
+   "day": "2026-11-03",
+   "seed": 6,
+   "breakDet": "MS262",
+   "savedVehH": 169.1,
+   "deltaPct": -39.3,
+   "fixedDelay": 21.5,
+   "adaptiveDelay": 13.1,
+   "arrived": 71943
+  },
+  "iera": {
+   "day": "2026-11-03",
+   "seed": 28,
+   "breakDet": "MS658",
+   "savedVehH": 14.63,
+   "deltaPct": -8,
+   "fixedDelay": 12,
+   "adaptiveDelay": 11.1,
+   "arrived": 54827
+  }
+ },
+ "hourly": {
+  "alex": [
+   {
+    "hour": 0,
+    "fixed": 8.8,
+    "adaptive": 7.7
+   },
+   {
+    "hour": 1,
+    "fixed": 7.7,
+    "adaptive": 7
+   },
+   {
+    "hour": 2,
+    "fixed": 8.4,
+    "adaptive": 6.6
+   },
+   {
+    "hour": 3,
+    "fixed": 8,
+    "adaptive": 6.1
+   },
+   {
+    "hour": 4,
+    "fixed": 8.1,
+    "adaptive": 6.2
+   },
+   {
+    "hour": 5,
+    "fixed": 8.1,
+    "adaptive": 7.9
+   },
+   {
+    "hour": 6,
+    "fixed": 8.6,
+    "adaptive": 9.2
+   },
+   {
+    "hour": 7,
+    "fixed": 9.3,
+    "adaptive": 10.7
+   },
+   {
+    "hour": 8,
+    "fixed": 9.9,
+    "adaptive": 10.9
+   },
+   {
+    "hour": 9,
+    "fixed": 8.5,
+    "adaptive": 9.1
+   },
+   {
+    "hour": 10,
+    "fixed": 9.5,
+    "adaptive": 10.3
+   },
+   {
+    "hour": 11,
+    "fixed": 10.1,
+    "adaptive": 11.1
+   },
+   {
+    "hour": 12,
+    "fixed": 9.7,
+    "adaptive": 11
+   },
+   {
+    "hour": 13,
+    "fixed": 9.1,
+    "adaptive": 10
+   },
+   {
+    "hour": 14,
+    "fixed": 10.4,
+    "adaptive": 11.4
+   },
+   {
+    "hour": 15,
+    "fixed": 9.8,
+    "adaptive": 11.5
+   },
+   {
+    "hour": 16,
+    "fixed": 10.6,
+    "adaptive": 11.2
+   },
+   {
+    "hour": 17,
+    "fixed": 12.4,
+    "adaptive": 13.4
+   },
+   {
+    "hour": 18,
+    "fixed": 10.1,
+    "adaptive": 11.3
+   },
+   {
+    "hour": 19,
+    "fixed": 9.7,
+    "adaptive": 11.1
+   },
+   {
+    "hour": 20,
+    "fixed": 9.4,
+    "adaptive": 10.6
+   },
+   {
+    "hour": 21,
+    "fixed": 18,
+    "adaptive": 19.3
+   },
+   {
+    "hour": 22,
+    "fixed": 13.3,
+    "adaptive": 15
+   },
+   {
+    "hour": 23,
+    "fixed": 7.1,
+    "adaptive": 7.9
+   }
+  ],
+  "kif": [
+   {
+    "hour": 0,
+    "fixed": 14.9,
+    "adaptive": 6.3
+   },
+   {
+    "hour": 1,
+    "fixed": 11.2,
+    "adaptive": 6.3
+   },
+   {
+    "hour": 2,
+    "fixed": 10.7,
+    "adaptive": 4.3
+   },
+   {
+    "hour": 3,
+    "fixed": 10.2,
+    "adaptive": 4.2
+   },
+   {
+    "hour": 4,
+    "fixed": 10,
+    "adaptive": 4.7
+   },
+   {
+    "hour": 5,
+    "fixed": 11.5,
+    "adaptive": 6
+   },
+   {
+    "hour": 6,
+    "fixed": 16,
+    "adaptive": 10.7
+   },
+   {
+    "hour": 7,
+    "fixed": 29.5,
+    "adaptive": 18.4
+   },
+   {
+    "hour": 8,
+    "fixed": 16.7,
+    "adaptive": 11.9
+   },
+   {
+    "hour": 9,
+    "fixed": 27.4,
+    "adaptive": 13.9
+   },
+   {
+    "hour": 10,
+    "fixed": 29.9,
+    "adaptive": 13.9
+   },
+   {
+    "hour": 11,
+    "fixed": 26.8,
+    "adaptive": 13.9
+   },
+   {
+    "hour": 12,
+    "fixed": 23.5,
+    "adaptive": 12.8
+   },
+   {
+    "hour": 13,
+    "fixed": 23.8,
+    "adaptive": 14.2
+   },
+   {
+    "hour": 14,
+    "fixed": 26.9,
+    "adaptive": 15.4
+   },
+   {
+    "hour": 15,
+    "fixed": 26.1,
+    "adaptive": 16.1
+   },
+   {
+    "hour": 16,
+    "fixed": 19.5,
+    "adaptive": 13.3
+   },
+   {
+    "hour": 17,
+    "fixed": 19.2,
+    "adaptive": 12.5
+   },
+   {
+    "hour": 18,
+    "fixed": 18.6,
+    "adaptive": 13.3
+   },
+   {
+    "hour": 19,
+    "fixed": 19.4,
+    "adaptive": 13.4
+   },
+   {
+    "hour": 20,
+    "fixed": 22.1,
+    "adaptive": 13.8
+   },
+   {
+    "hour": 21,
+    "fixed": 15.8,
+    "adaptive": 11.9
+   },
+   {
+    "hour": 22,
+    "fixed": 13.6,
+    "adaptive": 10.2
+   },
+   {
+    "hour": 23,
+    "fixed": 12,
+    "adaptive": 8.7
+   }
+  ],
+  "iera": [
+   {
+    "hour": 0,
+    "fixed": 9.2,
+    "adaptive": 8.6
+   },
+   {
+    "hour": 1,
+    "fixed": 9.1,
+    "adaptive": 9.7
+   },
+   {
+    "hour": 2,
+    "fixed": 8.9,
+    "adaptive": 8.4
+   },
+   {
+    "hour": 3,
+    "fixed": 8.6,
+    "adaptive": 8.1
+   },
+   {
+    "hour": 4,
+    "fixed": 9.3,
+    "adaptive": 9.7
+   },
+   {
+    "hour": 5,
+    "fixed": 9.3,
+    "adaptive": 8.3
+   },
+   {
+    "hour": 6,
+    "fixed": 11.2,
+    "adaptive": 10
+   },
+   {
+    "hour": 7,
+    "fixed": 12.2,
+    "adaptive": 11.1
+   },
+   {
+    "hour": 8,
+    "fixed": 13.4,
+    "adaptive": 12.5
+   },
+   {
+    "hour": 9,
+    "fixed": 11.9,
+    "adaptive": 11.1
+   },
+   {
+    "hour": 10,
+    "fixed": 11.5,
+    "adaptive": 11.3
+   },
+   {
+    "hour": 11,
+    "fixed": 11.7,
+    "adaptive": 10.9
+   },
+   {
+    "hour": 12,
+    "fixed": 11.9,
+    "adaptive": 11
+   },
+   {
+    "hour": 13,
+    "fixed": 12.4,
+    "adaptive": 11.4
+   },
+   {
+    "hour": 14,
+    "fixed": 12.9,
+    "adaptive": 11.9
+   },
+   {
+    "hour": 15,
+    "fixed": 14,
+    "adaptive": 12.7
+   },
+   {
+    "hour": 16,
+    "fixed": 12.9,
+    "adaptive": 11.7
+   },
+   {
+    "hour": 17,
+    "fixed": 12.5,
+    "adaptive": 11.7
+   },
+   {
+    "hour": 18,
+    "fixed": 12.5,
+    "adaptive": 11.1
+   },
+   {
+    "hour": 19,
+    "fixed": 13.4,
+    "adaptive": 11.1
+   },
+   {
+    "hour": 20,
+    "fixed": 11.3,
+    "adaptive": 10.7
+   },
+   {
+    "hour": 21,
+    "fixed": 11.3,
+    "adaptive": 9.7
+   },
+   {
+    "hour": 22,
+    "fixed": 10.2,
+    "adaptive": 9.6
+   },
+   {
+    "hour": 23,
+    "fixed": 9.8,
+    "adaptive": 9.9
+   }
+  ]
+ }
+}

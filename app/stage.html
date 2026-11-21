@@ -1,0 +1,321 @@
+<!doctype html>
+<html lang="el">
+<head>
+<meta charset="utf-8">
+<title>Ψηφιακός Τροχονόμος — σκηνή</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  /* Σκηνή παρουσίασης: 1920×1080, κλιμακώνεται ώστε να χωρά ολόκληρη σε κάθε οθόνη. Καμία αίτηση δικτύου. */
+  :root{ --navy:#16212C; --deep:#0E161E; --paper:#F5F2EA; --dim:#9AA7B3; --blue:#5C9BE6; --orange:#F0A066; --road:#27323E; --line:#3A4856; --good:#3FBF7A; --bad:#E06A4E; }
+  *{ box-sizing:border-box; margin:0; padding:0 }
+  html,body{ width:100%; height:100%; background:var(--deep); overflow:hidden }
+  body{ font-family:"Inter","Segoe UI",Arial,sans-serif; color:var(--paper) }
+  #stage{ position:absolute; left:0; top:0; width:1920px; height:1080px; background:var(--navy); transform-origin:0 0; overflow:hidden }
+  .hd{ position:absolute; left:56px; right:56px; top:34px; height:84px; display:flex; align-items:center; gap:32px }
+  .ttl{ font-family:"Commissioner","Segoe UI",Arial,sans-serif; font-weight:800; font-size:40px; letter-spacing:1px; white-space:nowrap }
+  .where{ font-size:28px; color:#C9D3DC; flex:1; white-space:nowrap; overflow:hidden }
+  .badge{ font-size:22px; font-weight:700; letter-spacing:2px; color:var(--orange); border:2px solid var(--orange); border-radius:6px; padding:8px 14px; white-space:nowrap }
+  .clock{ font-family:"Commissioner","Segoe UI",Arial,sans-serif; font-weight:700; font-size:72px; font-variant-numeric:tabular-nums; width:210px; text-align:right }
+  .panel{ position:absolute; left:56px; width:1808px; height:362px }
+  #pF{ top:132px } #pA{ top:508px }
+  .ph{ height:64px; display:flex; align-items:center; gap:18px }
+  .sw{ width:26px; height:26px; border-radius:5px }
+  .pn{ font-family:"Commissioner","Segoe UI",Arial,sans-serif; font-weight:700; font-size:34px; flex:1; white-space:nowrap }
+  .pl{ font-size:22px; letter-spacing:2px; color:var(--dim) }
+  .pv{ font-family:"Commissioner","Segoe UI",Arial,sans-serif; font-weight:700; font-size:60px; font-variant-numeric:tabular-nums; width:190px; text-align:right }
+  .pu{ font-size:24px; color:var(--dim); width:120px }
+  canvas{ display:block }
+  .road{ width:1808px; height:294px; border-radius:10px; background:var(--deep) }
+  .bt{ position:absolute; left:56px; right:56px; top:886px; height:166px; display:flex; gap:48px; align-items:stretch }
+  .cnt{ width:760px; display:flex; flex-direction:column; justify-content:center }
+  .cl{ font-size:22px; font-weight:700; letter-spacing:2px; color:var(--dim) }
+  .cv{ font-family:"Commissioner","Segoe UI",Arial,sans-serif; font-weight:800; font-size:104px; line-height:1.05; font-variant-numeric:tabular-nums; color:var(--good); white-space:nowrap }
+  .cv.neg{ color:var(--bad) }
+  .cv small{ font-size:44px; font-weight:700; color:var(--paper); margin-left:14px }
+  .cs{ font-size:24px; color:#C9D3DC; min-height:30px }
+  .dm{ flex:1; display:flex; flex-direction:column; justify-content:flex-end; gap:6px }
+  .dl{ font-size:20px; letter-spacing:2px; color:var(--dim); display:flex; justify-content:space-between; white-space:nowrap }
+  .dl.keys{ font-size:18px; letter-spacing:0; color:#7C8A97 }
+  #hint{ position:absolute; left:0; right:0; top:440px; text-align:center; font-family:"Commissioner","Segoe UI",Arial,sans-serif; font-weight:700; font-size:44px; color:var(--paper); background:rgba(14,22,30,.86); padding:22px 0; display:none }
+  #err{ position:absolute; inset:0; display:none; align-items:center; justify-content:center; font-size:32px; padding:80px; text-align:center; background:var(--navy) }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div class="hd">
+    <div class="ttl">ΨΗΦΙΑΚΟΣ ΤΡΟΧΟΝΟΜΟΣ</div>
+    <div class="where" id="where"></div>
+    <div class="badge">ΠΡΟΣΟΜΟΙΩΣΗ · ΜΙΑ ΕΚΤΕΛΕΣΗ</div>
+    <div class="clock" id="clock">00:00</div>
+  </div>
+  <div class="panel" id="pF">
+    <div class="ph"><div class="sw" style="background:var(--blue)"></div><div class="pn">ΣΤΑΘΕΡΟ ΠΡΟΓΡΑΜΜΑ — με το ρολόι</div><div class="pl">ΑΝΑΜΟΝΗ</div><div class="pv" id="vF" style="color:var(--blue)">0,0</div><div class="pu">s / όχημα</div></div>
+    <canvas class="road" id="cF" width="3616" height="588"></canvas>
+  </div>
+  <div class="panel" id="pA">
+    <div class="ph"><div class="sw" style="background:var(--orange)"></div><div class="pn">ΨΗΦΙΑΚΟΣ ΤΡΟΧΟΝΟΜΟΣ — ελαχιστοποιεί την αναμονή</div><div class="pl">ΑΝΑΜΟΝΗ</div><div class="pv" id="vA" style="color:var(--orange)">0,0</div><div class="pu">s / όχημα</div></div>
+    <canvas class="road" id="cA" width="3616" height="588"></canvas>
+  </div>
+  <div class="bt">
+    <div class="cnt">
+      <div class="cl" id="cl">ΩΡΕΣ ΑΝΑΜΟΝΗΣ ΠΟΥ ΓΛΙΤΩΣΑΝ ΟΙ ΟΔΗΓΟΙ ΣΗΜΕΡΑ</div>
+      <div class="cv" id="cv">0,0<small>ώρες</small></div>
+      <div class="cs" id="cs"></div>
+    </div>
+    <div class="dm">
+      <div class="dl"><span>ΚΙΝΗΣΗ ΤΗΣ ΗΜΕΡΑΣ · ανιχνευτές Περιφέρειας Αττικής</span></div>
+      <canvas id="cD" width="2000" height="192" style="width:1000px;height:96px"></canvas>
+      <div class="dl keys"><span>Οι ουρές δείχνουν το μέγιστο του τελευταίου 15λέπτου</span><span>Space · R · B · 1 2 3 · F</span></div>
+    </div>
+  </div>
+  <div id="hint">Space για εκκίνηση</div>
+  <div id="err"></div>
+</div>
+
+<script src="data.js"></script>
+<script src="sim-core.js"></script>
+<script src="stage-config.js"></script>
+<script id="stage-core">
+/* ===================================================================================
+   ΛΟΓΙΚΗ ΣΚΗΝΗΣ — χωρίς DOM (τρέχει και σε node, βλ. verify.js)
+   Παίζει μία ολόκληρη ημέρα με τους δύο ελεγκτές πάνω στις ίδιες αφίξεις. Ο προσομοιωμένος
+   χρόνος οδηγείται από το ρολόι τοίχου, όχι από το πλήθος των frames: ό,τι ρυθμό κι αν έχει
+   η οθόνη, η εκτέλεση διαρκεί το ίδιο και καταλήγει στον ίδιο αριθμό.
+   =================================================================================== */
+var StageCore = (function () {
+  'use strict';
+  var SITES = ['alex', 'kif', 'iera'], DAY = 86400, SHORT = 25000, FULL = 75000;
+  var WIN = 900, SNAP = 60;     // εξομάλυνση οθόνης: μέσος όρος των τελευταίων 15 προσομοιωμένων λεπτών
+
+  function create(DATA, SimCore, STAGE, opts) {
+    opts = opts || {};
+    var s = { site: STAGE.sites[opts.site] ? opts.site : 'kif', full: !!opts.full, playing: false, elapsed: 0, last: null, broken: false, had: false, gen: 0, F: null, A: null, hF: null, hA: null };
+
+    function hist(sim) { return { cnt: sim.net.juncs.map(function () { return [0, 0]; }), cur: sim.net.apps.map(function () { return 0; }), snaps: [] }; }
+    function snap(sim, h) {
+      h.snaps.push({ t: sim.t, m: h.cur.slice(), g: h.cnt.map(function (c) { return [c[0], c[1]]; }) });
+      for (var a = 0; a < h.cur.length; a++) h.cur[a] = 0;
+      if (h.snaps.length > WIN / SNAP + 1) h.snaps.shift();
+    }
+    function build() {
+      var c = STAGE.sites[s.site], p = { seed: c.seed, blind: 1 };
+      s.F = SimCore.createSim(DATA, s.site, c.day, 0, DAY, p, 'fixed', null);
+      s.A = SimCore.createSim(DATA, s.site, c.day, 0, DAY, p, 'optimal', null);
+      s.hF = hist(s.F); s.hA = hist(s.A); snap(s.F, s.hF); snap(s.A, s.hA);
+      s.elapsed = 0; s.last = null; s.playing = false; s.broken = false; s.had = false; s.gen++;
+    }
+    function stepOne(sim, h) {
+      sim.step();
+      for (var j = 0; j < sim.sig.length; j++) { var g = sim.sig[j].g; if (g >= 0) h.cnt[j][g]++; }
+      for (var a = 0; a < h.cur.length; a++) { var n = sim.qlen(a); if (n > h.cur[a]) h.cur[a] = n; }
+      if (sim.t % SNAP === 0) snap(sim, h);
+    }
+    function advance(target) {
+      while (!s.F.done && s.F.t < target) stepOne(s.F, s.hF);
+      while (!s.A.done && s.A.t < target) stepOne(s.A, s.hA);
+    }
+    function duration() { return s.full ? FULL : SHORT; }
+    function done() { return s.F.done && s.A.done; }
+    function applyBreak() { var d = STAGE.sites[s.site].breakDet; if (s.broken) s.A.failDetector(d); else s.A.restoreDetector(d); }
+
+    build();
+    return {
+      SITES: SITES,
+      key: function (k, now) {
+        k = String(k).toLowerCase();
+        if (k === ' ') { if (done()) { build(); s.playing = true; } else s.playing = !s.playing; s.last = now; }
+        else if (k === 'r') build();
+        else if (k === 'f') { s.full = !s.full; build(); }
+        else if (k === 'b') { if (s.F.t > 0 && !done()) { s.broken = !s.broken; if (s.broken) s.had = true; applyBreak(); } }
+        else if (k === '1' || k === '2' || k === '3') { s.site = SITES[+k - 1]; build(); }
+      },
+      tick: function (now) {
+        if (!s.playing) { s.last = now; return; }
+        if (s.last != null && now > s.last) s.elapsed += now - s.last;
+        s.last = now;
+        var d = duration();
+        if (s.elapsed >= d) { s.elapsed = d; advance(DAY); s.playing = false; }
+        else advance(Math.floor(s.elapsed / d * DAY));
+      },
+      // πηγαίνει σε ποσοστό της ημέρας και μένει σε παύση (για στιγμιότυπα και πρόβες)· προς τα πίσω ξεκινά από την αρχή
+      seek: function (frac) {
+        frac = Math.max(0, Math.min(1, frac));
+        var target = Math.floor(frac * DAY);
+        if (target < s.F.t) build();
+        advance(target); s.elapsed = frac * duration(); s.playing = false; s.last = null;
+      },
+      // εξομαλυμένη εικόνα ενός ελεγκτή: μέγιστη ουρά του τελευταίου 15λέπτου ανά πρόσβαση και μερίδιο πρασίνου της κύριας φάσης ανά κόμβο
+      view: function (which) {
+        var sim = which === 'F' ? s.F : s.A, h = which === 'F' ? s.hF : s.hA, o = h.snaps[0];
+        return {
+          q: sim.net.apps.map(function (A, a) { var m = h.cur[a]; for (var i = 1; i < h.snaps.length; i++) if (h.snaps[i].m[a] > m) m = h.snaps[i].m[a]; return m; }),
+          share: sim.net.juncs.map(function (J, j) { var g0 = h.cnt[j][0] - o.g[j][0], g1 = h.cnt[j][1] - o.g[j][1]; return g0 + g1 > 0 ? g0 / (g0 + g1) : 0.5; })
+        };
+      },
+      sim: function (which) { return which === 'F' ? s.F : s.A; },
+      saved: function () { return s.F.summary().delayH - s.A.summary().delayH; },
+      clock: function () { return s.F.t; },
+      modes: function () { return s.A.net.juncs.map(function (J, j) { return s.A.mode(j); }); },
+      site: function () { return s.site; }, broken: function () { return s.broken; }, hadBreak: function () { return s.had; }, playing: function () { return s.playing; },
+      full: function () { return s.full; }, done: done, duration: duration, gen: function () { return s.gen; },
+      progress: function () { return s.elapsed / duration(); }
+    };
+  }
+  return { create: create, SITES: SITES };
+})();
+if (typeof module !== 'undefined') module.exports = StageCore;
+</script>
+
+<script id="stage-ui">
+(function () {
+  'use strict';
+  var $ = function (id) { return document.getElementById(id); };
+  function fail(msg) { var e = $('err'); e.style.display = 'flex'; e.textContent = msg; }
+  if (!window.DATA || !window.SimCore || !window.STAGE) { fail('Λείπει το data.js, το sim-core.js ή το stage-config.js. Το stage.html πρέπει να βρίσκεται στον ίδιο φάκελο με αυτά (για το stage-config.js: node numbers.js).'); return; }
+
+  var C = { blue: '#5C9BE6', orange: '#F0A066', paper: '#F5F2EA', dim: '#9AA7B3', road: '#27323E', line: '#3A4856', deep: '#0E161E', box: '#1C2631', bad: '#E06A4E', side: '#8493A1' };
+  var nf1 = new Intl.NumberFormat('el-GR', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+  var nf0 = new Intl.NumberFormat('el-GR', { maximumFractionDigits: 0 });
+  var FONT = '"Inter","Segoe UI",Arial,sans-serif', HEAD = '"Commissioner","Segoe UI",Arial,sans-serif';
+
+  var opts = {};
+  location.hash.replace(/^#/, '').split('&').forEach(function (kv) { var p = kv.split('='); if (p[0] === 'site') opts.site = p[1]; if (p[0] === 'full') opts.full = true; if (p[0] === 'auto') opts.auto = true; if (p[0] === 't') opts.t = +p[1]; if (p[0] === 'break') opts.brk = true; });
+  var ctl = StageCore.create(DATA, SimCore, STAGE, opts), seenGen = -1, demand = null;
+
+  function fit() {
+    var k = Math.min(innerWidth / 1920, innerHeight / 1080), st = $('stage');
+    st.style.transform = 'translate(' + (innerWidth - 1920 * k) / 2 + 'px,' + (innerHeight - 1080 * k) / 2 + 'px) scale(' + k + ')';
+  }
+  addEventListener('resize', fit); fit();
+
+  var CODE = { Space: ' ', KeyR: 'r', KeyB: 'b', KeyF: 'f', Digit1: '1', Digit2: '2', Digit3: '3', Numpad1: '1', Numpad2: '2', Numpad3: '3' };
+  addEventListener('keydown', function (e) {
+    var k = CODE[e.code]; if (!k || e.ctrlKey || e.altKey || e.metaKey) return;   // e.code: ίδιο πλήκτρο σε ελληνική και αγγλική διάταξη
+    e.preventDefault(); if (e.repeat) return;
+    ctl.key(k, performance.now());
+  });
+
+  function hhmm(t) { t = Math.min(t, 86399); var h = Math.floor(t / 3600), m = Math.floor(t % 3600 / 60); return (h < 10 ? '0' : '') + h + ':' + (m < 10 ? '0' : '') + m; }
+  function shortName(A) { return A.label.split('→')[0].trim(); }
+
+  function setup() {
+    seenGen = ctl.gen();
+    var sim = ctl.sim('F'), site = sim.net.site, day = sim.day;
+    $('where').textContent = site.name.replace(' — διάδρομος 3 κόμβων', '') + ' · ' + day.label.replace('/2026', '');
+    demand = [];
+    for (var b = 0; b < 288; b++) {
+      var q = 0; sim.net.apps.forEach(function (A) { if (A.up < 0) q += SimCore.flowAt(DATA, A, day.key, b * 300, sim.P); });
+      demand.push(q);
+    }
+  }
+
+  function rr(g, x, y, w, h, r) { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); }
+
+  // Ένας δρόμος: οριζόντια η κύρια οδός, κάθετα οι κάθετες. Ουρές = εξομαλυμένος μέσος όρος (όχι στιγμιαία),
+  // γιατί σε αυτή την ταχύτητα τα φανάρια αλλάζουν δεκάδες φορές το δευτερόλεπτο.
+  function drawRoad(cv, which, color) {
+    var g = cv.getContext('2d'), W = 1808, H = 294, sim = ctl.sim(which), v = ctl.view(which), net = sim.net, nJ = net.juncs.length;
+    g.setTransform(2, 0, 0, 2, 0, 0); g.clearRect(0, 0, W, H);
+    var cy = 147, half = 74, bw = 56, LP = 22, CL = 24, CP = 30;
+    g.fillStyle = C.road; g.fillRect(0, cy - half, W, half * 2);
+    g.strokeStyle = C.line; g.lineWidth = 2; g.setLineDash([18, 14]); g.beginPath(); g.moveTo(0, cy); g.lineTo(W, cy); g.stroke(); g.setLineDash([]);
+    var xs = net.juncs.map(function (J, j) { return W * (j + 0.5) / nJ; }), seg = W / nJ;
+    net.juncs.forEach(function (J, j) {
+      var x = xs[j], mode = which === 'A' ? sim.mode(j) : 'fixed';
+      g.fillStyle = C.road; g.fillRect(x - bw, 0, bw * 2, H);
+      g.fillStyle = C.box; g.fillRect(x - bw, cy - half, bw * 2, half * 2);
+      if (mode === 'fixed-fail') { g.strokeStyle = C.bad; g.lineWidth = 5; g.strokeRect(x - bw, cy - half, bw * 2, half * 2); }
+      // μερίδιο πρασίνου: ↔ κύρια οδός, ↕ κάθετη
+      var sh = Math.round(v.share[j] * 100);
+      g.textAlign = 'center'; g.textBaseline = 'middle';
+      g.font = '700 30px ' + HEAD; g.fillStyle = color; g.fillText('↔ ' + sh + '%', x, cy - 24);
+      g.fillStyle = C.side; g.fillText('↕ ' + (100 - sh) + '%', x, cy + 24);
+      g.font = '600 15px ' + FONT; g.fillStyle = C.dim; g.fillText('ΠΡΑΣΙΝΟ', x, cy - 56);
+      // όνομα κόμβου και κατάσταση
+      g.textAlign = 'left'; g.textBaseline = 'top'; g.font = '700 22px ' + FONT; g.fillStyle = C.paper;
+      // ετικέτα κόμβου: σε διάδρομο μπαίνει δίπλα στον κόμβο της, στην πλευρά που δεν έχει κάθετη πρόσβαση
+      var multi = nJ > 1, sideAbove = J.apps.some(function (ai) { return net.apps[ai].phase === 1 && net.apps[ai].dir !== 'S'; });
+      var nx = multi ? x - bw - 14 : 16, ny = multi && sideAbove ? H - 38 : 10;
+      if (multi) { g.textAlign = 'right'; g.fillText(J.name, nx, ny); }
+      if (mode === 'fixed-blind') { g.font = '400 16px ' + FONT; g.fillStyle = C.dim; g.fillText(multi ? 'χωρίς ανιχνευτή → σταθερό' : 'χωρίς ανιχνευτή στην κάθετη → σταθερό πρόγραμμα', nx, multi ? ny + (sideAbove ? 20 : 27) : 10); }
+      if (mode === 'fixed-fail') {
+        var msg = 'ΒΛΑΒΗ ΑΝΙΧΝΕΥΤΗ → ΣΤΑΘΕΡΟ ΠΡΟΓΡΑΜΜΑ'; g.font = '700 24px ' + HEAD; var tw = g.measureText(msg).width;
+        var bx = multi ? Math.max(8, nx - tw - 28) : nx, by = multi ? (sideAbove ? H - 48 : 36) : 8;
+        g.textAlign = 'left'; g.fillStyle = C.bad; rr(g, bx, by, tw + 28, 40, 6); g.fill(); g.fillStyle = '#1B0F0B'; g.textBaseline = 'middle'; g.fillText(msg, bx + 14, by + 21);
+      }
+      J.apps.forEach(function (ai) {
+        var A = net.apps[ai], n = Math.max(0, Math.round(v.q[ai])), lanes = A.lanes, main = A.phase === 0, k, idx, ln, max, shown;
+        g.fillStyle = color;
+        if (main) {
+          var east = A.dir === 'E', room = seg / 2 - bw - 24; max = Math.max(1, Math.floor(room / CP)) * lanes; shown = Math.min(n, max);
+          for (k = 0; k < shown; k++) {
+            idx = Math.floor(k / lanes); ln = k % lanes;
+            var cx = east ? x - bw - 10 - idx * CP - CL : x + bw + 10 + idx * CP, yy = east ? cy + 10 + ln * LP : cy - 10 - 14 - ln * LP;
+            rr(g, cx, yy, CL, 14, 4); g.fill();
+          }
+          g.font = '700 26px ' + HEAD; g.fillStyle = C.paper; g.textBaseline = 'middle'; g.textAlign = east ? 'right' : 'left';
+          g.fillText(nf0.format(n), east ? x - bw - 14 : x + bw + 14, east ? cy + half + 22 : cy - half - 22);
+          g.font = '400 18px ' + FONT; g.fillStyle = C.dim;
+          var nwid = 22 + String(n).length * 15;
+          if (nJ === 1) g.fillText('μέγ. ουρά · ' + shortName(A) + (east ? ' →' : ' ←'), east ? x - bw - 14 - nwid : x + bw + 14 + nwid, east ? cy + half + 23 : cy - half - 21);
+        } else {
+          var below = A.dir === 'S', vroom = (H - (cy + half)) - 14; max = Math.max(1, Math.floor(vroom / 26)) * lanes; shown = Math.min(n, max);
+          for (k = 0; k < shown; k++) {
+            idx = Math.floor(k / lanes); ln = k % lanes;
+            var sx = below ? x + 8 + ln * LP : x - 8 - 14 - ln * LP, sy = below ? cy + half + 8 + idx * 26 : cy - half - 8 - 22 - idx * 26;
+            rr(g, sx, sy, 14, 22, 4); g.fill();
+          }
+          g.font = '700 26px ' + HEAD; g.fillStyle = C.paper; g.textBaseline = 'middle'; g.textAlign = below ? 'left' : 'right';
+          var lx = below ? x + bw + 14 : x - bw - 14, ly = below ? H - 44 : 62;
+          g.fillText(nf0.format(n), lx, ly);
+          g.font = '400 18px ' + FONT; g.fillStyle = C.dim;
+          if (nJ === 1) g.fillText('μέγ. ουρά · ' + shortName(A) + (A.measured ? '' : ' (χωρίς ανιχνευτή)'), lx, ly + 26);
+        }
+      });
+    });
+  }
+
+  function drawDemand() {
+    var cv = $('cD'), g = cv.getContext('2d'), W = 1000, H = 96, mx = Math.max.apply(null, demand), t = ctl.clock();
+    g.setTransform(2, 0, 0, 2, 0, 0); g.clearRect(0, 0, W, H);
+    var X = function (b) { return b / 288 * W; }, Y = function (q) { return H - 22 - (H - 30) * q / mx; };
+    g.beginPath(); g.moveTo(0, H - 22); for (var b = 0; b < 288; b++) g.lineTo(X(b + 0.5), Y(demand[b])); g.lineTo(W, H - 22); g.closePath();
+    g.fillStyle = '#2C3B4A'; g.fill();
+    var cx = X(Math.min(t, 86400) / 300);
+    g.save(); g.beginPath(); g.rect(0, 0, cx, H - 22); g.clip();
+    g.beginPath(); g.moveTo(0, H - 22); for (b = 0; b < 288; b++) g.lineTo(X(b + 0.5), Y(demand[b])); g.lineTo(W, H - 22); g.closePath();
+    g.fillStyle = '#6F8499'; g.fill(); g.restore();
+    g.fillStyle = C.paper; g.fillRect(cx - 1.5, 0, 3, H - 22);
+    g.font = '400 16px ' + FONT; g.fillStyle = C.dim; g.textBaseline = 'bottom';
+    [0, 6, 12, 18, 24].forEach(function (h) { g.textAlign = h === 0 ? 'left' : h === 24 ? 'right' : 'center'; g.fillText((h < 10 ? '0' : '') + h + ':00', X(h * 12), H); });
+  }
+
+  function render() {
+    if (ctl.gen() !== seenGen) setup();
+    var F = ctl.sim('F').summary(), A = ctl.sim('A').summary(), saved = F.delayH - A.delayH, done = ctl.done();
+    $('clock').textContent = done ? '24:00' : hhmm(ctl.clock());
+    $('vF').textContent = nf1.format(F.meanDelay); $('vA').textContent = nf1.format(A.meanDelay);
+    var cv = $('cv'); cv.className = 'cv' + (saved < -0.05 ? ' neg' : '');
+    cv.firstChild.nodeValue = (saved < -0.05 ? '−' : saved > 0.05 ? '+' : '') + nf1.format(Math.abs(saved));
+    $('cl').textContent = saved < -0.05 ? 'ΩΡΕΣ ΑΝΑΜΟΝΗΣ ΠΟΥ ΕΧΑΣΑΝ ΟΙ ΟΔΗΓΟΙ ΣΗΜΕΡΑ' : 'ΩΡΕΣ ΑΝΑΜΟΝΗΣ ΠΟΥ ΓΛΙΤΩΣΑΝ ΟΙ ΟΔΗΓΟΙ ΣΗΜΕΡΑ';
+    var d = F.meanDelay > 0 ? 100 * (A.meanDelay - F.meanDelay) / F.meanDelay : 0;
+    $('cs').textContent = done
+      ? 'Τέλος ημέρας · αναμονή ' + (d > 0 ? '+' : '−') + nf1.format(Math.abs(d)) + '% · ' + (ctl.hadBreak() ? 'με βλάβη ανιχνευτή στη διαδρομή' : nf0.format(F.arrived) + ' οχήματα')
+      : 'σε ' + nf0.format(F.arrived) + ' οχήματα μέχρι τώρα';
+    $('hint').style.display = (!ctl.playing() && ctl.clock() === 0) ? 'block' : 'none';
+    drawRoad($('cF'), 'F', C.blue); drawRoad($('cA'), 'A', C.orange); drawDemand();
+  }
+
+  function frame() { ctl.tick(performance.now()); render(); requestAnimationFrame(frame); }
+
+  // για στιγμιότυπα: #t=0.6 πηγαίνει κατευθείαν στο 60% της ημέρας, #break ενεργοποιεί τη βλάβη, #auto ξεκινά αμέσως
+  // #t=0.7&bf=0.62&bt=0.78: βλάβη από το 62% έως το 78% της ημέρας (για καρέ βίντεο)
+  var bf = +(location.hash.match(/bf=([\d.]+)/) || [])[1], bt = +(location.hash.match(/bt=([\d.]+)/) || [])[1];
+  if (opts.t > 0 && bf > 0 && opts.t > bf) { ctl.seek(bf); ctl.key('b', 0); ctl.seek(Math.min(opts.t, bt || 1)); if (bt && opts.t > bt) { ctl.key('b', 0); ctl.seek(opts.t); } }
+  else if (opts.t > 0) { ctl.seek(opts.t); if (opts.brk) { ctl.key('b', 0); ctl.seek(opts.t + 0.02); } }
+  else if (opts.auto) ctl.key(' ', performance.now());
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

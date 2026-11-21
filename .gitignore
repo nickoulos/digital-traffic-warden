@@ -1,0 +1,13 @@
+# τοπική έξοδος του καταγραφέα και του merge.py
+data-collection/data/
+data-collection/cloud/
+data-collection/merged/
+data-collection/logs/
+
+# cache του live-server.js
+app/live-cache/
+
+__pycache__/
+*.pyc
+.DS_Store
+Thumbs.db

@@ -1,0 +1,562 @@
+<!doctype html>
+<html lang="el">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ψηφιακός Τροχονόμος</title>
+<style>
+:root{
+  --sign:#0b3f91; --deep:#082f70; --white:#fff; --yellow:#ffd42a; --soft:#c5d5f1;
+  --ground:#e3e7eb; --green:#2fd07c; --red:#ff5a4c;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{font-size:10px;height:100%}
+body{height:100%;background:var(--sign);color:var(--white);overflow:hidden;display:flex;align-items:center;justify-content:center;
+  font-family:Bahnschrift,"DIN Alternate","Segoe UI",system-ui,sans-serif;font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+button:focus-visible{outline:.3rem solid var(--yellow);outline-offset:.3rem}
+
+.sign{position:relative;width:160rem;height:90rem;padding:3rem 3.8rem 2.4rem;display:grid;grid-template-rows:auto 1fr auto auto;gap:1.5rem}
+.sign::before{content:"";position:absolute;inset:.8rem;border:.3rem solid var(--white);border-radius:2.4rem;pointer-events:none}
+
+/* κεφαλίδα */
+.top{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:4rem}
+.brand h1{font-size:3.8rem;font-weight:600;line-height:1;letter-spacing:.005em}
+.brand p{font-size:1.75rem;color:var(--yellow);margin-top:.5rem;letter-spacing:.02em}
+.sites{display:flex;gap:1rem;justify-content:center}
+.sites button{text-align:left;padding:.8rem 1.6rem .7rem;border:.2rem solid rgba(255,255,255,.45);border-radius:1rem;line-height:1.15}
+.sites b{display:block;font-size:1.95rem;font-weight:600}
+.sites i{display:block;font-style:normal;font-size:1.3rem;color:var(--yellow)}
+.sites button[aria-pressed=true]{background:var(--white);border-color:var(--white);color:var(--sign)}
+.sites button[aria-pressed=true] i{color:var(--sign);opacity:.7}
+.now{text-align:right}
+.now b{display:block;font-size:6.2rem;font-weight:600;line-height:.9}
+.now span{font-size:1.6rem;color:var(--soft)}
+
+/* οι δύο διασταυρώσεις */
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:2.2rem;min-height:0}
+.side{display:flex;flex-direction:column;gap:.9rem;min-height:0;min-width:0}
+.head{display:flex;justify-content:space-between;align-items:flex-end;gap:2rem}
+.head h2{font-size:3rem;font-weight:600;line-height:1.05}
+.head p{font-size:1.55rem;color:var(--soft);margin-top:.3rem;min-height:1.9rem}
+.head p.warn{color:var(--yellow)}
+.figs{display:flex;gap:2.8rem;text-align:right;flex:none}
+.figs b{display:block;font-size:3.6rem;font-weight:600;line-height:1}
+.figs b small{font-size:1.7rem;font-weight:400;margin-left:.3rem}
+.figs span{font-size:1.35rem;color:var(--soft)}
+.plate{position:relative;flex:1;min-height:0;border-radius:1.4rem;overflow:hidden;background:var(--ground)}
+.plate canvas{position:absolute;inset:0;width:100%;height:100%}
+.rib{display:flex;align-items:center;gap:1.2rem;font-size:1.35rem;color:var(--soft)}
+.rib canvas{flex:1;height:2.2rem;border-radius:.5rem;background:var(--deep);min-width:0}
+.key{display:inline-block;width:1.1rem;height:1.1rem;border-radius:.25rem;margin:0 .4rem 0 .9rem;vertical-align:-.1rem}
+
+/* κάτω ζώνη */
+.low{display:grid;grid-template-columns:33rem 1fr auto;gap:3.4rem;align-items:end}
+.saved span{display:block;font-size:1.55rem;color:var(--soft);line-height:1.25}
+.saved b{display:block;font-size:7.4rem;font-weight:600;line-height:.98;color:var(--yellow)}
+.saved b.loss{color:var(--white)}
+.saved b small{font-size:2.6rem;font-weight:400;margin-left:.6rem}
+.day{min-width:0}
+.jump{display:flex;align-items:center;gap:.8rem;margin-bottom:.8rem;font-size:1.4rem;color:var(--soft);white-space:nowrap}
+.jump button{font-size:1.45rem;color:var(--white);padding:.35rem 1rem;border:.15rem solid rgba(255,255,255,.4);border-radius:2rem}
+.jump button:hover{background:rgba(255,255,255,.14)}
+.jump .leg{margin-left:auto}
+.jump .ln{display:inline-block;width:2.2rem;height:.3rem;border-radius:.2rem;margin:0 .5rem 0 1.2rem;vertical-align:.35rem}
+#chart{display:block;width:100%;height:8.6rem;cursor:pointer;border-radius:.6rem;background:var(--deep)}
+.hours{display:flex;justify-content:space-between;font-size:1.3rem;color:var(--soft);margin-top:.4rem}
+.ctl{display:flex;align-items:center;gap:1.6rem}
+#play{width:7.6rem;height:7.6rem;border-radius:50%;background:var(--white);color:var(--sign);display:grid;place-items:center;flex:none}
+#play svg{width:3rem;height:3rem;fill:currentColor}
+.ctl .col{display:flex;flex-direction:column;gap:.9rem}
+.speeds{display:flex;border:.15rem solid rgba(255,255,255,.4);border-radius:.8rem;overflow:hidden}
+.speeds button{font-size:1.6rem;padding:.55rem 1.15rem;min-width:5.4rem}
+.speeds button+button{border-left:.15rem solid rgba(255,255,255,.4)}
+.speeds button[aria-pressed=true]{background:var(--white);color:var(--sign);font-weight:600}
+#brk{font-size:1.6rem;padding:.6rem 1.2rem;border:.15rem solid var(--yellow);color:var(--yellow);border-radius:.8rem;text-align:center}
+#brk[aria-pressed=true]{background:var(--yellow);color:var(--deep);font-weight:600}
+.note{font-size:1.3rem;color:var(--soft);display:flex;justify-content:space-between;gap:3rem}
+</style>
+</head>
+<body>
+<div class="sign">
+  <header class="top">
+    <div class="brand"><h1>Ψηφιακός Τροχονόμος</h1><p>Psifiakos Trochonomos</p></div>
+    <nav class="sites" id="sites" aria-label="Διασταύρωση"></nav>
+    <div class="now"><b id="clock">00:00</b><span id="dayLbl"></span></div>
+  </header>
+
+  <main class="pair">
+    <section class="side">
+      <div class="head">
+        <div><h2>Με το ρολόι</h2><p>Σταθερό πρόγραμμα: ίδια πράσινα σε κάθε κύκλο</p></div>
+        <div class="figs">
+          <div><b id="qF">0</b><span>σε ουρά τώρα</span></div>
+          <div><b><span id="wF" style="font-size:inherit;color:inherit">0,0</span><small>s</small></b><span>μέση αναμονή ανά όχημα</span></div>
+        </div>
+      </div>
+      <div class="plate"><canvas id="cvF" aria-label="Κάτοψη της διασταύρωσης με το σταθερό πρόγραμμα"></canvas></div>
+      <div class="rib"><span>Πράσινο, τελευταία 4 λεπτά<i class="key" style="background:var(--green)"></i>κύρια οδός<i class="key" style="background:#fff"></i>κάθετη</span><canvas id="rbF"></canvas></div>
+    </section>
+    <section class="side">
+      <div class="head">
+        <div><h2>Ψηφιακός Τροχονόμος</h2><p id="modeTxt"></p></div>
+        <div class="figs">
+          <div><b id="qA">0</b><span>σε ουρά τώρα</span></div>
+          <div><b><span id="wA" style="font-size:inherit;color:inherit">0,0</span><small>s</small></b><span>μέση αναμονή ανά όχημα</span></div>
+        </div>
+      </div>
+      <div class="plate"><canvas id="cvA" aria-label="Κάτοψη της διασταύρωσης με τον Ψηφιακό Τροχονόμο"></canvas></div>
+      <div class="rib"><span>Πράσινο, τελευταία 4 λεπτά<i class="key" style="background:var(--green)"></i>κύρια οδός<i class="key" style="background:#fff"></i>κάθετη</span><canvas id="rbA"></canvas></div>
+    </section>
+  </main>
+
+  <footer class="low">
+    <div class="saved">
+      <span id="savedLbl">Ώρες αναμονής που γλίτωσαν οι οδηγοί από τα μεσάνυχτα</span>
+      <b id="saved">0,0<small>ώρες</small></b>
+      <span id="savedSub"></span>
+    </div>
+    <div class="day">
+      <div class="jump">
+        <span>Πήγαινε στις</span>
+        <button data-h="3">03:00 νύχτα</button><button data-h="8.25">08:15 πρωί</button><button data-h="13.5">13:30 μεσημέρι</button><button data-h="18">18:00 απόγευμα</button>
+        <span class="leg">Αναμονή<i class="ln" style="background:#fff"></i>ρολόι<i class="ln" style="background:var(--yellow)"></i>Τροχονόμος</span>
+      </div>
+      <svg id="chart" viewBox="0 0 1000 100" preserveAspectRatio="none" role="img" aria-label="Αναμονή ανά όχημα στη διάρκεια της ημέρας. Κλικ για μετάβαση σε ώρα."></svg>
+      <div class="hours"><span>00:00</span><span>06:00</span><span>12:00</span><span>18:00</span><span>24:00</span></div>
+    </div>
+    <div class="ctl">
+      <button id="play" aria-label="Εκκίνηση"></button>
+      <div class="col">
+        <div class="speeds" id="speeds" aria-label="Ταχύτητα"></div>
+        <button id="brk" aria-pressed="false">Χάλασε ένας ανιχνευτής</button>
+      </div>
+    </div>
+  </footer>
+
+  <div class="note">
+    <span id="noteTxt"></span>
+    <span>Όσο πιο κόκκινο το αυτοκίνητο, τόσο περισσότερο περιμένει.</span>
+  </div>
+</div>
+
+<script src="data.js"></script>
+<script src="sim-core.js"></script>
+<script src="stage-config.js"></script>
+<script>
+(function () {
+'use strict';
+var D = window.DATA, CFG = window.STAGE.sites, $ = function (id) { return document.getElementById(id); };
+var nf0 = new Intl.NumberFormat('el-GR', { maximumFractionDigits: 0 });
+var nf1 = new Intl.NumberFormat('el-GR', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+var FONT = 'Bahnschrift, "DIN Alternate", "Segoe UI", system-ui, sans-serif';
+var SITES = [
+  { id: 'kif', el: 'Λ. Κηφισίας × Πανόρμου', la: 'L. Kifisias × Panormou' },
+  { id: 'iera', el: 'Κων/πόλεως × Ιερά Οδός', la: 'Konstantinoupoleos × Iera Odos' },
+  { id: 'alex', el: 'Λ. Αλεξάνδρας', la: 'L. Alexandras' }
+];
+var SPEEDS = [4, 10, 60, 600];
+var DAY = 86400, LW = 12, PITCH = 17, CL = 13, CW = 8, Z = 12, GAP = 4;
+var ICON = {
+  play: '<svg viewBox="0 0 24 24"><path d="M7 4.5v15l12.5-7.5z"/></svg>',
+  pause: '<svg viewBox="0 0 24 24"><path d="M6 4.5h4.2v15H6zM13.8 4.5H18v15h-4.2z"/></svg>',
+  again: '<svg viewBox="0 0 24 24"><path d="M12 5a7 7 0 1 1-6.6 4.7l2 .7A4.9 4.9 0 1 0 12 7.1V10L7.5 6 12 2z"/></svg>'
+};
+var S = { site: 'kif', speed: 10, playing: false, F: null, A: null, acc: 0, snap: true, broken: false, hadBreak: false, vis: null, hist: null, geo: {}, batch: {}, uiAt: 0 };
+
+location.hash.replace(/^#/, '').split('&').forEach(function (kv) {
+  var p = kv.split('='); if (p[0]) S['h_' + p[0]] = decodeURIComponent(p[1] || '1');
+});
+if (S.h_site && CFG[S.h_site]) S.site = S.h_site;
+if (S.h_speed) S.speed = +S.h_speed;
+
+/* ---------- κλίμακα: η οθόνη σχεδιάζεται σε 1600 × 900 και μεγαλώνει ολόκληρη ---------- */
+var U = 1;
+function fit() {
+  U = Math.min(innerWidth / 1600, innerHeight / 900);
+  document.documentElement.style.fontSize = (10 * U) + 'px';
+  S.geo = {};
+}
+function hhmm(t) { t = Math.min(DAY, Math.max(0, t)); if (t >= DAY) return '24:00'; var h = Math.floor(t / 3600), m = Math.floor(t % 3600 / 60); return (h < 10 ? '0' : '') + h + ':' + (m < 10 ? '0' : '') + m; }
+function minus(s) { return s.replace('-', '−'); }
+
+/* ---------- προσομοίωση ---------- */
+function cfg() { return CFG[S.site]; }
+function mk(ctrl) { return SimCore.createSim(D, S.site, cfg().day, 0, DAY, { seed: cfg().seed }, ctrl); }
+function newVis(sim) { return { cars: sim.net.apps.map(function () { return {}; }), parts: [] }; }
+function stepBoth() {
+  S.F.step(); S.A.step();
+  for (var j = 0; j < S.hist.F.length; j++) {
+    S.hist.F[j].push(S.F.sig[j].g); S.hist.A[j].push(S.A.sig[j].g);
+    if (S.hist.F[j].length > 240) { S.hist.F[j].shift(); S.hist.A[j].shift(); }
+  }
+}
+function reset(frac) {
+  S.F = mk('fixed'); S.A = mk('optimal');
+  var nJ = S.F.net.juncs.length; S.hist = { F: [], A: [] };
+  for (var j = 0; j < nJ; j++) { S.hist.F.push([]); S.hist.A.push([]); }
+  var target = Math.round(Math.max(0, Math.min(1, frac)) * DAY);
+  while (S.F.t < target && !S.F.done) stepBoth();
+  S.vis = { F: newVis(S.F), A: newVis(S.A) };
+  S.acc = 0; S.snap = true; S.broken = false; S.hadBreak = false; S.uiAt = 0;
+  ui(true);
+}
+function batch() {
+  if (S.batch[S.site]) return S.batch[S.site];
+  var F = mk('fixed').run(), A = mk('optimal').run(), nb = 96, k = F.series.t.length / nb;
+  function per(sim) { var o = []; for (var b = 0; b < nb; b++) { var q = 0, a = 0; for (var i = 0; i < k; i++) { q += sim.series.qInt[b * k + i]; a += sim.series.arr[b * k + i]; } o.push(q / Math.max(1, a)); } return o; }
+  var dem = []; for (var b = 0; b < nb; b++) { var s = 0; F.net.apps.forEach(function (ap) { if (ap.up < 0) s += SimCore.flowAt(D, ap, cfg().day, b * 900 + 450, F.P); }); dem.push(s); }
+  return (S.batch[S.site] = { F: per(F), A: per(A), dem: dem });
+}
+
+/* ---------- γεωμετρία της κάτοψης ---------- */
+function zoom(sim) { return sim.net.juncs.length === 1 ? 1.45 : 1; }
+function geom(sim, W, H) {
+  var key = S.site + '|' + Math.round(W) + '|' + Math.round(H);
+  if (S.geo[key]) return S.geo[key];
+  var net = sim.net, nJ = net.juncs.length, mE = 1, mW = 1, hasS = false, hasN = false;
+  net.apps.forEach(function (A) {
+    if (A.dir === 'E') mE = Math.max(mE, A.lanes); if (A.dir === 'W') mW = Math.max(mW, A.lanes);
+    if (A.dir === 'S') hasS = true; if (A.dir === 'N') hasN = true;
+  });
+  var cy = Math.round(H * (hasS && !hasN ? 0.68 : hasN && !hasS ? 0.32 : 0.5)), yTop = cy - mW * LW, yBot = cy + mE * LW;
+  var xs = net.juncs.map(function (J, j) { return nJ === 1 ? W / 2 : W * (0.2 + 0.6 * j / (nJ - 1)); });
+  var hw = net.juncs.map(function (J) {
+    var m = 1; J.apps.forEach(function (ai) { var A = net.apps[ai]; if (A.dir === 'S' || A.dir === 'N') m = Math.max(m, A.lanes); });
+    return m * LW;
+  });
+  var edge = Z + GAP;
+  var ap = net.apps.map(function (A) {
+    var j = A.j, x = xs[j], h = hw[j], o = { A: A, L: A.lanes, j: j, horiz: A.dir === 'E' || A.dir === 'W' };
+    if (A.dir === 'E') { o.d = 1; o.stop = x - h - edge; o.end = j > 0 ? xs[j - 1] + hw[j - 1] + edge : 0; o.lane = function (l) { return cy + (l + 0.5) * LW; }; }
+    else if (A.dir === 'W') { o.d = -1; o.stop = x + h + edge; o.end = j < nJ - 1 ? xs[j + 1] - hw[j + 1] - edge : W; o.lane = function (l) { return cy - (l + 0.5) * LW; }; }
+    else if (A.dir === 'S') { o.d = 1; o.stop = yTop - edge; o.end = 0; o.lane = function (l) { return x - (l + 0.5) * LW; }; }
+    else { o.d = -1; o.stop = yBot + edge; o.end = H; o.lane = function (l) { return x + (l + 0.5) * LW; }; }
+    o.len = Math.abs(o.end - o.stop);
+    o.loop = Math.min(o.len - 34, 7 * PITCH);
+    return o;
+  });
+  var g = { W: W, H: H, cy: cy, yTop: yTop, yBot: yBot, xs: xs, hw: hw, mE: mE, mW: mW, ap: ap, nJ: nJ, edge: edge, v: PITCH / sim.P.spacing * sim.P.cruise / 3.6 };
+  S.geo[key] = g; return g;
+}
+/* θέση του μπροστινού μέρους ενός οχήματος: s = απόσταση από τη γραμμή στάσης (αρνητική πριν από αυτήν) */
+function place(g, o, lane, s, id) {
+  if (o.horiz) return { x: o.stop + o.d * s, y: o.lane(lane), hx: o.d, hy: 0, a: fade(g, o, o.stop + o.d * s, o.d) };
+  var right = id % 2 === 0, east = (o.A.dir === 'S') ? !right : right;          // δεξιά στροφή για S = δύση, για N = ανατολή
+  var yT = east ? g.cy + ((o.A.dir === 'N' ? g.mE - 1 : (id >> 1) % g.mE) + 0.5) * LW : g.cy - ((o.A.dir === 'S' ? g.mW - 1 : (id >> 1) % g.mW) + 0.5) * LW;
+  var y0 = o.stop, s1 = Math.abs(yT - y0);
+  if (s <= s1) return { x: o.lane(lane), y: y0 + o.d * s, hx: 0, hy: o.d, a: 1 };
+  var hx = east ? 1 : -1, x = o.lane(lane) + hx * (s - s1);
+  return { x: x, y: yT, hx: hx, hy: 0, a: fade(g, o, x, hx) };
+}
+function limit(g, j, hx) {          // πού σταματά να σχεδιάζεται ένα όχημα που φεύγει από τον κόμβο j
+  if (hx > 0) return j < g.nJ - 1 ? { x: g.xs[j] + g.hw[j] + g.edge + 34, soft: true } : { x: g.W + CL + 4, soft: false };
+  return j > 0 ? { x: g.xs[j] - g.hw[j] - g.edge - 34, soft: true } : { x: -CL - 4, soft: false };
+}
+function fade(g, o, x, hx) {
+  var lim = limit(g, o.j, hx), left = (lim.x - x) * hx;
+  if (left <= 0) return 0;
+  return lim.soft ? Math.min(1, left / 22) : 1;
+}
+
+/* ---------- οχήματα: η προσομοίωση δίνει ουρές, εδώ τους δίνουμε συνεχή κίνηση ---------- */
+function sync(sim, V, g, dtv, tc) {
+  var move = g.v * dtv, quick = dtv > 8;
+  g.ap.forEach(function (o, a) {
+    var head = sim.st.served[a], n = sim.qlen(a), tr = sim.transit[a].slice().sort(function (p, q) { return p - q; });
+    var cars = V.cars[a], total = n + tr.length, id, c, k;
+    for (id in cars) {
+      id = +id;
+      if (id < head) { if (!S.snap && !quick) V.parts.push({ o: o, lane: id % o.L, s: -cars[id].p, id: id }); delete cars[id]; }
+      else if (id >= head + total) delete cars[id];
+    }
+    for (k = 0; k < total; k++) {
+      id = head + k;
+      var row = Math.floor(k / o.L) * PITCH, target = k < n ? row : Math.max(row, (tr[k - n] - tc) * g.v);
+      c = cars[id];
+      if (!c) cars[id] = { p: S.snap ? target : Math.max(target, o.len + CL), w: 0 };
+      else c.p = c.p > target ? Math.max(target, c.p - move) : target;
+      cars[id].w = k < n ? tc - sim.q[a][sim.qh[a] + k] : 0;
+    }
+  });
+  var keep = [];
+  V.parts.forEach(function (p) { p.s += move; var q = place(g, p.o, p.lane, p.s, p.id); if (q.a > 0 && p.s < 2000) keep.push(p); });
+  V.parts = quick ? [] : keep;
+}
+function tint(w) {
+  function mix(a, b, t) { return 'rgb(' + Math.round(a[0] + (b[0] - a[0]) * t) + ',' + Math.round(a[1] + (b[1] - a[1]) * t) + ',' + Math.round(a[2] + (b[2] - a[2]) * t) + ')'; }
+  var c0 = [244, 246, 248], c1 = [255, 212, 42], c2 = [255, 82, 66];
+  if (w <= 15) return 'rgb(244,246,248)';
+  if (w <= 50) return mix(c0, c1, (w - 15) / 35);
+  return mix(c1, c2, Math.min(1, (w - 50) / 50));
+}
+function rr(c, x, y, w, h, r) { c.beginPath(); if (c.roundRect) c.roundRect(x, y, w, h, r); else c.rect(x, y, w, h); }
+function car(c, x, y, hx, hy, col, alpha) {      // x,y = μπροστινό μέρος
+  var cx = x - hx * CL / 2, cyy = y - hy * CL / 2, w = hx ? CL : CW, h = hx ? CW : CL;
+  c.globalAlpha = alpha;
+  c.fillStyle = col; rr(c, cx - w / 2, cyy - h / 2, w, h, 2.6); c.fill();
+  c.fillStyle = 'rgba(18,28,44,.5)';
+  if (hx) c.fillRect(cx + hx * 2.2 - 1.3, cyy - h / 2 + 1.4, 2.6, h - 2.8); else c.fillRect(cx - w / 2 + 1.4, cyy + hy * 2.2 - 1.3, w - 2.8, 2.6);
+  c.globalAlpha = 1;
+}
+function lamp(sim, A) {
+  var sg = sim.sig[A.j];
+  return sg.g === A.phase ? 2 : (sg.g === -1 && sg.amber === A.phase && sg.el < 3 ? 1 : 0);
+}
+
+/* ---------- σχεδίαση κάτοψης ---------- */
+function draw(cv, sim, V, adaptive) {
+  var dpr = window.devicePixelRatio || 1, cw = cv.clientWidth, ch = cv.clientHeight;
+  if (!cw || !ch) return;
+  if (cv.width !== Math.round(cw * dpr) || cv.height !== Math.round(ch * dpr)) { cv.width = Math.round(cw * dpr); cv.height = Math.round(ch * dpr); }
+  var zm = zoom(sim), c = cv.getContext('2d'), W = cw / U / zm, H = ch / U / zm, g = geom(sim, W, H), net = sim.net, j, i;
+  c.setTransform(dpr * U * zm, 0, 0, dpr * U * zm, 0, 0);
+  c.fillStyle = '#e3e7eb'; c.fillRect(0, 0, W, H);
+
+  // οικοδομικά τετράγωνα
+  var cols = [], px = -30;
+  for (j = 0; j < g.nJ; j++) { cols.push([px, g.xs[j] - g.hw[j]]); px = g.xs[j] + g.hw[j]; }
+  cols.push([px, W + 30]);
+  c.fillStyle = '#f4f6f8'; c.strokeStyle = '#d3d9e0'; c.lineWidth = 1;
+  cols.forEach(function (x) {
+    [[-30, g.yTop], [g.yBot, H + 30]].forEach(function (y) {
+      var bw = x[1] - x[0] - 36, bh = y[1] - y[0] - 36; if (bw < 20 || bh < 20) return;
+      c.fillStyle = '#f4f6f8'; rr(c, x[0] + 18, y[0] + 18, bw, bh, 12); c.fill(); c.stroke();
+      if (bw > 90 && bh > 90) { c.fillStyle = '#e9edf1'; rr(c, x[0] + 44, y[0] + 44, bw - 52, bh - 52, 8); c.fill(); }
+    });
+  });
+  // δέντρα στο πεζοδρόμιο της κύριας οδού
+  c.fillStyle = '#b4d1bc';
+  for (var tx = 26; tx < W; tx += 44) {
+    var near = false; for (j = 0; j < g.nJ; j++) if (Math.abs(tx - g.xs[j]) < g.hw[j] + 34) near = true;
+    if (near) continue;
+    c.beginPath(); c.arc(tx, g.yTop - 9, 3.6, 0, 7); c.arc(tx + 22, g.yBot + 9, 3.6, 0, 7); c.fill();
+  }
+  // άσφαλτος
+  c.fillStyle = '#2b3038';
+  c.fillRect(0, g.yTop, W, g.yBot - g.yTop);
+  for (j = 0; j < g.nJ; j++) c.fillRect(g.xs[j] - g.hw[j], 0, 2 * g.hw[j], H);
+  // διαγράμμιση
+  c.strokeStyle = 'rgba(255,255,255,.34)'; c.lineWidth = 1.2; c.setLineDash([9, 9]);
+  c.beginPath();
+  for (i = 1; i < g.mE; i++) seg(c, g, g.cy + i * LW);
+  for (i = 1; i < g.mW; i++) seg(c, g, g.cy - i * LW);
+  for (j = 0; j < g.nJ; j++) for (i = 1; i < g.hw[j] / LW; i++) {
+    [-1, 1].forEach(function (sd) { var x = g.xs[j] + sd * i * LW; c.moveTo(x, 0); c.lineTo(x, g.yTop - g.edge); c.moveTo(x, g.yBot + g.edge); c.lineTo(x, H); });
+  }
+  c.stroke(); c.setLineDash([]);
+  c.strokeStyle = 'rgba(255,255,255,.8)'; c.lineWidth = 1.6; c.beginPath();
+  seg(c, g, g.cy);
+  for (j = 0; j < g.nJ; j++) { c.moveTo(g.xs[j], 0); c.lineTo(g.xs[j], g.yTop - g.edge); c.moveTo(g.xs[j], g.yBot + g.edge); c.lineTo(g.xs[j], H); }
+  c.stroke();
+  // διαβάσεις πεζών
+  c.fillStyle = 'rgba(255,255,255,.82)';
+  for (j = 0; j < g.nJ; j++) {
+    var x0 = g.xs[j] - g.hw[j], x1 = g.xs[j] + g.hw[j], y;
+    for (y = g.yTop + 2; y < g.yBot - 3; y += 7) { c.fillRect(x0 - Z - 1, y, Z - 2, 3.4); c.fillRect(x1 + 3, y, Z - 2, 3.4); }
+    for (var x = x0 + 2; x < x1 - 3; x += 7) { c.fillRect(x, g.yTop - Z - 1, 3.4, Z - 2); c.fillRect(x, g.yBot + 3, 3.4, Z - 2); }
+  }
+  // ανιχνευτές στο οδόστρωμα
+  c.font = '500 10.5px ' + FONT; c.textBaseline = 'middle';
+  g.ap.forEach(function (o) {
+    var A = o.A; if (!A.det || o.loop < 30) return;
+    var bad = adaptive && S.broken && A.det === cfg().breakDet, a0 = o.lane(0) - (LW / 2) * (o.lane(1) > o.lane(0) ? 1 : -1), span = o.L * LW * (o.lane(1) > o.lane(0) ? 1 : -1);
+    var s = o.stop - o.d * o.loop;
+    c.strokeStyle = bad ? '#ff5a4c' : 'rgba(255,255,255,.6)'; c.lineWidth = bad ? 2 : 1.2;
+    if (o.horiz) c.strokeRect(s - 5, Math.min(a0, a0 + span) + 2, 10, Math.abs(span) - 4); else c.strokeRect(Math.min(a0, a0 + span) + 2, s - 5, Math.abs(span) - 4, 10);
+    c.fillStyle = bad ? '#d92b1f' : '#7b8796';
+    var txt = bad ? A.det + ' εκτός λειτουργίας' : (g.nJ > 1 ? A.det : 'ανιχνευτής ' + A.det);
+    if (A.dir === 'E') { c.textAlign = 'center'; c.fillText(txt, s, g.yBot + 26); }
+    else if (A.dir === 'W') { c.textAlign = 'center'; c.fillText(txt, s, g.yTop - 26); }
+    else if (A.dir === 'S') { c.textAlign = 'right'; c.fillText(txt, g.xs[o.j] - g.hw[o.j] - 22, s); }
+    else { c.textAlign = 'left'; c.fillText(txt, g.xs[o.j] + g.hw[o.j] + 22, s); }
+  });
+  // οχήματα
+  g.ap.forEach(function (o, a) {
+    var cars = V.cars[a], id, hidden = 0;
+    for (id in cars) {
+      var k = cars[id];
+      if (k.p > o.len - CL) { if (k.w > 0) hidden++; continue; }
+      var q = place(g, o, (+id) % o.L, -k.p, +id);
+      car(c, q.x, q.y, q.hx, q.hy, tint(k.w), 1);
+    }
+    o.hidden = hidden;
+  });
+  V.parts.forEach(function (p) { var q = place(g, p.o, p.lane, p.s, p.id); car(c, q.x, q.y, q.hx, q.hy, 'rgb(244,246,248)', q.a); });
+  // γραμμές στάσης και σηματοδότες
+  g.ap.forEach(function (o, a) {
+    var st = lamp(sim, o.A), col = ['#ff4b3e', '#ffb400', '#1fc16b'][st];
+    var lo = Math.min(o.lane(0), o.lane(o.L - 1)) - LW / 2, span = o.L * LW;
+    c.fillStyle = col;
+    if (o.horiz) c.fillRect(o.stop + (o.d > 0 ? 0 : -3), lo + 1, 3, span - 2); else c.fillRect(lo + 1, o.stop + (o.d > 0 ? 0 : -3), span - 2, 3);
+    var hx, hy;                                             // κέντρο της κεφαλής, στο πεζοδρόμιο δεξιά του οδηγού
+    if (o.A.dir === 'E') { hx = o.stop - 16; hy = g.yBot + 10; } else if (o.A.dir === 'W') { hx = o.stop + 16; hy = g.yTop - 10; }
+    else if (o.A.dir === 'S') { hx = g.xs[o.j] - g.hw[o.j] - 10; hy = o.stop - 16; } else { hx = g.xs[o.j] + g.hw[o.j] + 10; hy = o.stop + 16; }
+    var w = o.horiz ? 34 : 13, h = o.horiz ? 13 : 34;
+    c.fillStyle = '#161a20'; rr(c, hx - w / 2, hy - h / 2, w, h, 6.5); c.fill();
+    for (i = 0; i < 3; i++) {
+      var off = (i - 1) * 10.5 * (o.horiz ? -o.d : -o.d), lx = o.horiz ? hx + off : hx, ly = o.horiz ? hy : hy + off, on = i === st;
+      c.fillStyle = on ? ['#ff4b3e', '#ffb400', '#1fc16b'][i] : '#3a414b';
+      if (on) { c.shadowColor = c.fillStyle; c.shadowBlur = 12; }
+      c.beginPath(); c.arc(lx, ly, 3.7, 0, 7); c.fill(); c.shadowBlur = 0;
+    }
+  });
+  // ονόματα οδών και ουρές
+  g.ap.forEach(function (o, a) {
+    var A = o.A; if (A.up >= 0) return;
+    var n = sim.qlen(a), name = (g.nJ > 1 && o.horiz) ? net.site.mainName : A.label.replace(/ \(.*\)/, ''), jx = g.xs[o.j], h = g.hw[o.j], lastJ = g.nJ > 1 && o.j === g.nJ - 1;
+    var q = n + ' σε ουρά', over = o.hidden > 0;
+    function two(x, y, al) {
+      y = Math.min(y, H - 38);
+      var l2 = q +(A.measured ? '' : ', χωρίς ανιχνευτή') + (over ? ', συνεχίζει εκτός εικόνας' : '');
+      c.font = '600 14px ' + FONT; var w1 = c.measureText(name).width; c.font = '500 12.5px ' + FONT; var w2 = c.measureText(l2).width, bw = Math.max(w1, w2) + 16;
+      var bx = al === 'left' ? x - 8 : x - bw + 8;
+      c.fillStyle = 'rgba(255,255,255,.94)'; rr(c, bx, y - 11, bw, 40, 7); c.fill();
+      c.textAlign = al;
+      c.font = '600 14px ' + FONT; c.fillStyle = '#1f2937'; c.fillText(name, x, y);
+      c.font = '500 12.5px ' + FONT; c.fillStyle = over ? '#d92b1f' : '#5d6978'; c.fillText(l2, x, y + 17);
+    }
+    if (A.dir === 'E') two(o.end + 16, g.yBot + 56, 'left');
+    else if (A.dir === 'W') two(o.end - 16, g.yTop - 64, 'right');
+    else if (A.dir === 'S') { if (lastJ) two(jx - h - 22, 26, 'right'); else two(jx + h + 22, 26, 'left'); }
+    else two(jx - h - 22, H - 40, 'right');
+  });
+  // κατάσταση κόμβου όταν ο Τροχονόμος δεν ελέγχει
+  if (adaptive) for (j = 0; j < g.nJ; j++) {
+    var m = sim.mode(j); if (m === 'adaptive') continue;
+    var t = m === 'fixed-fail' ? 'βλάβη: στο ρολόι' : 'στο ρολόι', bx, by = g.yTop - 46;
+    c.font = '600 12px ' + FONT; var tw = c.measureText(t).width + 16; bx = g.xs[j] - g.hw[j] - 26 - tw;
+    c.fillStyle = m === 'fixed-fail' ? '#d92b1f' : '#44505f'; rr(c, bx, by, tw, 22, 11); c.fill();
+    c.fillStyle = '#fff'; c.textAlign = 'left'; c.fillText(t, bx + 8, by + 11.5);
+  }
+}
+function seg(c, g, y) {
+  var px = 0;
+  for (var j = 0; j <= g.nJ; j++) {
+    var x1 = j < g.nJ ? g.xs[j] - g.hw[j] - g.edge : g.W; c.moveTo(px, y); c.lineTo(x1, y);
+    if (j < g.nJ) px = g.xs[j] + g.hw[j] + g.edge;
+  }
+}
+function ribbon(cv, hist) {
+  var dpr = window.devicePixelRatio || 1, cw = cv.clientWidth, ch = cv.clientHeight; if (!cw) return;
+  if (cv.width !== Math.round(cw * dpr) || cv.height !== Math.round(ch * dpr)) { cv.width = Math.round(cw * dpr); cv.height = Math.round(ch * dpr); }
+  var c = cv.getContext('2d'); c.setTransform(dpr, 0, 0, dpr, 0, 0); c.clearRect(0, 0, cw, ch);
+  var nJ = hist.length, rh = ch / nJ, sw = cw / 240;
+  for (var j = 0; j < nJ; j++) {
+    var h = hist[j], i = 0;
+    while (i < h.length) {
+      var v = h[i], k = i; while (k < h.length && h[k] === v) k++;
+      if (v >= 0) { c.fillStyle = v === 0 ? '#2fd07c' : '#ffffff'; c.fillRect(cw - (h.length - i) * sw, j * rh + (nJ > 1 ? 0.5 : 0), (k - i) * sw - 0.6, rh - (nJ > 1 ? 1 : 0)); }
+      i = k;
+    }
+  }
+}
+
+/* ---------- διάγραμμα ημέρας ---------- */
+function chart() {
+  var b = batch(), n = b.F.length, mx = 1, md = 1, i;
+  for (i = 0; i < n; i++) { mx = Math.max(mx, b.F[i], b.A[i]); md = Math.max(md, b.dem[i]); }
+  function X(i) { return (i + 0.5) / n * 1000; }
+  function line(v) { var d = ''; for (var i = 0; i < n; i++) d += (i ? 'L' : 'M') + X(i).toFixed(1) + ' ' + (92 - 82 * v[i] / mx).toFixed(1); return d; }
+  var area = 'M0 100'; for (i = 0; i < n; i++) area += 'L' + X(i).toFixed(1) + ' ' + (100 - 70 * b.dem[i] / md).toFixed(1); area += 'L1000 100Z';
+  var lines = '<path d="' + line(b.F) + '" fill="none" stroke="#fff" stroke-width="1.6" vector-effect="non-scaling-stroke"/>' +
+    '<path d="' + line(b.A) + '" fill="none" stroke="#ffd42a" stroke-width="2.2" vector-effect="non-scaling-stroke"/>';
+  $('chart').innerHTML = '<defs><clipPath id="played"><rect id="playedR" x="0" y="0" width="0" height="100"/></clipPath></defs>' +
+    '<path d="' + area + '" fill="rgba(255,255,255,.1)"/>' +
+    '<g opacity=".28">' + lines + '</g><g clip-path="url(#played)">' + lines + '</g>' +
+    '<line id="head" x1="0" x2="0" y1="0" y2="100" stroke="#fff" stroke-width="2" vector-effect="non-scaling-stroke"/>';
+}
+
+/* ---------- κείμενα και αριθμοί ---------- */
+function ui(force) {
+  var now = performance.now(); if (!force && now - S.uiAt < 90) return; S.uiAt = now;
+  var f = S.F.summary(), a = S.A.summary(), saved = f.delayH - a.delayH, x = S.F.t / DAY * 1000;
+  $('clock').textContent = hhmm(S.F.t);
+  $('wF').textContent = nf1.format(f.meanDelay); $('wA').textContent = nf1.format(a.meanDelay);
+  $('qF').textContent = nf0.format(f.nowQ); $('qA').textContent = nf0.format(a.nowQ);
+  var el = $('saved'); el.className = saved < -0.05 ? 'loss' : '';
+  el.innerHTML = minus((saved >= 0.05 ? '+' : '') + nf1.format(Math.abs(saved) < 0.05 ? 0 : saved)) + '<small>ώρες</small>';
+  $('savedLbl').textContent = saved < -0.05 ? 'Ώρες αναμονής που πρόσθεσε ο Τροχονόμος από τα μεσάνυχτα' : 'Ώρες αναμονής που γλίτωσαν οι οδηγοί από τα μεσάνυχτα';
+  $('savedSub').textContent = 'σε ' + nf0.format(f.arrived) + ' οχήματα' + (S.hadBreak ? ', με βλάβη ανιχνευτή στη διαδρομή' : '') + (S.F.done ? ', τέλος ημέρας' : '');
+  var r = document.getElementById('playedR'); if (r) { r.setAttribute('width', x); var h = $('head'); h.setAttribute('x1', x); h.setAttribute('x2', x); }
+  var nJ = S.A.net.juncs.length, fail = 0, blind = 0;
+  for (var j = 0; j < nJ; j++) { var m = S.A.mode(j); if (m === 'fixed-fail') fail++; else if (m === 'fixed-blind') blind++; }
+  var mt = $('modeTxt');
+  mt.className = fail ? 'warn' : '';
+  mt.textContent = fail ? 'Βλάβη στον ' + cfg().breakDet + ': γύρισε μόνος του στο σταθερό πρόγραμμα'
+    : blind ? blind + ' από ' + nJ + ' κόμβους χωρίς ανιχνευτή στην κάθετη: εκεί μένει στο ρολόι'
+    : 'Διαλέγει ό,τι δίνει τη μικρότερη συνολική αναμονή';
+  $('play').innerHTML = S.F.done ? ICON.again : S.playing ? ICON.pause : ICON.play;
+  $('play').setAttribute('aria-label', S.F.done ? 'Από την αρχή' : S.playing ? 'Παύση' : 'Εκκίνηση');
+  var bk = $('brk'); bk.setAttribute('aria-pressed', String(S.broken)); bk.textContent = S.broken ? 'Επισκευή του ανιχνευτή' : 'Χάλασε ένας ανιχνευτής';
+}
+function controls() {
+  $('sites').innerHTML = SITES.map(function (s) { return '<button data-site="' + s.id + '" aria-pressed="' + (s.id === S.site) + '"><b>' + s.el + '</b><i>' + s.la + '</i></button>'; }).join('');
+  $('speeds').innerHTML = SPEEDS.map(function (v) { return '<button data-v="' + v + '" aria-pressed="' + (v === S.speed) + '">×' + v + '</button>'; }).join('');
+  var day = D.days.filter(function (d) { return d.key === cfg().day; })[0];
+  $('dayLbl').textContent = day.label + ', προσομοίωση';
+  $('noteTxt').textContent = 'Προσομοίωση. Η ζήτηση είναι μετρημένη από τους ανιχνευτές της Περιφέρειας Αττικής. Το σταθερό πρόγραμμα είναι δικός μας σχεδιασμός, όχι το ισχύον. Ίδια αυτοκίνητα και στις δύο πλευρές.';
+}
+function setSite(id) { if (!CFG[id]) return; S.site = id; S.playing = false; controls(); chart(); reset(0); }
+function toggle() { if (S.F.done) { reset(0); S.playing = true; } else S.playing = !S.playing; ui(true); }
+function seek(frac) { var was = S.playing; reset(frac); S.playing = was && !S.F.done; ui(true); }
+function breakDet() {
+  if (S.F.done) return;
+  S.broken = !S.broken;
+  if (S.broken) { S.A.failDetector(cfg().breakDet); S.hadBreak = true; } else S.A.restoreDetector(cfg().breakDet);
+  ui(true);
+}
+
+$('sites').onclick = function (e) { var b = e.target.closest('button'); if (b) setSite(b.dataset.site); };
+$('speeds').onclick = function (e) { var b = e.target.closest('button'); if (b) { S.speed = +b.dataset.v; controls(); } };
+$('play').onclick = toggle;
+$('brk').onclick = breakDet;
+document.querySelector('.jump').onclick = function (e) { var b = e.target.closest('button'); if (b) seek(+b.dataset.h / 24); };
+$('chart').onclick = function (e) { var r = this.getBoundingClientRect(); seek((e.clientX - r.left) / r.width); };
+addEventListener('keydown', function (e) {
+  if (e.ctrlKey || e.metaKey || e.altKey) return;
+  var k = e.code, i = SPEEDS.indexOf(S.speed);
+  if (k === 'Space') { e.preventDefault(); toggle(); }
+  else if (k === 'KeyB') breakDet();
+  else if (k === 'KeyR') { S.playing = false; reset(0); }
+  else if (k === 'Digit1' || k === 'Digit2' || k === 'Digit3') setSite(SITES[+k.slice(5) - 1].id);
+  else if (k === 'ArrowUp' && i < SPEEDS.length - 1) { S.speed = SPEEDS[i + 1]; controls(); }
+  else if (k === 'ArrowDown' && i > 0) { S.speed = SPEEDS[i - 1]; controls(); }
+  else if (k === 'ArrowRight') seek(Math.min(1, (S.F.t + 1800) / DAY));
+  else if (k === 'ArrowLeft') seek(Math.max(0, (S.F.t - 1800) / DAY));
+});
+addEventListener('resize', function () { fit(); });
+
+/* ---------- βρόχος ---------- */
+var last = 0;
+function frame(ts) { var dt = Math.min(0.1, (ts - last) / 1000 || 0); last = ts; tick(dt); requestAnimationFrame(frame); }
+function tick(dt) {
+  var dtv = 0;
+  if (S.playing && !S.F.done) {
+    dtv = dt * S.speed; S.acc += dtv;
+    var n = Math.floor(S.acc); S.acc -= n;
+    for (var i = 0; i < n && !S.F.done; i++) stepBoth();
+    if (S.F.done) { S.playing = false; S.acc = 0; ui(true); }
+  }
+  var cF = $('cvF'), cA = $('cvA'), tc = S.F.t + S.acc;
+  if (cF.clientWidth) {
+    var zm = zoom(S.F);
+    sync(S.F, S.vis.F, geom(S.F, cF.clientWidth / U / zm, cF.clientHeight / U / zm), dtv, tc);
+    sync(S.A, S.vis.A, geom(S.A, cA.clientWidth / U / zm, cA.clientHeight / U / zm), dtv, tc);
+    S.snap = false;
+    draw(cF, S.F, S.vis.F, false); draw(cA, S.A, S.vis.A, true);
+    ribbon($('rbF'), S.hist.F); ribbon($('rbA'), S.hist.A);
+  }
+  ui(false);
+}
+
+fit(); controls(); chart(); reset(S.h_t ? +S.h_t : 0);
+if (S.h_break) breakDet();
+if (S.h_play) S.playing = true;
+if (S.h_frames) for (var fi = 0; fi < +S.h_frames; fi++) tick(1 / 60);      // για ελέγχους χωρίς πραγματικό ρολόι
+ui(true);
+requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

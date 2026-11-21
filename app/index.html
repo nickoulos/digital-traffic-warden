@@ -1,0 +1,604 @@
+<!doctype html>
+<html lang="el">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ψηφιακός Τροχονόμος — προσομοίωση προσαρμοστικής σηματοδότησης</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha384-sHL9NAb7lN7rfvG5lfHpm643Xkcjzp4jFvuavGOndn6pjVqS6ny56CAt3nsEVT4H" crossorigin="anonymous">
+<style>
+:root{
+  --bg:#f3f2ee; --panel:#fcfcfb; --ink:#12120f; --ink2:#52514e; --ink3:#8a8982; --rule:#d9d7cf; --rule2:#e9e7e0;
+  --road:#dcdad2; --roadline:#fcfcfb; --car:#3b3a36; --carmove:#9b9a93; --late:#c23b3a;
+  --fixed:#2a78d6; --adapt:#eb6834; --green:#1e9e4a; --amber:#e0a100; --red:#d43d3c;
+  --tag:#fff3d0; --tagink:#6b4e00; --real:#dff3e6; --realink:#12592c; --focus:#2a78d6;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#121211; --panel:#1a1a19; --ink:#f0efec; --ink2:#c3c2b7; --ink3:#8b8a82; --rule:#34332f; --rule2:#282724;
+    --road:#2c2b28; --roadline:#1a1a19; --car:#e4e3dc; --carmove:#7d7c75; --late:#e66767;
+    --fixed:#3987e5; --adapt:#d95926; --green:#2fb35d; --amber:#d9a21a; --red:#e25352;
+    --tag:#3d3210; --tagink:#f0d68a; --real:#143321; --realink:#9ad9b0; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#121211; --panel:#1a1a19; --ink:#f0efec; --ink2:#c3c2b7; --ink3:#8b8a82; --rule:#34332f; --rule2:#282724;
+  --road:#2c2b28; --roadline:#1a1a19; --car:#e4e3dc; --carmove:#7d7c75; --late:#e66767;
+  --fixed:#3987e5; --adapt:#d95926; --green:#2fb35d; --amber:#d9a21a; --red:#e25352;
+  --tag:#3d3210; --tagink:#f0d68a; --real:#143321; --realink:#9ad9b0; color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:13px/1.45 "Segoe UI",system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif}
+.num,td.n,th.n,.clock,.kv b{font-variant-numeric:tabular-nums}
+header{display:flex;align-items:baseline;gap:14px;padding:10px 18px 8px;border-bottom:1px solid var(--rule);background:var(--panel)}
+header h1{font-size:19px;margin:0;font-weight:700;letter-spacing:-.01em}
+header .sub{color:var(--ink2);flex:1;min-width:0}
+.simbadge{font-size:11px;font-weight:700;letter-spacing:.08em;border:1.5px solid var(--ink);padding:2px 8px;white-space:nowrap}
+button,select,input{font:inherit;color:inherit}
+button,select{background:var(--panel);border:1px solid var(--rule);border-radius:3px;padding:4px 9px;cursor:pointer}
+button:hover,select:hover{border-color:var(--ink3)}
+button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid var(--focus);outline-offset:1px}
+button[aria-pressed="true"]{background:var(--ink);color:var(--panel);border-color:var(--ink)}
+.truth{display:flex;gap:4px 18px;flex-wrap:wrap;padding:5px 18px;border-bottom:1px solid var(--rule);font-size:12px;color:var(--ink2);background:var(--panel)}
+.pill{display:inline-block;font-size:10.5px;font-weight:700;padding:0 6px;border-radius:2px;margin-right:5px;letter-spacing:.03em}
+.pill.real{background:var(--real);color:var(--realink)} .pill.assume{background:var(--tag);color:var(--tagink)}
+.bar{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;padding:8px 18px;border-bottom:1px solid var(--rule)}
+.grp{display:flex;gap:4px;align-items:center;flex-wrap:wrap}
+.grp>label,.lbl{font-size:11px;color:var(--ink3);text-transform:uppercase;letter-spacing:.06em;margin-right:3px}
+.clock{font-size:20px;font-weight:700;min-width:5.2ch}
+#scrub{width:170px;accent-color:var(--ink)}
+main{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(360px,1fr);gap:12px;padding:12px 18px}
+@media (max-width:1050px){main{grid-template-columns:1fr}}
+.panel{background:var(--panel);border:1px solid var(--rule);border-radius:3px}
+.panel>h2{font-size:12px;margin:0;padding:6px 10px;border-bottom:1px solid var(--rule2);font-weight:700;display:flex;gap:8px;align-items:center}
+.panel>h2 small{font-weight:400;color:var(--ink2)}
+.sw{display:inline-block;width:10px;height:10px;border-radius:2px;flex:none}
+.kvs{padding:5px 10px 4px;border-bottom:1px solid var(--rule2);display:flex;gap:34px;flex-wrap:wrap}
+.kv span{display:block;font-size:10.5px;color:var(--ink3);text-transform:uppercase;letter-spacing:.05em}
+.kv b{font-size:17px;font-weight:700;line-height:1.15}
+.kv b small{font-size:11px;font-weight:400;color:var(--ink2)}
+canvas{display:block;width:100%;height:236px}
+.rule-txt{padding:5px 10px;border-top:1px solid var(--rule2);color:var(--ink2);font-size:12px}
+.stack{display:flex;flex-direction:column;gap:12px;min-width:0}
+table{border-collapse:collapse;width:100%}
+th,td{padding:3px 8px;text-align:left;border-bottom:1px solid var(--rule2);vertical-align:top}
+th{font-size:10.5px;color:var(--ink3);text-transform:uppercase;letter-spacing:.05em;font-weight:600}
+td.n,th.n{text-align:right;white-space:nowrap}
+.headline{padding:8px 10px;font-size:14px;border-bottom:1px solid var(--rule2)}
+.headline>b{font-size:17px}
+.caveat{padding:5px 10px;font-size:11.5px;color:var(--ink2)}
+.chart{padding:6px 10px 2px;position:relative}
+.chart h3{font-size:11.5px;margin:0 0 1px;font-weight:600}
+.chart h3 small{font-weight:400;color:var(--ink3)}
+.legend{display:flex;gap:12px;font-size:11px;color:var(--ink2)}
+.legend i{display:inline-block;width:14px;height:0;border-top:2px solid;vertical-align:middle;margin-right:4px}
+.chart svg{display:block;width:100%;height:84px;overflow:visible}
+details>summary{padding:5px 10px;cursor:pointer;font-size:12px;font-weight:600;border-top:1px solid var(--rule2)}
+.tip{position:absolute;pointer-events:none;background:var(--ink);color:var(--panel);font-size:11px;padding:3px 7px;border-radius:2px;white-space:nowrap;display:none;z-index:5}
+.lower{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:12px;padding:0 18px 12px}
+@media (max-width:1050px){.lower{grid-template-columns:1fr}}
+.assume-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:6px 18px;padding:8px 10px}
+.fld{display:flex;align-items:center;gap:6px;justify-content:space-between;border-bottom:1px dotted var(--rule);padding-bottom:3px}
+.fld label{flex:1;min-width:0;font-size:12px}
+.fld input{width:66px;text-align:right;background:var(--bg);border:1px solid var(--rule);border-radius:2px;padding:2px 4px}
+.fld .u{width:42px;color:var(--ink3);font-size:11px}
+td input{width:54px;text-align:right;background:var(--bg);border:1px solid var(--rule);border-radius:2px;padding:1px 4px}
+#map{height:300px;background:var(--rule2)}
+.notes{padding:8px 12px;color:var(--ink2);font-size:12.5px}
+.notes h3{font-size:12.5px;margin:8px 0 2px;color:var(--ink)}
+.notes ul{margin:2px 0 6px;padding-left:18px}
+.scroll{overflow-x:auto}
+.thesi{font-size:11px;color:var(--ink3)}
+footer{padding:4px 18px 18px;color:var(--ink3);font-size:11.5px}
+</style>
+</head>
+<body>
+<header>
+  <h1>Ψηφιακός Τροχονόμος</h1>
+  <div class="sub">Φανάρια που ακολουθούν την πραγματική κίνηση — σύγκριση σταθερού προγράμματος με προσαρμοστικό έλεγχο, πάνω σε μετρημένη ζήτηση</div>
+  <span class="simbadge">ΠΡΟΣΟΜΟΙΩΣΗ</span>
+  <button id="themeBtn" title="Εναλλαγή φωτεινού/σκούρου">◐ Θέμα</button>
+</header>
+<div class="truth">
+  <span><span class="pill real">ΜΕΤΡΗΜΕΝΟ</span>Η ζήτηση: ροή οχημάτων ανά πρόσβαση από τους ανιχνευτές της Περιφέρειας Αττικής (21/10–11/11/2026).</span>
+  <span><span class="pill assume">ΠΑΡΑΔΟΧΗ</span>Προγράμματα σηματοδότησης, γεωμετρία, στρέφουσες κινήσεις, ροή κορεσμού — δεν είναι διαθέσιμα· τα υποθέτουμε.</span>
+  <span>Τα αποτελέσματα είναι <b>προσομοιωμένα</b>, όχι μετρημένη εξοικονόμηση.</span>
+</div>
+
+<div class="bar">
+  <div class="grp"><span class="lbl">Κόμβος</span><span id="siteBtns" class="grp"></span></div>
+  <div class="grp"><span class="lbl">Σενάριο</span><span id="scBtns" class="grp"></span></div>
+</div>
+<div class="bar">
+  <div class="grp"><button id="playBtn" style="min-width:104px">▶ Αναπαραγωγή</button><button id="resetBtn" title="Από την αρχή">⏮</button></div>
+  <div class="grp"><span class="lbl">Ταχύτητα</span><span id="spBtns" class="grp"></span></div>
+  <div class="grp"><span class="lbl">Ώρα</span><span class="clock" id="clock">07:00</span><input type="range" id="scrub" min="0" max="1000" value="0" aria-label="Θέση στον χρόνο"></div>
+  <div class="grp"><span class="lbl">Ημέρα</span><select id="daySel"></select>
+    <select id="fromSel" aria-label="Από ώρα"></select>–<select id="toSel" aria-label="Έως ώρα"></select></div>
+  <div class="grp" id="scNote" style="color:var(--ink2);font-size:12px;flex:1 1 260px"></div>
+</div>
+
+<main>
+  <div class="stack">
+    <section class="panel">
+      <h2><span class="sw" style="background:var(--fixed)"></span>Σταθερό πρόγραμμα <small id="fxInfo"></small></h2>
+      <div class="kvs" id="kvF"></div>
+      <canvas id="cvF"></canvas>
+      <div class="rule-txt">Κανόνας: ίδιος κύκλος και ίδια πράσινα σε κάθε επανάληψη, υπολογισμένα με τη μέθοδο Webster από τη μέση ζήτηση της ώρας αιχμής κάθε χρονικής ζώνης (τυπική ημέρα). Δεν «βλέπει» τι συμβαίνει τώρα. <span style="color:var(--ink3)">Κάτω από κάθε κόμβο: ιστορικό φάσεων 5 λεπτών (πράσινο = κύρια οδός).</span></div>
+    </section>
+    <section class="panel">
+      <h2><span class="sw" style="background:var(--adapt)"></span>Προσαρμοστικό — «τροχονόμος» <small id="adInfo"></small></h2>
+      <div class="kvs" id="kvA"></div>
+      <canvas id="cvA"></canvas>
+      <div class="rule-txt">Κανόνας: κρατά το πράσινο όσο εξυπηρετεί ουρά· το δίνει απέναντι μόλις η ουρά αδειάσει ή μόλις η απέναντι ουρά γίνει αισθητά μεγαλύτερη — όπως ο τροχονόμος. Πάντα με ελάχιστο πράσινο πεζών, ενδιάμεσο χρόνο ασφαλείας και ανώτατη αναμονή στο κόκκινο.</div>
+    </section>
+  </div>
+
+  <div class="stack">
+    <section class="panel">
+      <h2>Αποτέλεσμα προσομοίωσης <small id="resScope"></small></h2>
+      <div class="headline" id="headline"></div>
+      <div class="scroll"><table id="resTbl"></table></div>
+      <details><summary>Ανά πρόσβαση — ποιος κερδίζει και ποιος χάνει</summary><div class="scroll"><table id="perTbl"></table></div></details>
+      <details><summary>Με ποιες παραδοχές ισχύει</summary><div class="caveat" id="resCaveat"></div></details>
+    </section>
+    <section class="panel">
+      <h2>Στη διάρκεια του σεναρίου <small>η κάθετη γραμμή δείχνει τη θέση της αναπαραγωγής</small></h2>
+      <div class="chart" id="chDemand"></div>
+      <div class="chart" id="chDelay"></div>
+      <div class="chart" id="chQueue"></div>
+    </section>
+  </div>
+</main>
+
+<div class="lower">
+  <div class="stack">
+    <section class="panel">
+      <h2>Παραδοχές <small>αλλάξτε τιμή και η προσομοίωση ξανατρέχει — όλες είναι υποθέσεις, όχι στοιχεία του πραγματικού κόμβου</small></h2>
+      <div class="assume-grid" id="assumeGrid"></div>
+      <div class="caveat"><button id="resetAssume">Επαναφορά προεπιλογών</button></div>
+    </section>
+    <section class="panel">
+      <h2>Ποιος ανιχνευτής τροφοδοτεί ποια πρόσβαση <small id="siteNote"></small></h2>
+      <div class="scroll"><table id="apTbl"></table></div>
+      <div class="caveat" id="unmod"></div>
+    </section>
+    <section class="panel">
+      <h2>Σταθερά προγράμματα που υπολογίστηκαν (Webster) <small>ανά χρονική ζώνη· σχεδιασμός από την τυπική ημέρα</small></h2>
+      <div class="scroll"><table id="planTbl"></table></div>
+    </section>
+  </div>
+  <div class="stack">
+    <section class="panel">
+      <h2>Χάρτης <small>κόμβοι (εκτιμώμενη θέση) και ανιχνευτές</small></h2>
+      <div id="map"></div>
+    </section>
+    <section class="panel">
+      <h2>Τι να κρατήσετε</h2>
+      <div class="notes">
+        <h3>Ποιος λειτουργεί τα φανάρια</h3>
+        Τη φωτεινή σηματοδότηση στην Αθήνα τη λειτουργεί το <b>Κέντρο Διαχείρισης Κυκλοφορίας της Περιφέρειας Αττικής</b>, όχι ο Δήμος Αθηναίων. Ο ίδιος φορέας δημοσιεύει και τις μετρήσεις των ανιχνευτών που χρησιμοποιούμε. Χωρίς την Περιφέρεια ως εταίρο δεν γίνεται πιλοτική εφαρμογή.
+        <h3>Όρια του μοντέλου</h3>
+        <ul>
+          <li>Η μετρημένη ροή είναι όσα οχήματα <i>πέρασαν</i>· σε κορεσμένες προσβάσεις υποεκτιμά την πραγματική ζήτηση.</li>
+          <li>Δύο φάσεις ανά κόμβο (κύρια / κάθετη), χωρίς ξεχωριστή φάση αριστερής στροφής, λεωφορειολωρίδες ή πεζούς με κουμπί.</li>
+          <li>Ο προσαρμοστικός ελεγκτής «γνωρίζει» την ουρά τέλεια· στην πράξη εκτιμάται από ανιχνευτές 80–190 m πριν τη γραμμή στάσης, με σφάλμα.</li>
+          <li>Οι αφίξεις είναι τυχαίες (Poisson) γύρω από τη μετρημένη 5λεπτη ροή· οι ουρές είναι «κατακόρυφες» με έλεγχο υπερχείλισης.</li>
+        </ul>
+        <h3>Τι θα χρειαζόταν ένας πιλότος</h3>
+        <ul>
+          <li>Πρόσβαση στους ρυθμιστές σηματοδότησης και στα ισχύοντα προγράμματα, μέσω της Περιφέρειας.</li>
+          <li>Μετρήσεις στρεφουσών κινήσεων και πεζών στους κόμβους.</li>
+          <li>Περιορισμοί ασφαλείας ως αδιαπραγμάτευτα όρια: ελάχιστο πράσινο πεζών, ενδιάμεσοι χρόνοι, ανώτατη αναμονή.</li>
+          <li>Σύγκριση πριν/μετά με πραγματικές μετρήσεις — όχι με προσομοίωση.</li>
+        </ul>
+      </div>
+    </section>
+  </div>
+</div>
+<footer id="foot"></footer>
+
+<script src="data.js"></script>
+<script src="sim-core.js"></script>
+
+<script id="app">
+(function () {
+'use strict';
+var D = window.DATA, $ = function (id) { return document.getElementById(id); };
+var nf0 = new Intl.NumberFormat('el-GR', { maximumFractionDigits: 0 }), nf1 = new Intl.NumberFormat('el-GR', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+function f0(x) { return nf0.format(x); } function f1(x) { return nf1.format(x); }
+function hhmm(t) { t = ((t % 86400) + 86400) % 86400; var h = Math.floor(t / 3600), m = Math.floor(t % 3600 / 60); return (h < 10 ? '0' : '') + h + ':' + (m < 10 ? '0' : '') + m; }
+function css(v) { return getComputedStyle(document.documentElement).getPropertyValue(v).trim(); }
+
+var SCEN = [
+  { id: 'am', label: 'Πρωινή αιχμή', day: '2026-11-03', from: 7, to: 10, note: 'Τρίτη 3/11, 07:00–10:00' },
+  { id: 'pm', label: 'Απογευματινή αιχμή', day: '2026-11-03', from: 16, to: 19, note: 'Τρίτη 3/11, 16:00–19:00' },
+  { id: 'night', label: 'Νύχτα', day: '2026-11-03', from: 1, to: 4, note: 'Τρίτη 3/11, 01:00–04:00 — λίγη κίνηση, εδώ το όφελος σε απόλυτο χρόνο είναι μικρό' },
+  { id: 'mar', label: 'Μαραθώνιος 8/11', day: '2026-11-08', from: 9, to: 13, note: 'Κυριακή Μαραθωνίου, 09:00–13:00 — κλειστοί άξονες, η κίνηση μετατοπίστηκε· το σταθερό πρόγραμμα είναι της τυπικής Κυριακής' },
+  { id: 'all', label: 'Όλη η μέρα', day: '2026-11-03', from: 0, to: 24, note: 'Τρίτη 3/11, 24 ώρες' }
+];
+var SPEEDS = [1, 10, 30, 60, 240];
+var ASSUME = [
+  ['satFlow', 'Ροή κορεσμού ανά λωρίδα', 'οχ/ώ', 50], ['lost', 'Χαμένος χρόνος ανά αλλαγή φάσης (κίτρινο + ολικό κόκκινο)', 's', 1],
+  ['minGreenSide', 'Ελάχιστο πράσινο πεζών — διάσχιση κύριου άξονα', 's', 1], ['minGreenMain', 'Ελάχιστο πράσινο πεζών — διάσχιση κάθετης', 's', 1],
+  ['cMax', 'Μέγιστος κύκλος (σταθερό)', 's', 5], ['maxRed', 'Ανώτατη αναμονή στο κόκκινο (προσαρμοστικό)', 's', 5],
+  ['ratio', 'Κατώφλι αλλαγής: απέναντι ουρά ≥ × τρέχουσα', '×', 0.1], ['lookahead', 'Πόσο πριν «βλέπει» ο ανιχνευτής', 's', 1],
+  ['maxThru', 'Μέγιστο ποσοστό ευθείας προς επόμενο κόμβο', '%', 5], ['cruise', 'Ταχύτητα μεταξύ κόμβων', 'km/h', 5],
+  ['spacing', 'Μήκος ανά όχημα σε ουρά', 'm', 0.5], ['storage', 'Χώρος αναμονής σε πρόσβαση εισόδου', 'm', 10],
+  ['demandScale', 'Ζήτηση ως % της μετρημένης ροής', '%', 5], ['seed', 'Σπόρος τυχαίων αφίξεων', '', 1], ['blind', 'Ο ελεγκτής βλέπει μόνο προσβάσεις με ανιχνευτή (1 = ναι, 0 = όχι)', '', 1]
+];
+var S = { site: 'alex', sc: 'am', day: '2026-11-03', from: 7, to: 10, speed: 30, playing: false, params: {}, over: {}, batch: null, simF: null, simA: null, hist: null, acc: 0 };
+(function hashInit() {
+  location.hash.replace(/^#/, '').split('&').forEach(function (kv) { var p = kv.split('='); if (p[0]) S['h_' + p[0]] = decodeURIComponent(p[1] || ''); });
+  if (S.h_theme) document.documentElement.setAttribute('data-theme', S.h_theme);
+  if (S.h_site) S.site = S.h_site;
+  if (S.h_sc) { var sc = SCEN.filter(function (x) { return x.id === S.h_sc; })[0]; if (sc) { S.sc = sc.id; S.day = sc.day; S.from = sc.from; S.to = sc.to; } }
+  if (S.h_speed) S.speed = +S.h_speed;
+})();
+
+/* ---------- controls ---------- */
+function btns(host, items, cur, on) {
+  host.innerHTML = '';
+  items.forEach(function (it) {
+    var b = document.createElement('button'); b.textContent = it.label; b.setAttribute('aria-pressed', String(it.id === cur));
+    b.onclick = function () { on(it.id); }; host.appendChild(b);
+  });
+}
+function renderControls() {
+  btns($('siteBtns'), D.sites.map(function (s) { return { id: s.id, label: s.short }; }), S.site, function (id) { S.site = id; S.over = {}; rerun(true); });
+  btns($('scBtns'), SCEN, S.sc, function (id) { var sc = SCEN.filter(function (x) { return x.id === id; })[0]; S.sc = id; S.day = sc.day; S.from = sc.from; S.to = sc.to; rerun(true); });
+  btns($('spBtns'), SPEEDS.map(function (v) { return { id: v, label: '×' + v }; }), S.speed, function (v) { S.speed = v; renderControls(); });
+  var ds = $('daySel'); ds.innerHTML = D.days.map(function (d) { return '<option value="' + d.key + '">' + d.label + '</option>'; }).join(''); ds.value = S.day;
+  var hs = ''; for (var h = 0; h <= 24; h++) hs += '<option value="' + h + '">' + (h < 10 ? '0' : '') + h + ':00</option>';
+  $('fromSel').innerHTML = hs; $('toSel').innerHTML = hs; $('fromSel').value = S.from; $('toSel').value = S.to;
+  var sc = SCEN.filter(function (x) { return x.id === S.sc; })[0];
+  $('scNote').textContent = sc ? sc.note : 'Προσαρμοσμένο σενάριο';
+  $('playBtn').textContent = S.playing ? '⏸ Παύση' : '▶ Αναπαραγωγή';
+}
+function custom() {
+  S.day = $('daySel').value; S.from = +$('fromSel').value; S.to = +$('toSel').value;
+  if (S.to <= S.from) S.to = Math.min(24, S.from + 1);
+  S.sc = 'custom'; rerun(true);
+}
+$('daySel').onchange = custom; $('fromSel').onchange = custom; $('toSel').onchange = custom;
+$('playBtn').onclick = function () { if (S.simF.done) seek(0); S.playing = !S.playing; renderControls(); };
+$('resetBtn').onclick = function () { S.playing = false; seek(0); renderControls(); };
+$('scrub').oninput = function () { seek(+this.value / 1000); };
+$('themeBtn').onclick = function () {
+  var cur = document.documentElement.getAttribute('data-theme') || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+  document.documentElement.setAttribute('data-theme', cur === 'dark' ? 'light' : 'dark'); drawAll(); renderCharts();
+};
+
+/* ---------- assumptions ---------- */
+function renderAssume() {
+  $('assumeGrid').innerHTML = ASSUME.map(function (a) {
+    var v = S.params[a[0]] != null ? S.params[a[0]] : SimCore.DEFAULTS[a[0]];
+    return '<div class="fld"><label for="p_' + a[0] + '"><span class="pill assume">παραδοχή</span>' + a[1] + '</label><input id="p_' + a[0] + '" type="number" step="' + a[3] + '" value="' + v + '"><span class="u">' + a[2] + '</span></div>';
+  }).join('');
+  ASSUME.forEach(function (a) {
+    $('p_' + a[0]).onchange = function () { var v = parseFloat(this.value); if (isFinite(v) && v > 0) { S.params[a[0]] = v; rerun(false); } };
+  });
+}
+$('resetAssume').onclick = function () { S.params = {}; S.over = {}; renderAssume(); rerun(false); };
+
+function renderApproaches() {
+  var net = S.simF.net, site = net.site, rows = '';
+  $('siteNote').textContent = site.note;
+  site.junctions.forEach(function (j) {
+    j.approaches.forEach(function (a, i) {
+      var A = net.apps.filter(function (x) { return x.id === a.id; })[0], det = a.det ? D.detectors[a.det] : null;
+      rows += '<tr><td>' + (i === 0 ? '<b>' + j.name + '</b>' : '') + '</td><td>' + a.label + '</td><td>' +
+        (det ? '<span class="pill real">' + a.det + '</span><div class="thesi">' + cap(det.thesi) + '</div>'
+          : '<span class="pill assume">χωρίς ανιχνευτή</span><div class="thesi">ζήτηση = ποσοστό της ροής του ' + a.assume[0] + '</div>') +
+        '</td><td class="n"><input type="number" min="1" max="6" step="1" value="' + A.lanes + '" data-ap="' + a.id + '" data-k="lanes" title="παραδοχή: λωρίδες = πλήθος ανιχνευτών"></td><td class="n">' +
+        (det ? 'μετρημένη' : '<input type="number" min="0" max="300" step="5" value="' + Math.round(A.factor * 100) + '" data-ap="' + a.id + '" data-k="factor"> %') + '</td></tr>';
+    });
+  });
+  $('apTbl').innerHTML = '<tr><th>Κόμβος</th><th>Πρόσβαση</th><th>Ανιχνευτής και θέση του</th><th class="n">Λωρίδες <span class="pill assume">παραδοχή</span></th><th class="n">Ζήτηση</th></tr>' + rows;
+  Array.prototype.forEach.call($('apTbl').querySelectorAll('input'), function (inp) {
+    inp.onchange = function () {
+      var v = parseFloat(this.value); if (!isFinite(v) || v < 0) return;
+      var o = S.over[this.dataset.ap] || (S.over[this.dataset.ap] = {});
+      if (this.dataset.k === 'lanes') o.lanes = Math.max(1, Math.round(v)); else o.factor = v / 100;
+      rerun(false);
+    };
+  });
+  var un = []; site.junctions.forEach(function (j) { (j.unmodelled || []).forEach(function (u) { un.push(u); }); });
+  $('unmod').innerHTML = (un.length ? '<b>Δεν μοντελοποιούνται:</b> ' + un.join(' · ') + '. ' : '') + 'Η αντιστοίχιση ανιχνευτή → πρόσβαση έγινε από το κείμενο θέσης του φορέα και τις συντεταγμένες.';
+}
+function cap(s) { s = (s || '').toLowerCase(); return s.charAt(0).toUpperCase() + s.slice(1); }
+
+function renderPlans() {
+  var sim = S.simF, cur = SimCore.periodAt(sim.t), h = '<tr><th>Ζώνη</th><th class="n">Κύκλος</th>';
+  sim.net.juncs.forEach(function (J) { h += '<th class="n">' + J.name + '<br>πράσινο κύρια / κάθετη · μετατόπιση · κορεσμός</th>'; });
+  h += '</tr>';
+  sim.plans.forEach(function (pl, i) {
+    h += '<tr' + (i === cur ? ' style="font-weight:700"' : '') + '><td>' + pl.period.label + (pl.dir ? ' <span class="thesi">κύμα ' + (pl.dir === 'E' ? '→' : '←') + '</span>' : '') + '</td><td class="n">' + pl.C + ' s</td>';
+    pl.j.forEach(function (j) { h += '<td class="n">' + j.g0 + ' / ' + j.g1 + ' s · ' + j.off + ' s · ' + f0(j.x * 100) + '%</td>'; });
+    h += '</tr>';
+  });
+  $('planTbl').innerHTML = h;
+}
+
+/* ---------- run ---------- */
+function mk(ctrl) { return SimCore.createSim(D, S.site, S.day, S.from * 3600, S.to * 3600, S.params, ctrl, S.over); }
+function rerun(resetPlay) {
+  S.batch = { F: mk('fixed').run(), A: mk('adaptive').run() };
+  S.batch.sF = S.batch.F.summary(); S.batch.sA = S.batch.A.summary();
+  var frac = resetPlay ? 0 : (S.simF ? (S.simF.t - S.simF.t0) / (S.simF.t1 - S.simF.t0) : 0);
+  if (resetPlay) S.playing = false;
+  seek(frac);
+  renderControls(); renderResults(); renderCharts(); renderApproaches(); renderPlans(); updateMap();
+}
+function newHist(n) { var h = []; for (var i = 0; i < n; i++) h.push([]); return h; }
+function seek(frac) {
+  S.simF = mk('fixed'); S.simA = mk('adaptive');
+  S.hist = { F: newHist(S.simF.net.juncs.length), A: newHist(S.simF.net.juncs.length) };
+  var target = S.simF.t0 + Math.round(frac * (S.simF.t1 - S.simF.t0));
+  while (S.simF.t < target && !S.simF.done) stepBoth();
+  S.acc = 0; drawAll(); liveUI();
+}
+function stepBoth() {
+  S.simF.step(); S.simA.step();
+  for (var j = 0; j < S.hist.F.length; j++) {
+    var hf = S.hist.F[j], ha = S.hist.A[j];
+    hf.push(S.simF.sig[j].g); ha.push(S.simA.sig[j].g);
+    if (hf.length > 300) { hf.shift(); ha.shift(); }
+  }
+}
+var lastTs = 0;
+function frame(ts) {
+  var dt = Math.min(0.1, (ts - lastTs) / 1000 || 0); lastTs = ts;
+  if (S.playing && S.simF) {
+    S.acc += dt * S.speed;
+    var n = Math.floor(S.acc); S.acc -= n;
+    for (var i = 0; i < n && !S.simF.done; i++) stepBoth();
+    if (S.simF.done) { S.playing = false; renderControls(); }
+    if (n > 0) { drawAll(); liveUI(); }
+  }
+  requestAnimationFrame(frame);
+}
+
+/* ---------- live counters ---------- */
+function kv(host, s) {
+  host.innerHTML =
+    '<div class="kv"><span>Μέση καθυστέρηση</span><b class="num">' + f1(s.meanDelay) + ' <small>s/όχημα</small></b></div>' +
+    '<div class="kv"><span>Σε ουρά τώρα</span><b class="num">' + f0(s.nowQ) + ' <small>οχήματα</small></b></div>' +
+    '<div class="kv"><span>Μέγιστη ουρά</span><b class="num">' + f0(s.maxQ) + ' <small>οχ. · ' + f0(s.maxQm) + ' m</small></b></div>' +
+    '<div class="kv"><span>Εξυπηρετήθηκαν</span><b class="num">' + f0(s.served) + ' <small>οχήματα</small></b></div>';
+}
+function liveUI() {
+  var sf = S.simF.summary(), sa = S.simA.summary();
+  kv($('kvF'), sf); kv($('kvA'), sa);
+  $('clock').textContent = hhmm(S.simF.t);
+  $('scrub').value = Math.round(1000 * (S.simF.t - S.simF.t0) / (S.simF.t1 - S.simF.t0));
+  var pl = S.simF.plans[SimCore.periodAt(S.simF.t)];
+  $('fxInfo').textContent = 'Webster · ζώνη ' + pl.period.label + ' · κύκλος ' + pl.C + ' s' + (pl.dir ? ' · πράσινο κύμα ' + (pl.dir === 'E' ? '→' : '←') : '');
+  $('adInfo').textContent = 'χωρίς σταθερό κύκλο · μέσος κύκλος έως τώρα ' + f0(sa.cycle) + ' s';
+  moveCursor();
+}
+
+/* ---------- canvas ---------- */
+function drawAll() { if (!S.simF) return; draw($('cvF'), S.simF, S.hist.F); draw($('cvA'), S.simA, S.hist.A); }
+function draw(cv, sim, hist) {
+  var dpr = window.devicePixelRatio || 1, W = cv.clientWidth, H = cv.clientHeight;
+  if (cv.width !== Math.round(W * dpr) || cv.height !== Math.round(H * dpr)) { cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); }
+  var g = cv.getContext('2d'); g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, W, H);
+  var C = { road: css('--road'), line: css('--roadline'), car: css('--car'), mov: css('--carmove'), late: css('--late'), ink: css('--ink'), ink2: css('--ink2'), ink3: css('--ink3'),
+    green: css('--green'), amber: css('--amber'), red: css('--red'), rule: css('--rule'), panel: css('--panel') };
+  var net = sim.net, P = sim.P, nJ = net.juncs.length, LW = 9, top = 16, bot = H - 18;
+  var xs = nJ === 3 ? [0.22 * W, 0.43 * W, 0.83 * W] : [0.5 * W];
+  var mE = 1, mW = 1;
+  net.apps.forEach(function (A) { if (A.dir === 'E') mE = Math.max(mE, A.lanes); if (A.dir === 'W') mW = Math.max(mW, A.lanes); });
+  var cy = Math.round((top + bot) / 2), yTop = cy - mW * LW, yBot = cy + mE * LW;
+  var half = net.juncs.map(function (J) {
+    var l = 1, r = 1; J.apps.forEach(function (ai) { var A = net.apps[ai]; if (A.dir === 'S') l = A.lanes; if (A.dir === 'N') r = A.lanes; });
+    return { l: l * LW, r: r * LW };
+  });
+  // δρόμοι
+  g.fillStyle = C.road; g.fillRect(0, yTop, W, yBot - yTop);
+  for (var j = 0; j < nJ; j++) g.fillRect(xs[j] - half[j].l, top, half[j].l + half[j].r, bot - top);
+  g.strokeStyle = C.line; g.lineWidth = 1.5; g.setLineDash([]);
+  g.beginPath();
+  var px = 0;
+  for (j = 0; j <= nJ; j++) { var x1 = j < nJ ? xs[j] - half[j].l : W; g.moveTo(px, cy); g.lineTo(x1, cy); if (j < nJ) px = xs[j] + half[j].r; }
+  for (j = 0; j < nJ; j++) { g.moveTo(xs[j], top); g.lineTo(xs[j], yTop); g.moveTo(xs[j], yBot); g.lineTo(xs[j], bot); }
+  g.stroke();
+  g.font = '11px "Segoe UI",system-ui,sans-serif'; g.textBaseline = 'alphabetic';
+  // προσβάσεις
+  net.apps.forEach(function (A) {
+    var j = A.j, xj = xs[j], horiz = A.dir === 'E' || A.dir === 'W', stop, end, sgn;
+    if (A.dir === 'E') { stop = xj - half[j].l - 3; end = j > 0 ? xs[j - 1] + half[j - 1].r + 3 : 0; sgn = -1; }
+    else if (A.dir === 'W') { stop = xj + half[j].r + 3; end = j < nJ - 1 ? xs[j + 1] - half[j + 1].l - 3 : W; sgn = 1; }
+    else if (A.dir === 'S') { stop = yTop - 3; end = top; sgn = -1; }
+    else { stop = yBot + 3; end = bot; sgn = 1; }
+    var armPx = Math.abs(end - stop), pitch = Math.max(5, Math.min(12, armPx / (A.armM / P.spacing)));
+    var rows = Math.floor(armPx / pitch), carL = pitch - 1.5, carW = LW - 2.5, n = sim.qlen(A.idx), vis = Math.min(n, rows * A.lanes);
+    function lanePos(l) {
+      if (A.dir === 'E') return cy + (l + 0.5) * LW; if (A.dir === 'W') return cy - (l + 0.5) * LW;
+      if (A.dir === 'S') return xj - (l + 0.5) * LW; return xj + (l + 0.5) * LW;
+    }
+    function car(along, l, col) {
+      g.fillStyle = col; var c = lanePos(l), a0 = sgn < 0 ? along - carL : along;
+      if (horiz) g.fillRect(a0, c - carW / 2, carL, carW); else g.fillRect(c - carW / 2, a0, carW, carL);
+    }
+    var qa = sim.q[A.idx], h0 = sim.qh[A.idx];
+    for (var k = 0; k < vis; k++) {
+      var row = Math.floor(k / A.lanes), wait = sim.t - qa[h0 + k];
+      car(stop + sgn * (row * pitch + 1), k % A.lanes, wait > 90 ? C.late : C.car);
+    }
+    var tail = Math.ceil(vis / A.lanes) * pitch, v = P.cruise / 3.6 * (pitch / P.spacing), tr = sim.transit[A.idx];
+    for (k = 0; k < tr.length; k++) {
+      var dpx = tail + (tr[k] - sim.t) * v + 2; if (dpx > armPx - carL) continue;
+      car(stop + sgn * dpx, k % A.lanes, C.mov);
+    }
+    // σηματοδότης
+    var sg = sim.sig[j], col = sg.g === A.phase ? C.green : (sg.g === -1 && sg.amber === A.phase && sg.el < 3 ? C.amber : C.red);
+    g.fillStyle = col;
+    var span = A.lanes * LW, s0 = lanePos(0) - (A.dir === 'E' || A.dir === 'N' ? LW / 2 : span - LW / 2);
+    if (horiz) g.fillRect(stop - (sgn < 0 ? 0 : 3), s0, 3, span); else g.fillRect(s0, stop - (sgn < 0 ? 0 : 3), span, 3);
+    // ετικέτα: ανιχνευτής · τρέχουσα μετρημένη ροή · ουρά
+    var flow = SimCore.flowAt(D, A, sim.day.key, sim.t, P);
+    var t1 = (A.measured ? A.det : 'παραδοχή') + ' · ' + f0(flow) + '/ώ', t2 = 'ουρά ' + n, txt = t1 + ' · ' + t2;
+    var over = n - vis;
+    g.fillStyle = sim.blocked(A.idx) || n > A.storeVeh ? C.late : C.ink2;
+    if (A.dir === 'E') { g.textAlign = 'right'; g.fillText(txt, stop - 2, yBot + 12); }
+    else if (A.dir === 'W') { g.textAlign = 'left'; g.fillText(txt, stop + 2, yTop - 5); }
+    else if (A.dir === 'S') { g.textAlign = 'right'; g.fillText(t1, xj - half[j].l - 5, top + 22); g.fillText(t2, xj - half[j].l - 5, top + 35); }
+    else { g.textAlign = 'left'; g.fillText(t1, xj + half[j].r + 5, bot - 20); g.fillText(t2, xj + half[j].r + 5, bot - 7); }
+    if (over > 0) {
+      g.fillStyle = C.late; g.font = 'bold 11px "Segoe UI",system-ui,sans-serif';
+      if (horiz) { g.textAlign = sgn < 0 ? 'left' : 'right'; g.fillText('+' + over, end + (sgn < 0 ? 3 : -3), lanePos(A.lanes) + (A.dir === 'E' ? 22 : -14)); }
+      else { g.textAlign = 'left'; g.fillText('+' + over, lanePos(0) + (A.dir === 'S' ? 6 : 6 + A.lanes * LW), A.dir === 'S' ? top + 9 : bot - 2); }
+      g.font = '11px "Segoe UI",system-ui,sans-serif';
+    }
+  });
+  // ονόματα κόμβων + ιστορικό φάσεων
+  for (j = 0; j < nJ; j++) {
+    g.fillStyle = C.ink; g.textAlign = 'left'; g.font = 'bold 11.5px "Segoe UI",system-ui,sans-serif';
+    g.fillText(net.juncs[j].name, xs[j] + half[j].r + 6, top + 22);
+    g.font = '11px "Segoe UI",system-ui,sans-serif';
+    var sg2 = sim.sig[j]; g.fillStyle = C.ink3;
+    g.fillText(sg2.g === 0 ? 'πράσινο κύρια ' + sg2.el + ' s' : sg2.g === 1 ? 'πράσινο κάθετη ' + sg2.el + ' s' : 'ενδιάμεσος χρόνος', xs[j] + half[j].r + 6, top + 35);
+    var hs = hist[j], sw = 120, sx = Math.max(2, Math.min(W - sw - 2, xs[j] - sw / 2)), sy = H - 12;
+    g.fillStyle = C.rule; g.fillRect(sx, sy, sw, 8);
+    for (var i = 0; i < hs.length; i++) {
+      if (hs[i] < 0) continue;
+      g.fillStyle = hs[i] === 0 ? C.green : C.ink3;
+      g.fillRect(sx + sw - (hs.length - i) * 0.4, sy, 0.5, 8);
+    }
+  }
+  g.fillStyle = C.ink3; g.textAlign = 'left';
+  g.fillText('← ' + net.site.axis.W, 4, 11);
+  g.textAlign = 'right'; g.fillText(net.site.mainName + ' ' + net.site.axis.E + ' →', W - 4, 11);
+}
+
+/* ---------- results ---------- */
+function pct(a, b) { if (!a) return '—'; var p = 100 * (b - a) / a; return (p > 0 ? '+' : '−') + f0(Math.abs(p)) + '%'; }
+function renderResults() {
+  var f = S.batch.sF, a = S.batch.sA, day = D.days.filter(function (d) { return d.key === S.day; })[0];
+  $('resScope').textContent = day.label + ', ' + hhmm(S.from * 3600) + '–' + (S.to === 24 ? '24:00' : hhmm(S.to * 3600)) + ' · ολόκληρο το σενάριο';
+  var dd = f.meanDelay ? 100 * (f.meanDelay - a.meanDelay) / f.meanDelay : 0, abs = f.meanDelay - a.meanDelay;
+  $('headline').innerHTML = 'Στην προσομοίωση, το προσαρμοστικό ' + (dd >= 0 ? 'μείωσε' : 'αύξησε') + ' τη μέση καθυστέρηση κατά <b class="num">' + f0(Math.abs(dd)) + '%</b> — από ' +
+    f1(f.meanDelay) + ' σε ' + f1(a.meanDelay) + ' s ανά όχημα (' + (abs >= 0 ? '−' : '+') + f1(Math.abs(abs)) + ' s).' +
+    (f.queued > 60 || f.meanDelay > 90 ? '<div class="caveat" style="padding:4px 0 0">Προσοχή στην ανάγνωση: εδώ το σταθερό πρόγραμμα <b>υπερκορέστηκε</b> (έμειναν ' + f0(f.queued) + ' οχήματα σε ουρά, μέγιστη ' + f0(f.maxQ) + '), γιατί η ζήτηση της ημέρας ξέφυγε από την τυπική για την οποία σχεδιάστηκε. Το ποσοστό είναι μεγάλο επειδή η ουρά μεγαλώνει χωρίς όριο· εξαρτάται έντονα από τις παραδοχές λωρίδων και ροής κορεσμού.</div>' : '') +
+    (abs < 5 && abs >= 0 ? '<div class="caveat" style="padding:4px 0 0">Σε απόλυτο χρόνο η διαφορά είναι μικρή: λίγα δευτερόλεπτα ανά όχημα.</div>' : '');
+  function row(name, vf, va, d) { return '<tr><td>' + name + '</td><td class="n">' + vf + '</td><td class="n">' + va + '</td><td class="n">' + d + '</td></tr>'; }
+  var h = '<tr><th>Δείκτης (προσομοίωση)</th><th class="n"><span class="sw" style="background:var(--fixed)"></span> Σταθερό</th><th class="n"><span class="sw" style="background:var(--adapt)"></span> Προσαρμ.</th><th class="n">Διαφορά</th></tr>';
+  h += row('Μέση καθυστέρηση, s/όχημα', f1(f.meanDelay), f1(a.meanDelay), pct(f.meanDelay, a.meanDelay));
+  h += row('Συνολική καθυστέρηση, οχηματοώρες', f1(f.delayH), f1(a.delayH), (a.delayH - f.delayH > 0 ? '+' : '−') + f1(Math.abs(a.delayH - f.delayH)) + ' ώ');
+  h += row('Οχήματα που σταμάτησαν, %', f0(f.stopsPct), f0(a.stopsPct), pct(f.stopsPct, a.stopsPct));
+  h += row('Μέγιστη ουρά, οχήματα (m ανά λωρίδα)', f0(f.maxQ) + ' (' + f0(f.maxQm) + ')', f0(a.maxQ) + ' (' + f0(a.maxQm) + ')', pct(f.maxQ, a.maxQ));
+  h += row('Υπερχείλιση χώρου αναμονής, λεπτά', f1(f.spill / 60), f1(a.spill / 60), pct(f.spill, a.spill));
+  h += row('Εξυπηρετήθηκαν · έμειναν σε ουρά', f0(f.served) + ' · ' + f0(f.queued), f0(a.served) + ' · ' + f0(a.queued), '');
+  h += row('Μέγιστο κόκκινο κύριας / κάθετης (αναμονή πεζών), s', f0(f.maxRed[0]) + ' / ' + f0(f.maxRed[1]), f0(a.maxRed[0]) + ' / ' + f0(a.maxRed[1]), '');
+  h += row('Μέσος κύκλος, s', f0(f.cycle), f0(a.cycle), '');
+  $('resTbl').innerHTML = h;
+  h = '<tr><th>Μέση καθυστέρηση, s/όχημα</th><th class="n">Σταθερό</th><th class="n">Προσαρμ.</th><th class="n">Διαφορά, s</th></tr>';
+  var net = S.batch.F.net;
+  f.per.forEach(function (p, i) {
+    var A = net.apps[i];
+    h += row('<span class="thesi">' + net.juncs[A.j].name + ' ·</span> ' + A.label.replace(/ \(.*\)/, '') + (A.measured ? '' : ' <span class="pill assume">παραδοχή</span>'), f1(p.delay), f1(a.per[i].delay), (a.per[i].delay - p.delay > 0 ? '+' : '−') + f1(Math.abs(a.per[i].delay - p.delay)));
+  });
+  $('perTbl').innerHTML = h;
+  var P = S.batch.F.P;
+  $('resCaveat').innerHTML = 'Ισχύει μόνο για αυτές τις παραδοχές: ροή κορεσμού ' + f0(P.satFlow) + ' οχ/ώ/λωρίδα, χαμένος χρόνος ' + P.lost + ' s, ελάχιστα πράσινα πεζών ' + P.minGreenMain + '/' + P.minGreenSide + ' s, ανώτατο κόκκινο ' + P.maxRed + ' s, ζήτηση ' + P.demandScale + '% της μετρημένης. Ίδιες τυχαίες αφίξεις και στους δύο ελεγκτές. ' +
+    '<b>Δεν είναι μέτρηση ούτε πρόβλεψη για τον πραγματικό κόμβο.</b>' + (f.conserved && a.conserved ? '' : ' ⚠ έλεγχος διατήρησης οχημάτων απέτυχε.');
+}
+
+/* ---------- charts (SVG) ---------- */
+var charts = [];
+function lineChart(host, title, unit, xs, series, fmt) {
+  var W = host.clientWidth - 20 || 420, Hh = 84, ml = 34, mr = 6, mt = 6, mb = 16, pw = W - ml - mr, ph = Hh - mt - mb;
+  var mx = 0; series.forEach(function (s) { s.v.forEach(function (y) { if (y > mx) mx = y; }); });
+  var step = Math.pow(10, Math.floor(Math.log10(mx || 1))), tk = mx / step < 2 ? step / 2 : mx / step < 5 ? step : step * 2;
+  var ymax = Math.max(tk, Math.ceil(mx / tk) * tk), t0 = xs[0], t1 = xs[xs.length - 1] + 300;
+  function X(t) { return ml + pw * (t - t0) / (t1 - t0); } function Y(v) { return mt + ph * (1 - v / ymax); }
+  var s = '<svg viewBox="0 0 ' + W + ' ' + Hh + '" role="img" aria-label="' + title + '">';
+  for (var v = 0; v <= ymax + 1e-9; v += tk) s += '<line x1="' + ml + '" x2="' + (W - mr) + '" y1="' + Y(v) + '" y2="' + Y(v) + '" stroke="var(--rule2)"/><text x="' + (ml - 4) + '" y="' + (Y(v) + 3.5) + '" text-anchor="end" font-size="10" fill="var(--ink3)">' + f0(v) + '</text>';
+  var hours = (t1 - t0) / 3600, hstep = hours > 12 ? 4 : hours > 5 ? 2 : 1;
+  for (var h = Math.ceil(t0 / 3600); h * 3600 <= t1; h += 1) if (h % hstep === 0) s += '<text x="' + X(h * 3600) + '" y="' + (Hh - 3) + '" text-anchor="middle" font-size="10" fill="var(--ink3)">' + (h < 10 ? '0' : '') + h + ':00</text><line x1="' + X(h * 3600) + '" x2="' + X(h * 3600) + '" y1="' + (mt + ph) + '" y2="' + (mt + ph + 3) + '" stroke="var(--ink3)"/>';
+  series.forEach(function (se) {
+    var d = ''; se.v.forEach(function (y, i) { d += (i ? 'L' : 'M') + X(xs[i] + 150).toFixed(1) + ' ' + Y(y).toFixed(1); });
+    s += '<path d="' + d + '" fill="none" stroke="' + se.c + '" stroke-width="2" stroke-linejoin="round"' + (se.dash ? ' stroke-dasharray="4 3"' : '') + '/>';
+  });
+  s += '<line class="cur" x1="0" x2="0" y1="' + mt + '" y2="' + (mt + ph) + '" stroke="var(--ink)" stroke-width="1"/><line class="hov" x1="0" x2="0" y1="' + mt + '" y2="' + (mt + ph) + '" stroke="var(--ink3)" stroke-dasharray="2 2" style="display:none"/></svg>';
+  host.innerHTML = '<h3>' + title + ' <small>' + unit + '</small></h3><div class="legend">' + series.map(function (se) { return '<span><i style="border-color:' + se.c + (se.dash ? ';border-top-style:dashed' : '') + '"></i>' + se.n + '</span>'; }).join('') + '</div>' + s + '<div class="tip"></div>';
+  var svg = host.querySelector('svg'), tip = host.querySelector('.tip'), hov = host.querySelector('.hov');
+  svg.onmousemove = function (e) {
+    var r = svg.getBoundingClientRect(), x = (e.clientX - r.left) * W / r.width, i = Math.max(0, Math.min(xs.length - 1, Math.floor((x - ml) / pw * xs.length)));
+    hov.style.display = ''; hov.setAttribute('x1', X(xs[i] + 150)); hov.setAttribute('x2', X(xs[i] + 150));
+    tip.style.display = 'block'; tip.innerHTML = hhmm(xs[i]) + ' · ' + series.map(function (se) { return se.n + ' ' + (fmt || f0)(se.v[i]); }).join(' · ');
+    tip.style.left = Math.min(r.width - tip.offsetWidth, Math.max(0, e.clientX - r.left - 40)) + 'px'; tip.style.top = '18px';
+  };
+  svg.onmouseleave = function () { tip.style.display = 'none'; hov.style.display = 'none'; };
+  charts.push({ cur: host.querySelector('.cur'), X: X });
+}
+function renderCharts() {
+  if (!S.batch) return;
+  charts = [];
+  var F = S.batch.F, A = S.batch.A, xs = F.series.t, net = F.net;
+  var meas = xs.map(function () { return 0; }), assu = xs.map(function () { return 0; });
+  net.apps.forEach(function (ap) {
+    if (ap.up >= 0) return;                                  // μόνο οι είσοδοι του δικτύου
+    xs.forEach(function (t, i) { var q = SimCore.flowAt(D, ap, S.day, t, F.P); if (ap.measured) meas[i] += q; else assu[i] += q; });
+  });
+  var hasAss = assu.some(function (v) { return v > 0; });
+  lineChart($('chDemand'), 'Ζήτηση στις εισόδους', 'οχ/ώρα · μετρημένη από ανιχνευτές', xs,
+    [{ n: 'μετρημένη', v: meas, c: 'var(--ink2)' }].concat(hasAss ? [{ n: 'παραδοχή (χωρίς ανιχνευτή)', v: assu, c: 'var(--ink3)', dash: 1 }] : []));
+  function dl(sim) { return sim.series.qInt.map(function (q, i) { return q / Math.max(1, sim.series.arr[i]); }); }
+  lineChart($('chDelay'), 'Καθυστέρηση ανά όχημα', 's · προσομοίωση, ανά 5 λεπτά', xs,
+    [{ n: 'σταθερό', v: dl(F), c: 'var(--fixed)' }, { n: 'προσαρμοστικό', v: dl(A), c: 'var(--adapt)' }], f1);
+  lineChart($('chQueue'), 'Οχήματα σε ουρά', 'μέσος όρος 5λέπτου · προσομοίωση', xs,
+    [{ n: 'σταθερό', v: F.series.qInt.map(function (q) { return q / 300; }), c: 'var(--fixed)' }, { n: 'προσαρμοστικό', v: A.series.qInt.map(function (q) { return q / 300; }), c: 'var(--adapt)' }], f1);
+  moveCursor();
+}
+function moveCursor() { if (!S.simF) return; charts.forEach(function (c) { var x = c.X(S.simF.t); c.cur.setAttribute('x1', x); c.cur.setAttribute('x2', x); }); }
+
+/* ---------- map ---------- */
+var map = null, layer = null;
+function updateMap() {
+  if (!window.L) return;
+  if (!map) {
+    map = L.map('map', { scrollWheelZoom: false });
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19, subdomains: 'abcd', attribution: 'Χάρτης © Esri και συνεργάτες' }).addTo(map);
+  }
+  if (layer) layer.remove();
+  layer = L.layerGroup().addTo(map);
+  var pts = [];
+  D.sites.forEach(function (s) {
+    var sel = s.id === S.site;
+    s.junctions.forEach(function (j) {
+      L.circleMarker([j.lat, j.lon], { radius: sel ? 9 : 6, color: '#12120f', weight: 2, fillColor: sel ? '#eb6834' : '#ffffff', fillOpacity: 0.9 }).addTo(layer)
+        .bindTooltip('<b>' + j.name + '</b><br>εκτιμώμενη θέση κόμβου');
+      if (sel) pts.push([j.lat, j.lon]);
+      j.approaches.forEach(function (a) {
+        if (!a.det) return; var d = D.detectors[a.det];
+        L.circleMarker([d.lat, d.lon], { radius: 4, color: '#2a78d6', weight: 2, fillColor: '#2a78d6', fillOpacity: 1 }).addTo(layer)
+          .bindTooltip('<b>' + a.det + '</b> · ' + d.n + ' ανιχν.<br>' + cap(d.thesi) + '<br>→ ' + a.label);
+        if (sel) pts.push([d.lat, d.lon]);
+      });
+    });
+  });
+  var d656 = D.detectors.MS656;
+  if (d656) L.circleMarker([d656.lat, d656.lon], { radius: 4, color: '#8a8982', weight: 2, fillColor: '#fff', fillOpacity: 1 }).addTo(layer).bindTooltip('<b>MS656</b> — χωρίς δεδομένα στην καταγραφή');
+  map.fitBounds(pts, { padding: [30, 30], maxZoom: 17 });
+}
+
+window.__mapReady = updateMap;
+window.__mapFail = function () { $('map').innerHTML = '<div class="notes">Ο χάρτης χρειάζεται σύνδεση στο διαδίκτυο (Leaflet + OpenStreetMap). Οι ανιχνευτές και οι θέσεις τους φαίνονται στον πίνακα αριστερά.</div>'; };
+
+/* ---------- init ---------- */
+$('foot').textContent = 'Πηγή ζήτησης: ' + D.source + ' · data.js παράχθηκε ' + D.generated + ' · Τυπική καθημερινή = διάμεσος ' + D.wkDates.length + ' εργάσιμων, τυπικό Σαββατοκύριακο = διάμεσος ' + D.weDates.length + ' ημερών.';
+renderAssume();
+rerun(true);
+if (S.h_t) seek(Math.max(0, Math.min(1, +S.h_t)));
+if (S.h_play === '1') { S.playing = true; renderControls(); }
+window.addEventListener('resize', function () { drawAll(); renderCharts(); });
+requestAnimationFrame(frame);
+})();
+</script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha384-cxOPjt7s7Iz04uaHJceBmS+qpjv2JkIHNVcuOrM+YHwZOmJGBXI00mdUXEq65HTH" crossorigin="anonymous" onload="window.__mapReady&&window.__mapReady()" onerror="window.__mapFail&&window.__mapFail()"></script>
+</body>
+</html>

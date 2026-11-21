@@ -1,0 +1,390 @@
+<!doctype html>
+<html lang="el">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ψηφιακός Τροχονόμος — κέντρο ελέγχου</title>
+<style>
+:root{--sign:#0b3f91;--deep:#082f70;--night:#06245a;--white:#fff;--yellow:#ffd42a;--soft:#c5d5f1;--green:#2fd07c;--red:#ff5a4c;--ink:#17202b;--mute:#5a6675;--line:#dfe5ec}
+*{box-sizing:border-box;margin:0;padding:0}
+[hidden]{display:none!important}
+.boot *{transition:none!important}
+html{font-size:10px;height:100%}
+body{height:100%;background:var(--night);color:var(--white);overflow:hidden;display:flex;align-items:center;justify-content:center;
+  font-family:Bahnschrift,"DIN Alternate","Segoe UI",system-ui,sans-serif;font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+button:focus-visible{outline:.3rem solid var(--yellow);outline-offset:.2rem}
+.stage{position:relative;width:160rem;height:90rem;overflow:hidden;background:var(--deep)}
+#map{position:absolute;left:0;top:0;width:100%;height:100%}
+
+/* πινακίδα τίτλου και ρολόι */
+.plate{position:absolute;left:2.4rem;top:2.2rem;background:var(--sign);border:.3rem solid var(--white);border-radius:1.6rem;padding:1.3rem 2rem 1.2rem;box-shadow:0 .6rem 2.4rem rgba(3,18,48,.45)}
+.plate h1{font-size:2.9rem;font-weight:600;line-height:1}
+.plate p{font-size:1.5rem;color:var(--yellow);margin-top:.45rem}
+.clock{position:absolute;left:2.4rem;top:11.6rem;display:flex;align-items:baseline;gap:1.4rem}
+.clock b{font-size:7.4rem;font-weight:600;line-height:.9}
+.clock span{font-size:1.6rem;color:var(--soft);line-height:1.3}
+.clock span i{font-style:normal;display:block;color:var(--yellow)}
+.tally{position:absolute;left:2.4rem;top:21.4rem;width:33rem;background:rgba(6,36,90,.82);border-radius:1.2rem;padding:1.2rem 1.5rem}
+.tally b{display:block;font-size:4.6rem;font-weight:600;line-height:1;color:var(--yellow)}
+.tally b small{font-size:1.9rem;font-weight:400;margin-left:.5rem}
+.tally span{display:block;font-size:1.4rem;color:var(--soft);line-height:1.3;margin-top:.3rem}
+.legend{position:absolute;left:2.4rem;top:33.6rem;width:33rem;background:rgba(6,36,90,.82);border-radius:1.2rem;padding:1rem 1.5rem;font-size:1.3rem;line-height:1.9;color:var(--soft)}
+.legend i{display:inline-block;width:1.1rem;height:1.1rem;border-radius:50%;margin-right:.6rem;vertical-align:-.05rem}
+.legend i.big{width:1.7rem;height:1.7rem;border:.25rem solid var(--white);vertical-align:-.35rem;margin-right:.5rem}
+.legend b{color:var(--white);font-weight:600}
+
+/* φανάρια πάνω στον χάρτη */
+.jn{position:absolute;transform:translate(-50%,-50%);z-index:3}
+.jn .dot{display:block;width:3rem;height:3rem;border-radius:50%;border:.35rem solid var(--white);background:var(--green);transition:background-color 2.4s linear;box-shadow:0 .3rem 1rem rgba(3,18,48,.6)}
+.jn.red .dot{animation:halo 1.3s ease-out infinite}
+@keyframes halo{0%{box-shadow:0 0 0 0 rgba(255,90,76,.75)}100%{box-shadow:0 0 0 2.6rem rgba(255,90,76,0)}}
+.jn .tag{position:absolute;left:2.4rem;top:-1.5rem;white-space:nowrap;background:var(--white);color:var(--ink);border-radius:.8rem;padding:.5rem .9rem .45rem;font-size:1.35rem;line-height:1.2;box-shadow:0 .3rem 1rem rgba(3,18,48,.45)}
+.jn.left .tag{left:auto;right:2.4rem;text-align:right}
+.jn.up .tag{left:-3rem;top:-6.6rem}
+.jn.down .tag{left:-2rem;top:2.4rem}
+.jn .tag b{display:block;font-size:1.55rem;font-weight:600;color:var(--sign)}
+.jn .tag em{font-style:normal;display:inline-block;margin-left:.6rem;background:var(--yellow);border-radius:.4rem;padding:0 .5rem;font-size:1.2rem}
+.jn.sel .dot{outline:.3rem solid var(--yellow);outline-offset:.3rem}
+
+/* ειδοποιήσεις */
+.feed{position:absolute;left:2.4rem;bottom:11.4rem;width:44rem;display:flex;flex-direction:column-reverse;gap:.8rem;z-index:4}
+.note{background:var(--white);color:var(--ink);border-radius:1rem;padding:.9rem 1.2rem .9rem 1.6rem;border-left:.8rem solid var(--yellow);font-size:1.45rem;line-height:1.3;box-shadow:0 .4rem 1.6rem rgba(3,18,48,.5);animation:in .35s ease both}
+.note.alert{border-left-color:var(--red)}
+.note.ok{border-left-color:var(--green)}
+.note b{font-weight:600}
+.note time{color:var(--mute);margin-right:.7rem}
+.note button{display:inline-block;margin-top:.6rem;background:var(--sign);color:var(--white);border-radius:.7rem;padding:.5rem 1.1rem;font-size:1.4rem}
+.note.old{opacity:.72}
+@keyframes in{from{opacity:0;transform:translateY(1.2rem)}}
+
+/* γραμμή χρόνου */
+.time{position:absolute;left:2.4rem;right:2.4rem;bottom:1.8rem;height:8rem;background:rgba(6,36,90,.88);border-radius:1.2rem;padding:1rem 1.6rem;display:grid;grid-template-columns:auto 1fr auto;gap:1.8rem;align-items:center;z-index:4;transition:right .45s ease}
+.time .ctl{display:flex;gap:.8rem;align-items:center}
+.time .ctl button{height:4.4rem;min-width:4.4rem;padding:0 1.2rem;border:.2rem solid rgba(255,255,255,.5);border-radius:.9rem;font-size:1.6rem}
+.time .ctl button[aria-pressed=true]{background:var(--white);color:var(--sign);border-color:var(--white)}
+.track{position:relative;height:6rem;cursor:pointer}
+.track svg{position:absolute;left:0;top:0;width:100%;height:4.2rem}
+.track .hrs{position:absolute;left:0;right:0;bottom:0;height:1.6rem;font-size:1.2rem;color:var(--soft)}
+.track .hrs i{position:absolute;font-style:normal;transform:translateX(-50%)}
+.track .head{position:absolute;top:-.3rem;width:.3rem;height:4.8rem;background:var(--yellow);border-radius:.2rem;transform:translateX(-50%);pointer-events:none}
+.time .cap{font-size:1.25rem;color:var(--soft);line-height:1.3;width:25rem}
+
+/* πλαϊνή καρτέλα */
+.tab{position:absolute;right:0;top:50%;transform:translateY(-50%);writing-mode:vertical-rl;background:var(--white);color:var(--sign);font-size:1.7rem;font-weight:600;padding:2rem .9rem;border-radius:1.2rem 0 0 1.2rem;z-index:6;transition:right .45s ease;box-shadow:-.3rem 0 1.4rem rgba(3,18,48,.4)}
+.panel{position:absolute;right:-56rem;top:0;width:56rem;height:100%;background:var(--white);color:var(--ink);z-index:5;transition:right .45s ease;padding:2rem 2.2rem 1.6rem;overflow-y:auto;box-shadow:-.6rem 0 2.4rem rgba(3,18,48,.45)}
+.open .panel{right:0}
+.open .tab{right:56rem}
+.open .time{right:58.4rem}
+.panel h2{font-size:2.6rem;font-weight:600;color:var(--sign);line-height:1.05}
+.panel .lead{font-size:1.35rem;color:var(--mute);margin:.4rem 0 1rem;line-height:1.35}
+.axis{font-size:1.5rem;font-weight:600;color:var(--white);background:var(--sign);border-radius:.7rem;padding:.45rem 1rem;margin:1.2rem 0 .2rem;display:flex;justify-content:space-between}
+.axis span{font-weight:400;color:var(--soft)}
+.jb{padding:1rem 0 1.1rem;border-bottom:.2rem solid var(--line)}
+.jb.sel{background:#f3f6fa;margin:0 -1rem;padding-left:1rem;padding-right:1rem;border-radius:.8rem}
+.jb .hd{display:flex;align-items:center;gap:1rem}
+.jb .hd i{width:1.6rem;height:1.6rem;border-radius:50%;flex:none;transition:background-color 2.4s linear}
+.jb .hd b{font-size:1.9rem;font-weight:600;flex:1;min-width:0}
+.jb .hd .w{font-size:1.5rem;color:var(--mute)}
+.seg{display:flex;border:.2rem solid var(--sign);border-radius:.8rem;overflow:hidden;flex:none}
+.seg button{font-size:1.35rem;padding:.35rem .9rem;color:var(--sign)}
+.seg button[aria-pressed=true]{background:var(--sign);color:var(--white)}
+.jb .why{font-size:1.25rem;color:var(--mute);background:#eef2f6;border-radius:.6rem;padding:.3rem .8rem;flex:none}
+.sig{display:grid;grid-template-columns:auto 1fr;gap:.5rem 1.2rem;align-items:center;margin-top:.8rem;font-size:1.35rem}
+.lamps{display:flex;gap:.5rem;align-items:center}
+.lamps u{text-decoration:none;display:inline-flex;align-items:center;gap:.45rem;margin-right:.8rem}
+.lamps u i{width:1.5rem;height:1.5rem;border-radius:50%;background:#c9d2dc}
+.lamps u i.g{background:var(--green)}
+.lamps u i.r{background:var(--red)}
+.lamps u i.a{background:#ffb400}
+.rib{height:1.5rem;border-radius:.4rem;background:#c9d2dc}
+.tm{display:grid;grid-template-columns:repeat(3,1fr) ;gap:.8rem;margin-top:.7rem}
+.tm div{background:#f3f6fa;border-radius:.7rem;padding:.5rem .8rem}
+.tm div b{display:block;font-size:2rem;font-weight:600;color:var(--sign);line-height:1.1}
+.tm div b small{font-size:1.2rem;font-weight:400;color:var(--mute);margin-left:.4rem}
+.tm div span{font-size:1.2rem;color:var(--mute)}
+.ap{display:grid;grid-template-columns:1fr 7rem 5.4rem 9rem;gap:.8rem;align-items:center;font-size:1.3rem;padding:.22rem 0}
+.ap.h{color:var(--mute);font-size:1.15rem;margin-top:.6rem}
+.ap .n{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ap .v{text-align:right;font-weight:600}
+.ap .est{font-weight:400;color:#7a8696}
+.ap .q{height:1.1rem;border-radius:.3rem;background:#e6ebf1;overflow:hidden}
+.ap .q i{display:block;height:100%;background:var(--sign);border-radius:.3rem;transition:width .4s linear}
+.fine{position:absolute;left:auto;width:62rem;top:2.2rem;right:5rem;font-size:1.25rem;color:var(--soft);line-height:1.35;text-align:right;z-index:2;transition:right .45s ease;text-shadow:0 0 .6rem var(--deep)}
+.open .fine{right:58.5rem}
+@media (prefers-reduced-motion:reduce){.jn.red .dot{animation:none}.note{animation:none}}
+</style>
+</head>
+<body>
+<div class="stage boot" id="stage">
+  <canvas id="map"></canvas>
+  <p class="fine">Μετρήσεις ανιχνευτών: πραγματικές, της Περιφέρειας Αττικής, Τρίτη 3/11/2026, σε αναπαραγωγή. Αναμονή στα φανάρια και αποτέλεσμα των αλλαγών: προσομοίωση.<br>«Ρολόι»: σταθερό πρόγραμμα δικού μας σχεδιασμού, όχι το ισχύον. Δρόμοι © OpenStreetMap.</p>
+  <div class="plate"><h1>Ψηφιακός Τροχονόμος</h1><p>Κέντρο ελέγχου σηματοδότησης</p></div>
+  <div class="clock"><b id="clock">--:--</b><span>Τρίτη 3 Νοεμβρίου 2026<i id="mode">αναπαραγωγή ×60</i></span></div>
+  <div class="tally"><b id="saved">0,0<small>ώρες</small></b><span id="savedCap">αναμονής λιγότερες από τη στιγμή που ανέλαβε ο Τροχονόμος</span></div>
+  <div class="legend"><b>Ανιχνευτές</b> (μετρημένη ταχύτητα)<br><i style="background:#2fd07c"></i>κανονική <i style="background:#ffd42a;margin-left:1rem"></i>αργή <i style="background:#ff5a4c;margin-left:1rem"></i>πολύ αργή<br><i class="big" style="background:#2fd07c"></i><b>Φανάρι</b> με υπολογισμένη αναμονή</div>
+  <div id="marks"></div>
+  <div class="feed" id="feed" aria-live="polite"></div>
+  <div class="time">
+    <div class="ctl"><button id="play" aria-label="Αναπαραγωγή ή παύση">❚❚</button><button id="slow" aria-label="Πιο αργά">−</button><button id="fast" aria-label="Πιο γρήγορα">+</button><button id="auto" aria-pressed="false">Αυτόματη ανάθεση</button></div>
+    <div class="track" id="track"><svg id="cong" viewBox="0 0 1000 100" preserveAspectRatio="none"></svg><div class="hrs" id="hrs"></div><div class="head" id="head"></div></div>
+    <div class="cap">Η καμπύλη δείχνει πόσοι ανιχνευτές μετρούν αργή κίνηση. Πατήστε πάνω της για να πάτε σε άλλη ώρα.</div>
+  </div>
+  <button class="tab" id="tab" aria-expanded="false">Φανάρια και χρόνοι</button>
+  <aside class="panel" id="panel" aria-label="Φανάρια και χρόνοι"></aside>
+</div>
+<script src="data.js"></script>
+<script src="sim-core.js"></script>
+<script src="map-data.js"></script>
+<script>
+(function () {
+  'use strict';
+  var $ = function (id) { return document.getElementById(id); };
+  var DAY = '2026-11-03', T0 = 6 * 3600, T1 = 22 * 3600, WIN = 300, RED = 40, CLEAR = 22;
+  var H = {}; location.hash.slice(1).split('&').forEach(function (kv) { var p = kv.split('='); if (p[0]) H[p[0]] = p[1] == null ? '1' : p[1]; });
+  function hms(s) { var p = String(s).split(':'); return (+p[0]) * 3600 + (+(p[1] || 0)) * 60; }
+  var START = H.t ? hms(H.t) : 9 * 3600 + 30 * 60, speed = +H.speed || 60, playing = H.play !== '0', auto = H.auto === '1';
+  var remPx = 10;
+  function fit() { remPx = Math.min(innerWidth / 160, innerHeight / 90); document.documentElement.style.fontSize = remPx + 'px'; sizeMap(); }
+  function hm(sec) { var h = Math.floor(sec / 3600) % 24, m = Math.floor(sec % 3600 / 60); return (h < 10 ? '0' : '') + h + ':' + (m < 10 ? '0' : '') + m; }
+  function num(x, d) { return x.toFixed(d == null ? 1 : d).replace('.', ',').replace('-', '−'); }
+  function mix(a, b, k) { return [0, 1, 2].map(function (i) { return Math.round(a[i] + (b[i] - a[i]) * k); }); }
+  var GREEN = [47, 208, 124], YEL = [255, 212, 42], REDC = [255, 90, 76];
+  function heat(w) { var c = w <= 15 ? GREEN : w <= 35 ? mix(GREEN, YEL, (w - 15) / 20) : w <= 55 ? mix(YEL, REDC, (w - 35) / 20) : REDC; return 'rgb(' + c.join(',') + ')'; }
+
+  /* ---------- προσομοίωση: ένα δίκτυο ανά σημείο, και ένα «σκιώδες» που μένει πάντα στο ρολόι ---------- */
+  // Στην Κηφισίας ο ορίζοντας είναι 180 s αντί για 120: αδειάζει πιο γρήγορα μια ήδη μεγάλη ουρά (βλ. knowledge-base/results/experiment-frontier.md).
+  var sites = [], J = [];           // J: όλα τα φανάρια
+  function build() {
+    sites = []; J = [];
+    var ORDER = ['kif', 'alex', 'iera'];
+    DATA.sites.slice().sort(function (x, y) { return ORDER.indexOf(x.id) - ORDER.indexOf(y.id); }).forEach(function (S) {
+      var sim = SimCore.createSim(DATA, S.id, DAY, T0, T1, S.id === 'kif' ? { seed: 7, optH: 180 } : { seed: 7 }, 'optimal', null), sh = SimCore.createSim(DATA, S.id, DAY, T0, T1, { seed: 7 }, 'fixed', null);
+      var site = { id: S.id, def: S, sim: sim, sh: sh, js: [] };
+      sim.net.juncs.forEach(function (Jn, j) {
+        sim.hold(j, true);
+        var seen = [0, 0]; Jn.apps.forEach(function (a) { if (sim.net.apps[a].measured) seen[sim.net.apps[a].phase] = 1; });
+        var o = { site: site, j: j, key: S.id + j, name: Jn.name, lat: S.junctions[j].lat, lon: S.junctions[j].lon, can: !!(seen[0] && seen[1]), on: false,
+          q: [], s: [], qs: [], ss: [], wait: 0, waitSh: 0, red: false, wasRed: false, seg: [], g: -2, gStart: T0, last: [0, 0], lastChange: -1e9, autoAt: 0, alerted: false };
+        site.js.push(o); J.push(o);
+      });
+      sites.push(site);
+    });
+  }
+  function roll(o, sim, qa, sa) {     // αναμονή = μέση ουρά / ρυθμός εξυπηρέτησης, σε κυλιόμενο πεντάλεπτο
+    var q = 0, sv = 0; sim.net.juncs[o.j].apps.forEach(function (a) { q += sim.qlen(a); sv += sim.st.served[a]; });
+    qa.push(q); sa.push(sv); if (qa.length > WIN) { qa.shift(); sa.shift(); }
+    var L = 0; for (var i = 0; i < qa.length; i++) L += qa[i];
+    var lam = (sa[sa.length - 1] - sa[0]) / qa.length; return lam > 0 ? (L / qa.length) / lam : 0;
+  }
+  function stepAll(quiet) {
+    sites.forEach(function (site) {
+      if (site.sim.done) return;
+      site.sim.step(); site.sh.step();
+      var t = site.sim.t;
+      site.js.forEach(function (o) {
+        o.wait = roll(o, site.sim, o.q, o.s); o.waitSh = roll(o, site.sh, o.qs, o.ss);
+        var g = site.sim.sig[o.j].g;
+        if (g !== o.g) {
+          if (o.g >= 0) {
+            var dur = t - 1 - o.gStart; o.last[o.g] = dur; o.seg.push([o.gStart, t - 1, o.g]); if (o.seg.length > 40) o.seg.shift();
+            if (!quiet && o.on) changed(o, o.g, dur, t);
+          }
+          if (g >= 0) o.gStart = t - 1;
+          o.g = g;
+        }
+        if (!quiet) watch(o, t);
+      });
+    });
+  }
+  function plan(o, t) { return o.site.sim.plans[SimCore.periodAt(t)].j[o.j]; }
+  function changed(o, ph, dur, t) {   // ειδοποίηση όταν ο Τροχονόμος δίνει αισθητά διαφορετικό πράσινο από το ρολόι
+    var p = plan(o, t), ref = ph === 0 ? p.g0 : p.g1;
+    if (Math.abs(dur - ref) < 6 || t - o.lastChange < 240) return;
+    o.lastChange = t;
+    note('', t, '<b>' + o.name + '</b>: πράσινο ' + (ph === 0 ? o.site.def.mainName : 'κάθετης') + ' ' + ref + ' → ' + dur + ' s');
+  }
+  function watch(o, t) {
+    if (!o.red && o.wait > RED) {
+      o.red = true; o.wasRed = true;
+      if (!o.on) {
+        note('alert', t, '<b>Συμφόρηση στην ' + o.name + '</b>: αναμονή ' + Math.round(o.wait) + ' s' + (o.can ? (auto ? '. Ο Τροχονόμος αναλαμβάνει.' : '') : '. Χωρίς ανιχνευτή στην κάθετη, μένει στο ρολόι.'),
+          o.can && !auto ? { label: 'Ανάθεση στον Τροχονόμο', key: o.key } : null);
+        if (auto && o.can) o.autoAt = t + 90;
+      }
+    }
+    if (o.autoAt && t >= o.autoAt) { o.autoAt = 0; assign(o, true, t); }
+    if (o.red && o.wait < CLEAR) {
+      o.red = false;
+      if (o.on) note('ok', t, '<b>' + o.name + '</b>: η αναμονή έπεσε στα ' + Math.round(o.wait) + ' s. Με το ρολόι θα ήταν ' + Math.round(o.waitSh) + ' s.');
+    }
+  }
+  function assign(o, on, t) {
+    if (!o.can || o.on === on) return;
+    o.on = on; o.site.sim.hold(o.j, !on); o.lastChange = t;
+    note(on ? '' : 'alert', t, '<b>' + o.name + '</b>: ' + (on ? 'ο Τροχονόμος ανέλαβε τους χρόνους' : 'επιστροφή στο ρολόι'));
+    drawPanel(true);
+  }
+  function now() { return sites[0].sim.t; }
+  function goto(t) {                 // μετάβαση σε άλλη ώρα: ξανατρέχει τη μέρα ως εκεί με όλα τα φανάρια στο ρολόι
+    var keep = {}; J.forEach(function (o) { keep[o.key] = o.on; });
+    build(); while (now() < t) stepAll(true);
+    J.forEach(function (o) { if (keep[o.key]) { o.on = true; o.site.sim.hold(o.j, false); } o.red = o.wait > RED; });
+    $('feed').innerHTML = ''; marks(); drawPanel(true);
+  }
+
+  /* ---------- ειδοποιήσεις ---------- */
+  function note(kind, t, html, action) {
+    var el = document.createElement('div'); el.className = 'note ' + kind;
+    el.innerHTML = '<time>' + hm(t) + '</time>' + html + (action ? '<br><button data-key="' + action.key + '">' + action.label + '</button>' : '');
+    var f = $('feed'); f.insertBefore(el, f.firstChild);
+    Array.prototype.forEach.call(f.children, function (c, i) { if (i > 0) c.classList.add('old'); });
+    while (f.children.length > 4) f.removeChild(f.lastChild);
+  }
+  $('feed').addEventListener('click', function (e) {
+    var k = e.target.getAttribute && e.target.getAttribute('data-key'); if (!k) return;
+    J.forEach(function (o) { if (o.key === k) assign(o, true, now()); }); e.target.remove();
+  });
+
+  /* ---------- χάρτης ---------- */
+  var cv = $('map'), cx = cv.getContext('2d'), LAT0 = 37.9865, LON0 = 23.7392, SPAN = 0.058, COS = Math.cos(LAT0 * Math.PI / 180), viewW = 160, viewTarget = 160, PW = 0, PH = 0;
+  var PLACES = [['Σύνταγμα', 37.9738, 23.7362], ['Ομόνοια', 37.9856, 23.7262], ['Λυκαβηττός', 37.9817, 23.7445], ['Κεραμεικός', 37.9772, 23.7150], ['Κυψέλη', 38.0010, 23.7390], ['Ζωγράφου', 37.9770, 23.7720]];
+  function sizeMap() { var dpr = window.devicePixelRatio || 1; PW = 160 * remPx; PH = 90 * remPx; cv.width = Math.round(PW * dpr); cv.height = Math.round(PH * dpr); cx.setTransform(dpr, 0, 0, dpr, 0, 0); }
+  function px(lon, lat) { var k = (PH * 0.86) / SPAN; return [viewW * remPx / 2 + (lon - LON0) * k * COS, PH * 0.47 - (lat - LAT0) * k]; }
+  var roadCv = document.createElement('canvas'), roadKey = '';
+  function drawRoads() {
+    var dpr = window.devicePixelRatio || 1, cx = roadCv.getContext('2d');
+    roadCv.width = cv.width; roadCv.height = cv.height; cx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    cx.fillStyle = '#082f70'; cx.fillRect(0, 0, PW, PH);
+    cx.lineCap = 'round'; cx.lineJoin = 'round';
+    var W = [0, 0.11, 0.17, 0.3, 0.42], A = [0, 0.28, 0.42, 0.7, 0.9];
+    for (var c = 1; c <= 4; c++) {
+      cx.beginPath();
+      MAP.roads.forEach(function (r) { if (r.c !== c) return; var p = px(r.p[0][0], r.p[0][1]); cx.moveTo(p[0], p[1]); for (var i = 1; i < r.p.length; i++) { p = px(r.p[i][0], r.p[i][1]); cx.lineTo(p[0], p[1]); } });
+      cx.strokeStyle = 'rgba(255,255,255,' + A[c] + ')'; cx.lineWidth = W[c] * remPx; cx.stroke();
+    }
+    cx.font = '500 ' + 1.35 * remPx + 'px Bahnschrift, "Segoe UI", sans-serif'; cx.fillStyle = 'rgba(197,213,241,.8)'; cx.textAlign = 'center';
+    PLACES.forEach(function (pl) { var p = px(pl[2], pl[1]); cx.fillText(pl[0], p[0], p[1]); });
+  }
+  function drawMap(t) {
+    var key = viewW.toFixed(2) + '|' + PW; if (key !== roadKey) { roadKey = key; drawRoads(); }
+    cx.save(); cx.setTransform(1, 0, 0, 1, 0, 0); cx.drawImage(roadCv, 0, 0); cx.restore();
+    var b = Math.min(287, Math.floor(t / 300)), fr = (t % 300) / 300, r = 0.42 * remPx;
+    MAP.dets.forEach(function (d) {
+      var v = d.v[b] + ((d.v[Math.min(287, b + 1)] - d.v[b]) * fr), k = v / d.ff, p = px(d.lon, d.lat);
+      if (p[0] < -20 || p[0] > PW + 20) return;
+      cx.beginPath(); cx.arc(p[0], p[1], k < 0.5 ? r * 1.35 : r, 0, 6.2832);
+      cx.fillStyle = k < 0.5 ? 'rgba(255,90,76,.95)' : k < 0.75 ? 'rgba(255,212,42,.9)' : 'rgba(47,208,124,.8)'; cx.fill();
+    });
+  }
+  var sel = null;
+  function marks() {
+    var box = $('marks');
+    if (box.children.length !== J.length) {
+      box.innerHTML = J.map(function (o) { return '<button class="jn' + (o.site.id === 'alex' ? [' left', ' up', ' down'][o.j] : '') + '" data-key="' + o.key + '"><span class="dot"></span><span class="tag"><b></b><span></span></span></button>'; }).join('');
+    }
+    J.forEach(function (o, i) {
+      var el = box.children[i], p = px(o.lon, o.lat);
+      el.style.left = p[0] + 'px'; el.style.top = p[1] + 'px';
+      el.classList.toggle('red', o.red); el.classList.toggle('sel', sel === o.key);
+      el.firstChild.style.backgroundColor = heat(o.wait);
+      var tag = el.lastChild; tag.firstChild.textContent = o.name;
+      tag.lastChild.innerHTML = 'αναμονή ' + Math.round(o.wait) + ' s' + (o.on ? '<em>Τροχονόμος</em>' : '');
+    });
+  }
+  $('marks').addEventListener('click', function (e) { var b = e.target.closest('.jn'); if (!b) return; sel = b.getAttribute('data-key'); openPanel(true); drawPanel(true); var blk = document.querySelector('.jb.sel'); if (blk) blk.scrollIntoView({ block: 'nearest' }); });
+
+  /* ---------- καρτέλα «Φανάρια και χρόνοι» ---------- */
+  var open = false, panelAt = 0;
+  function openPanel(v) { open = v; $('stage').classList.toggle('open', v); $('tab').setAttribute('aria-expanded', v); viewTarget = v ? 104 : 160; if (v) drawPanel(true); }
+  $('tab').addEventListener('click', function () { openPanel(!open); });
+  function lamp(o, ph) { var S = o.site.sim.sig[o.j]; return S.g === ph ? 'g' : (S.g < 0 && S.amber === ph ? 'a' : 'r'); }
+  function ribbon(o, t) {
+    var from = t - 600, parts = [], segs = o.seg.slice(); if (o.g >= 0) segs.push([o.gStart, t, o.g]);
+    var cur = 0;
+    segs.forEach(function (s) {
+      var a = Math.max(0, (s[0] - from) / 6), b = Math.min(100, (s[1] - from) / 6); if (b <= 0 || b <= a) return;
+      var col = s[2] === 0 ? '#0b3f91' : '#7fa3de';
+      if (a > cur) parts.push('#c9d2dc ' + cur.toFixed(1) + '% ' + a.toFixed(1) + '%');
+      parts.push(col + ' ' + a.toFixed(1) + '% ' + b.toFixed(1) + '%'); cur = b;
+    });
+    if (cur < 100) parts.push('#c9d2dc ' + cur.toFixed(1) + '% 100%');
+    return 'linear-gradient(90deg,' + parts.join(',') + ')';
+  }
+  function drawPanel(force) {
+    if (!open) return; var tNow = performance.now(); if (!force && tNow - panelAt < 400) return; panelAt = tNow;
+    var t = now(), html = '<h2>Φανάρια και χρόνοι</h2><p class="lead">Κάθε άξονας με τα φανάρια του: τι δείχνει τώρα, πόσο πράσινο δίνει, πόση κίνηση έχει κάθε πρόσβαση. Σκούρο μπλε στη λωρίδα είναι το πράσινο του κύριου άξονα τα τελευταία 10 λεπτά, ανοιχτό της κάθετης.</p>';
+    sites.forEach(function (site) {
+      html += '<div class="axis">' + site.def.mainName + '<span>' + site.js.length + (site.js.length > 1 ? ' φανάρια' : ' φανάρι') + '</span></div>';
+      site.js.forEach(function (o) {
+        var p = plan(o, t), net = site.sim.net, S = site.sim.sig[o.j], C = o.last[0] + o.last[1] + 2 * site.sim.P.lost;
+        html += '<div class="jb' + (sel === o.key ? ' sel' : '') + '"><div class="hd"><i style="background-color:' + heat(o.wait) + '"></i><b>' + o.name + '</b><span class="w">αναμονή ' + Math.round(o.wait) + ' s</span>' +
+          (o.can ? '<div class="seg"><button data-key="' + o.key + '" data-on="0" aria-pressed="' + !o.on + '">Ρολόι</button><button data-key="' + o.key + '" data-on="1" aria-pressed="' + o.on + '">Τροχονόμος</button></div>' : '<span class="why">χωρίς ανιχνευτή στην κάθετη</span>') + '</div>' +
+          '<div class="sig"><div class="lamps"><u><i class="' + lamp(o, 0) + '"></i>κύρια</u><u><i class="' + lamp(o, 1) + '"></i>κάθετη</u></div><div class="rib" style="background:' + ribbon(o, t) + '"></div></div>' +
+          '<div class="tm"><div><b>' + (o.last[0] && o.last[1] ? C : p.C) + '<small>s</small></b><span>κύκλος · ρολόι ' + p.C + '</span></div><div><b>' + (o.last[0] || p.g0) + '<small>s</small></b><span>πράσινο κύριας · ρολόι ' + p.g0 + '</span></div><div><b>' + (o.last[1] || p.g1) + '<small>s</small></b><span>πράσινο κάθετης · ρολόι ' + p.g1 + '</span></div></div>' +
+          '<div class="ap h"><span>Πρόσβαση</span><span class="v">οχ./ώρα</span><span class="v">ουρά</span><span></span></div>';
+        net.juncs[o.j].apps.forEach(function (a) {
+          var A = net.apps[a], f = Math.round(SimCore.flowAt(DATA, A, DAY, t, site.sim.P)), q = site.sim.qlen(a);
+          html += '<div class="ap"><span class="n">' + A.label + '</span><span class="v' + (A.measured ? '' : ' est') + '">' + (A.measured ? '' : '≈') + f + '</span><span class="v">' + q + '</span><div class="q"><i style="width:' + Math.min(100, q * 2.5) + '%"></i></div></div>';
+        });
+        html += '</div>';
+      });
+    });
+    var pn = $('panel'), sc = pn.scrollTop; pn.innerHTML = html; pn.scrollTop = sc;
+  }
+  $('panel').addEventListener('click', function (e) { var k = e.target.getAttribute('data-key'); if (!k) return; J.forEach(function (o) { if (o.key === k) assign(o, e.target.getAttribute('data-on') === '1', now()); }); });
+
+  /* ---------- γραμμή χρόνου ---------- */
+  function timeline() {
+    var pts = [], n = (T1 - T0) / 300, mx = 0, vals = [];
+    for (var i = 0; i <= n; i++) { var b = Math.min(287, T0 / 300 + i), c = 0; MAP.dets.forEach(function (d) { if (d.v[b] / d.ff < 0.6) c++; }); vals.push(c / MAP.dets.length); mx = Math.max(mx, c / MAP.dets.length); }
+    vals.forEach(function (v, i) { pts.push((i / n * 1000).toFixed(1) + ',' + (96 - v / mx * 88).toFixed(1)); });
+    $('cong').innerHTML = '<polygon points="0,100 ' + pts.join(' ') + ' 1000,100" fill="rgba(255,212,42,.25)"/><polyline points="' + pts.join(' ') + '" fill="none" stroke="#ffd42a" stroke-width="2" vector-effect="non-scaling-stroke"/>';
+    var h = ''; for (var x = T0; x <= T1; x += 7200) h += '<i style="left:' + ((x - T0) / (T1 - T0) * 100) + '%">' + hm(x) + '</i>'; $('hrs').innerHTML = h;
+  }
+  $('track').addEventListener('click', function (e) { var r = $('track').getBoundingClientRect(), t = T0 + Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)) * (T1 - T0 - 60); goto(Math.round(t / 60) * 60); });
+
+  /* ---------- χειρισμός ---------- */
+  function ui() {
+    $('play').textContent = playing ? '❚❚' : '▶'; $('auto').setAttribute('aria-pressed', auto);
+    $('mode').textContent = (playing ? 'αναπαραγωγή ×' + speed : 'παύση') + (auto ? ', αυτόματη ανάθεση' : '');
+  }
+  $('play').addEventListener('click', function () { playing = !playing; ui(); });
+  $('slow').addEventListener('click', function () { speed = Math.max(10, speed / 2); ui(); });
+  $('fast').addEventListener('click', function () { speed = Math.min(480, speed * 2); ui(); });
+  $('auto').addEventListener('click', function () { auto = !auto; ui(); });
+  addEventListener('keydown', function (e) {
+    if (e.key === ' ') { playing = !playing; e.preventDefault(); }
+    else if (e.key === 'a' || e.key === 'A' || e.key === 'α' || e.key === 'Α') { var any = false; J.forEach(function (o) { if (o.red && o.can && !o.on) { assign(o, true, now()); any = true; } }); if (!any) auto = !auto; }
+    else if (e.key === 'p' || e.key === 'P' || e.key === 'π' || e.key === 'Π') openPanel(!open);
+    else if (e.key === 'r' || e.key === 'R' || e.key === 'ρ' || e.key === 'Ρ') { J.forEach(function (o) { o.on = false; }); goto(START); }
+    else if (e.key === 'ArrowRight') speed = Math.min(480, speed * 2);
+    else if (e.key === 'ArrowLeft') speed = Math.max(10, speed / 2);
+    else return;
+    ui();
+  });
+
+  /* ---------- βρόχος ---------- */
+  var lastFrame = 0, carry = 0;
+  function frame(ts) {
+    var dt = lastFrame ? Math.min(0.1, (ts - lastFrame) / 1000) : 0; lastFrame = ts;
+    if (playing && !sites[0].sim.done) { carry += dt * speed; var n = Math.min(600, Math.floor(carry)); carry -= n; for (var i = 0; i < n; i++) stepAll(false); }
+    if (Math.abs(viewW - viewTarget) > 0.2) viewW += (viewTarget - viewW) * Math.min(1, dt * 7); else viewW = viewTarget;
+    var t = now(); drawMap(t); marks(); drawPanel(false);
+    $('clock').textContent = hm(t); $('head').style.left = ((t - T0) / (T1 - T0) * 100) + '%';
+    var saved = 0, any = false; sites.forEach(function (s) { var a = 0, b = 0; s.sh.st.qInt.forEach(function (v) { a += v; }); s.sim.st.qInt.forEach(function (v) { b += v; }); saved += (a - b) / 3600; }); J.forEach(function (o) { if (o.on) any = true; });
+    $('saved').firstChild.nodeValue = num(saved, Math.abs(saved) >= 100 ? 0 : 1);
+    $('savedCap').textContent = any || Math.abs(saved) > 0.05 ? 'αναμονής λιγότερες από τη στιγμή που ανέλαβε ο Τροχονόμος' : 'Όλα τα φανάρια είναι στο ρολόι. Ο Τροχονόμος περιμένει ανάθεση.';
+    requestAnimationFrame(frame);
+  }
+  addEventListener('resize', fit);
+  build(); fit(); timeline(); goto(START); if (H.panel === '1') openPanel(true);
+  if (H.assign) { var at = hms(H.assign); while (now() < at) stepAll(false); J.forEach(function (o) { if (o.can && o.site.id === 'kif') assign(o, true, now()); }); }
+  if (H.until) { var u = hms(H.until); while (now() < u) stepAll(false); }
+  setTimeout(function () { $('stage').classList.remove('boot'); }, 300);
+  if (H.debug) setTimeout(function () { var o = {}; ['stage', 'panel', 'tab', 'map'].forEach(function (k) { var r = $(k).getBoundingClientRect(); o[k] = [Math.round(r.left), Math.round(r.right), Math.round(r.width)]; }); o.win = [innerWidth, innerHeight, remPx, getComputedStyle($('panel')).right]; document.title = JSON.stringify(o); }, 1500);
+  ui(); requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
